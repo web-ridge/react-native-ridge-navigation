@@ -16,6 +16,13 @@ export {
   useParams,
 } from './Navigation';
 export {
+  createBottomTabsRoot,
+  createNormalRoot,
+  createSideMenuRoot,
+  registerScreen,
+} from './navigationUtils';
+
+export type {
   Root,
   BaseScreen,
   BottomTabType,
@@ -23,8 +30,4 @@ export {
   RootChildBottomTabs,
   RootChildSideMenu,
   RootChildNormal,
-  createBottomTabsRoot,
-  createNormalRoot,
-  createSideMenuRoot,
-  registerScreen,
 } from './navigationUtils';
