@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "react-native-react-ridge-navigation": ["./src/index"]
+      "react-native-ridge-navigation": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

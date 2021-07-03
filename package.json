@@ -1,5 +1,5 @@
 {
-  "name": "react-native-react-ridge-navigation",
+  "name": "react-native-ridge-navigation",
   "version": "0.3.0",
   "description": "Simple and performant cross platform navigation with simple api",
   "main": "lib/commonjs/index",
@@ -13,7 +13,7 @@
     "android",
     "ios",
     "cpp",
-    "react-native-react-ridge-navigation.podspec",
+    "react-native-ridge-navigation.podspec",
     "!lib/typescript/example",
     "!android/build",
     "!ios/build",
@@ -36,13 +36,13 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/web-ridge/react-native-react-ridge-navigation",
+  "repository": "https://github.com/web-ridge/react-native-ridge-navigation",
   "author": "Richard Lindhout <info@webridge.nl> (https://github.com/web-ridge)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/web-ridge/react-native-react-ridge-navigation/issues"
+    "url": "https://github.com/web-ridge/react-native-ridge-navigation/issues"
   },
-  "homepage": "https://github.com/web-ridge/react-native-react-ridge-navigation#readme",
+  "homepage": "https://github.com/web-ridge/react-native-ridge-navigation#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

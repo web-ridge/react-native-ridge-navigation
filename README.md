@@ -44,11 +44,11 @@ npm install react-native-navigation-hooks
 ```
 #### 2. Install react-native-ridge-navigation + deps
 ```sh
-yarn add react-native-paper react-router-dom@experimental react-native-react-ridge-navigation
+yarn add react-native-paper react-router-dom@experimental react-native-ridge-navigation
 ```
 or
 ```sh
-npm install react-native-paper react-router-dom@experimental react-native-react-ridge-navigation
+npm install react-native-paper react-router-dom@experimental react-native-ridge-navigation
 ```
 
 
