@@ -15,3 +15,16 @@ export {
   updateBadge,
   useParams,
 } from './Navigation';
+export {
+  Root,
+  BaseScreen,
+  BottomTabType,
+  SideMenuItem,
+  RootChildBottomTabs,
+  RootChildSideMenu,
+  RootChildNormal,
+  createBottomTabsRoot,
+  createNormalRoot,
+  createSideMenuRoot,
+  registerScreen,
+} from './navigationUtils';
