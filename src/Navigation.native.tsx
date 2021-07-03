@@ -52,6 +52,7 @@ function getBottomLayout(colorScheme: ColorSchemeName): OptionsLayout {
     componentBackgroundColor: backgroundColor,
   };
 }
+
 function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
   const isDark = colorScheme === 'dark';
   return {
@@ -62,6 +63,7 @@ function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
     badgeColor: isDark ? 'red' : '#F59E00',
   };
 }
+
 function getLayout(colorScheme: ColorSchemeName): OptionsLayout {
   const backgroundColor = colorScheme === 'dark' ? '#000' : '#fff';
   return {

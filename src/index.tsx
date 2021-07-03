@@ -5,6 +5,7 @@ export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
 export { default as preloader } from './Preloader';
 export { default as lazyWithPreload } from './LazyWithPreload';
+export { default as Redirect } from './Redirect';
 
 export {
   NavigationRoot,
