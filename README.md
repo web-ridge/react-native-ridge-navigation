@@ -1,11 +1,21 @@
-# react-native-react-ridge-navigation (BETA)
+
+<h1 align="center">
+  <img src="https://user-images.githubusercontent.com/6492229/124349256-854c4680-dbee-11eb-84ca-fd410a4a0fcd.png" width="128">
+  <br>
+  react-native-ridge-navigation (⚠️ in beta)
+</h1>
+
 Simple and performant cross platform navigation with simple api, but not yet ready for production usage. Only used internally.
+
+⚠️ This is a very early release, not recommended for production yet.
 
 Things which need to be done:
 - Configure theme dark/light
 - Remove react-native-paper dependency
 - wait for new experimental react-router-dom release: [react-router/pull/7838](https://github.com/ReactTraining/react-router/pull/7838)
 - create universal lazyWithPreload for screens
+- example app with example stacks
+- create website
 
 ## Features
 - Superior performance (we use [wix/react-native-navigation](https://github.com/wix/react-native-navigation))
