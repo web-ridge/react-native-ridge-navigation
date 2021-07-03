@@ -1,18 +1,11 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import ReactRidgeNavigation from 'react-native-react-ridge-navigation';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
-  React.useEffect(() => {
-    ReactRidgeNavigation.multiply(3, 7).then(setResult);
-  }, []);
-
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>TODO: make example :)</Text>
     </View>
   );
 }
