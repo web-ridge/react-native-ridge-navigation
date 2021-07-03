@@ -2,7 +2,7 @@ export { default as DeepLinking } from './DeepLinking';
 export { default as BackLink } from './BackLink';
 export { default as OnlyRenderOnce } from './OnlyRenderOnce';
 export { default as SwitchRoot } from './SwitchRoot';
-
+export { default as Link } from './Link';
 export { default as preloader } from './Preloader';
 export { default as lazyWithPreload } from './LazyWithPreload';
 
