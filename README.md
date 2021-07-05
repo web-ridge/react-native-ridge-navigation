@@ -39,7 +39,6 @@ npx create-react-native-web-application --name myappname
 ```
 
 #### 1. Install deps + library
-Follow steps here: https://wix.github.io/react-native-navigation/docs/before-you-start/
 
 ```
 yarn add react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation && npx rnn-link && npx pod-install
