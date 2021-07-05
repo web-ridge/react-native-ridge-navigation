@@ -23,7 +23,7 @@ Things which need to be done:
 - Android, iOS, web ([ReactTraining/react-router](https://github.com/ReactTraining/react-router)))
 - Preload data on hover
 - Automatic deep-linking
-- Preload components on web
+- Lazy load components
 
 ## Supported stacks
 - normal
