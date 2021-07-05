@@ -31,13 +31,13 @@ Things which need to be done:
 
 ## Installation
 
-#### 0. If you don't have an app yet
+#### 1. If you don't have an app yet (optional)
 Create one with our tool [web-ridge/create-react-native-web-application](https://github.com/web-ridge/create-react-native-web-application)
 ```
 npx create-react-native-web-application --name myappname
 ```
 
-#### 1. One liner
+#### 1. Install deps + library
 Follow steps here: https://wix.github.io/react-native-navigation/docs/before-you-start/
 
 ```
