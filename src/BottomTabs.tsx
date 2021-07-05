@@ -1,10 +1,10 @@
 import * as React from 'react';
 import type { RootChildBottomTabs } from './navigationUtils';
-import { Image, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 import { useLocation } from 'react-router-dom';
 import BottomTab from './BottomTab';
-import Link from './Link';
-import { TouchableRipple } from 'react-native-paper';
+// import Link from './Link';
+// import { TouchableRipple } from 'react-native-paper';
 import { badgesCount } from './Navigation';
 
 function BottomTabs({
@@ -29,28 +29,28 @@ function BottomTabs({
         isBigScreen ? styles.rootBigScreen : styles.rootSmall,
       ]}
     >
-      {isBigScreen ? (
-        <Link to={bottomTabsRoot.children[0].child} params={{}}>
-          {(linkProps) => (
-            <TouchableRipple
-              {...linkProps}
-              accessibilityRole="button"
-              accessibilityLabel={'Go to home'}
-              style={styles.logoRipple}
-            >
-              <Image
-                source={
-                  isDark
-                    ? require('../img/logo_small_dark.png').default
-                    : require('../img/logo_small.png').default
-                }
-                style={styles.logo}
-                resizeMethod="auto"
-              />
-            </TouchableRipple>
-          )}
-        </Link>
-      ) : null}
+      {/*{isBigScreen ? (*/}
+      {/*  <Link to={bottomTabsRoot.children[0].child} params={{}}>*/}
+      {/*    {(linkProps) => (*/}
+      {/*      <TouchableRipple*/}
+      {/*        {...linkProps}*/}
+      {/*        accessibilityRole="button"*/}
+      {/*        accessibilityLabel={'Go to home'}*/}
+      {/*        style={styles.logoRipple}*/}
+      {/*      >*/}
+      {/*        <Image*/}
+      {/*          source={*/}
+      {/*            isDark*/}
+      {/*              ? require('../img/logo_small_dark.png').default*/}
+      {/*              : require('../img/logo_small.png').default*/}
+      {/*          }*/}
+      {/*          style={styles.logo}*/}
+      {/*          resizeMethod="auto"*/}
+      {/*        />*/}
+      {/*      </TouchableRipple>*/}
+      {/*    )}*/}
+      {/*  </Link>*/}
+      {/*) : null}*/}
       {bottomTabsRoot.children.map((child) => (
         <BottomTab
           isBigScreen={isBigScreen}
