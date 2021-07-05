@@ -31,26 +31,22 @@ Things which need to be done:
 
 ## Installation
 
-#### 1. Install wix/react-native-navigation
+#### 0. If you don't have an app yet
+Create one with our tool [web-ridge/create-react-native-web-application](https://github.com/web-ridge/create-react-native-web-application)
+```
+npx create-react-native-web-application --name myappname
+```
+
+#### 1. One liner
 Follow steps here: https://wix.github.io/react-native-navigation/docs/before-you-start/
 
-#### 2. Install react-native-navigation-hooks
-```sh
-yarn add react-native-navigation-hooks
 ```
-or
-```sh
-npm install react-native-navigation-hooks
+yarn add react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation && npx rnn-link && npx pod-install
 ```
-#### 2. Install react-native-ridge-navigation + deps
-```sh
-yarn add react-native-paper react-router-dom@experimental react-native-ridge-navigation
+or with npm
 ```
-or
-```sh
-npm install react-native-paper react-router-dom@experimental react-native-ridge-navigation
+npm install react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation && npx rnn-link && npx pod-install
 ```
-
 
 
 ## Usage
