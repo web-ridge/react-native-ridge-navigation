@@ -9,7 +9,7 @@ import Spacer from '../helpers/Spacer';
 import ScreenWrapper from '../helpers/ScreenWrapper';
 import SimpleSnackbar from '../helpers/SimpleSnackbar';
 import { defaultStyles } from '../helpers/utils';
-import { SwitchRoot } from 'react-native-ridge-navigation';
+import { SwitchRoot } from '../../../src';
 import { NavigationRoots } from '../Navigator';
 
 interface SignInFormState {

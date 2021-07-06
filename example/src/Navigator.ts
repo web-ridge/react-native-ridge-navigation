@@ -1,9 +1,6 @@
 import routes from './NavigatorRoutes';
 import AppHOC from './App';
-import {
-  createNormalRoot,
-  createNavigation,
-} from 'react-native-ridge-navigation';
+import { createNormalRoot, createNavigation } from '../../src/index';
 
 export const NavigationRoots = {
   RootHome: 'home',

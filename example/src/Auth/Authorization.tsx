@@ -5,7 +5,7 @@ import authState, { AuthState } from './AuthState';
 import { fetchAndSaveProfileForToken } from './AuthorizationUtils';
 
 import type { ComponentType } from 'react';
-import { SwitchRoot } from 'react-native-ridge-navigation';
+import { SwitchRoot } from '../../../src';
 import { NavigationRoots } from '../Navigator';
 
 // getInitialState fetches data from localStorage

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { BaseScreen, ExtractRouteParams } from './navigationUtils';
 import { useNavigation } from './Navigation';
-import { generatePath } from 'react-router-dom';
+import { generatePath } from './react-router';
 import type { GestureResponderEvent } from 'react-native';
 import type { PreloadableComponent } from './LazyWithPreload';
 import preloader from './Preloader';

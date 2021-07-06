@@ -1,4 +1,4 @@
-import { registerScreen } from 'react-native-ridge-navigation';
+import { registerScreen } from '../../src';
 
 import AuthScreenLazy from './Auth/AuthScreenLazy';
 import { RequireAuthHOC } from './Auth/Authorization';

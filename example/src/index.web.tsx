@@ -4,7 +4,7 @@ import AppHOC from './App';
 import './index.css';
 
 import './Navigator';
-import { NavigationRoot } from 'react-native-ridge-navigation';
+import { NavigationRoot } from '../../src';
 import ErrorBoundaryWithRetry from './helpers/ErrorBoundaryWithRetry';
 import AsyncBoundary from './helpers/AsyncBoundary';
 

@@ -7,16 +7,15 @@ import {
   preloadRoot,
   Root,
 } from './navigationUtils';
-
+import { BrowserRouter } from './react-router-dom';
 import {
-  BrowserRouter,
   Routes,
   Route,
   useParams as useParamsImpl,
   generatePath,
   useNavigate,
   useLocation,
-} from 'react-router-dom';
+} from './react-router';
 
 import preloader from './Preloader';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';

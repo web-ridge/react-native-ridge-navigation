@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { RootChildBottomTabs } from './navigationUtils';
 import { StyleSheet, useColorScheme, View } from 'react-native';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from './react-router';
 import BottomTab from './BottomTab';
 // import Link from './Link';
 // import { TouchableRipple } from 'react-native-paper';

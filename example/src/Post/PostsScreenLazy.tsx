@@ -1,2 +1,2 @@
-import { lazyWithPreload } from 'react-native-ridge-navigation';
+import { lazyWithPreload } from '../../../src';
 export default lazyWithPreload(() => import('./PostsScreen'));

@@ -4,7 +4,8 @@ import {
   DarkTheme,
   Provider as PaperProvider,
 } from 'react-native-paper';
-import { ColorSchemeName, Platform, useColorScheme } from 'react-native';
+import { ColorSchemeName, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AsyncBoundary from './helpers/AsyncBoundary';
 import LimitedView from './helpers/LimitedView';
@@ -35,24 +36,15 @@ export default function AppHOC<T extends object>(
     const memoTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
 
     return (
-      <PaperProvider theme={memoTheme}>
-        <LimitedView>
-          {Platform.OS === 'web' ? (
-            <style type="text/css">
-              {`@font-face {
-                font-family: 'MaterialCommunityIcons';
-                src: url(${
-                  require('react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf')
-                    .default
-                }) format('truetype');
-              }`}
-            </style>
-          ) : null}
-          <AsyncBoundary>
-            <WrappedComponent {...wrapperProps} />
-          </AsyncBoundary>
-        </LimitedView>
-      </PaperProvider>
+      <SafeAreaProvider>
+        <PaperProvider theme={memoTheme}>
+          <LimitedView>
+            <AsyncBoundary>
+              <WrappedComponent {...wrapperProps} />
+            </AsyncBoundary>
+          </LimitedView>
+        </PaperProvider>
+      </SafeAreaProvider>
     );
   }
 

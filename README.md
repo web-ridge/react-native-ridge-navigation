@@ -45,7 +45,7 @@ yarn add react-native-navigation react-native-navigation-hooks react-native-pape
 ```
 or with npm
 ```
-npm install react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation && npx rnn-link && npx pod-install
+npm install react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation history && npx rnn-link && npx pod-install
 ```
 
 

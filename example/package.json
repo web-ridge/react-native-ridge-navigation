@@ -11,23 +11,20 @@
     "web:build": "react-app-rewired build",
     "web:test": "react-app-rewired test",
     "web:eject": "react-app-rewired eject",
-    "web": "react-app-rewired start",
-    "postinstall": "patch-package"
+    "web": "react-app-rewired start"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.15.5",
-    "patch-package": "^6.4.7",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "history": "^5.0.0",
+    "react": "^18.0.0-alpha-ed6c091fe-20210701",
+    "react-dom": "^18.0.0-alpha-ed6c091fe-20210701",
     "react-native": "0.64.2",
     "react-native-navigation": "^7.17.1",
     "react-native-navigation-hooks": "^6.3.0",
     "react-native-paper": "^4.9.2",
-    "react-native-ridge-navigation": "^0.7.2",
     "react-native-safe-area-context": "^3.2.0",
     "react-native-use-form": "^0.2.6",
     "react-native-web": "^0.17.1",
-    "react-router-dom": "^0.0.0-experimental-ffd8c7d0",
     "react-scripts": "4.0.3"
   },
   "devDependencies": {
