@@ -22,12 +22,6 @@ function getTheme(colorScheme: ColorSchemeName): typeof DarkTheme {
     mode: 'adaptive',
     dark: isDark,
     roundness: 10,
-    colors: {
-      ...baseTheme.colors,
-      background: isDark ? '#121212' : '#ffffff',
-      primary: isDark ? '#908DA4' : '#211a48',
-      accent: isDark ? '#BBD78A' : '#76ae14',
-    },
   };
 }
 

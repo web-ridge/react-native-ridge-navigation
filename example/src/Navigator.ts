@@ -5,7 +5,6 @@ import {
   createNavigation,
   createBottomTabsRoot,
   createScreens,
-  createTheme,
   defaultTheme,
 } from '../../src/index';
 
@@ -38,7 +37,7 @@ export const BottomRoots = {
 // http://nsimage.brosteins.com/Home
 
 const Navigator = createNavigation(
-  createTheme(defaultTheme),
+  defaultTheme,
   createScreens(routes),
   {
     [NavigationRoots.RootHome]: createBottomTabsRoot([

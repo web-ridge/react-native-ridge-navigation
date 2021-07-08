@@ -6,6 +6,7 @@ import {
   ExtractRouteParams,
   preloadRoot,
   Root,
+  setTheme,
   ThemeSettings,
 } from './navigationUtils';
 import { BrowserRouter } from './react-router-dom';
@@ -23,11 +24,10 @@ import { View, useWindowDimensions, StyleSheet } from 'react-native';
 
 import BottomTabs from './BottomTabs';
 import SwitchRoot from './SwitchRoot';
-import { newRidgeState, StateWithValue } from 'react-ridge-state';
+import { newRidgeState } from 'react-ridge-state';
 
 let screenItems: BaseScreen[] = [];
 let root: Root = {};
-export let theme: StateWithValue<ThemeSettings> | undefined;
 
 export function useParams<T extends BaseScreen>(
   _: T,
@@ -226,12 +226,12 @@ export function NavigationRoot({
 }
 
 export function createNavigation<ScreenItems extends BaseScreen[]>(
-  themeState: StateWithValue<ThemeSettings>,
+  themeSettings: ThemeSettings,
   screens: ScreenItems,
   r: Root,
   _: any
 ): any {
-  theme = themeState;
+  setTheme(themeSettings);
   root = r;
   screenItems = screens;
 

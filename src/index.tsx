@@ -15,7 +15,6 @@ export {
   refreshBottomTabs,
   updateBadge,
   useParams,
-  theme,
 } from './Navigation';
 
 export {
@@ -24,8 +23,11 @@ export {
   createSideMenuRoot,
   registerScreen,
   createScreens,
-  createTheme,
   defaultTheme,
+  useTheme,
+  setTheme,
+  getTheme,
+  createSimpleTheme,
 } from './navigationUtils';
 
 export type {

@@ -2,14 +2,57 @@ import * as React from 'react';
 import { Appbar, Button, Text } from 'react-native-paper';
 import authState, { reset } from '../Auth/AuthState';
 
+import { createSimpleTheme, setTheme } from '../../../src';
+
 export default function AccountScreen() {
   const [{ user }] = authState.use();
+
   return (
     <>
       <Appbar.Header>
         <Appbar.Content title="Account" />
       </Appbar.Header>
       <Text>{user?.username}</Text>
+      <Button
+        onPress={() => {
+          setTheme(
+            createSimpleTheme({
+              light: {
+                primary: '#2003fc',
+                accent: '#2003fc',
+                text: '#000',
+              },
+              dark: {
+                primary: '#52a6fa',
+                accent: '#52a6fa',
+                text: '#fff',
+              },
+            })
+          );
+        }}
+      >
+        Blue theme
+      </Button>
+      <Button
+        onPress={() => {
+          setTheme(
+            createSimpleTheme({
+              light: {
+                primary: '#fc0303',
+                accent: '#fc0303',
+                text: '#000',
+              },
+              dark: {
+                primary: '#ff9191',
+                accent: '#ff9191',
+                text: '#fff',
+              },
+            })
+          );
+        }}
+      >
+        Red theme
+      </Button>
       <Button
         mode="contained"
         onPress={() => {

@@ -16,9 +16,12 @@ import {
   BaseScreen,
   BottomTabType,
   ExtractRouteParams,
+  getTheme,
   preloadRoot,
   Root,
+  setTheme,
   ThemeSettings,
+  useTheme,
 } from './navigationUtils';
 import * as React from 'react';
 import preloader from './Preloader';
@@ -29,11 +32,9 @@ import {
   useColorScheme,
 } from 'react-native';
 import useLatest from './useLatest';
-import type { StateWithValue } from 'react-ridge-state';
 
 const stackId = 'AppStack';
 let root: Root = {};
-export let theme: StateWithValue<ThemeSettings> | undefined;
 
 let currentRootKey: string | undefined;
 export async function setRoot(rootKey?: string) {
@@ -49,7 +50,7 @@ export function useParams<T extends BaseScreen>(
 }
 
 function getBottomLayout(colorScheme: ColorSchemeName): OptionsLayout {
-  const { bottomBar } = theme!.get()[colorScheme || 'light'];
+  const { bottomBar } = getTheme()[colorScheme || 'light'];
   const backgroundColor = bottomBar.backgroundColor;
   return {
     backgroundColor,
@@ -58,7 +59,7 @@ function getBottomLayout(colorScheme: ColorSchemeName): OptionsLayout {
 }
 
 function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
-  const { bottomBar } = theme!.get()[colorScheme || 'light'];
+  const { bottomBar } = getTheme()[colorScheme || 'light'];
 
   return {
     textColor: bottomBar.textColor,
@@ -73,7 +74,7 @@ function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
 }
 
 function getLayout(colorScheme: ColorSchemeName): OptionsLayout {
-  const { layout } = theme!.get()[colorScheme || 'light'];
+  const { layout } = getTheme()[colorScheme || 'light'];
   return {
     backgroundColor: layout.backgroundColor,
     componentBackgroundColor: layout.backgroundColor,
@@ -171,7 +172,7 @@ const topBar: OptionsTopBar = {
 };
 
 function getStatusBar(colorScheme: ColorSchemeName): OptionsStatusBar {
-  const { statusBar } = theme!.get()[colorScheme || 'light'];
+  const { statusBar } = getTheme()[colorScheme || 'light'];
   return statusBar;
 }
 
@@ -377,18 +378,16 @@ export default function withUpdatableScreenTheme<
   T extends { componentId: string }
 >(WrappedComponent: React.ComponentType<T>): React.FC<T> {
   function Wrapper(wrapperProps: T) {
-    const t = theme?.useValue();
+    const theme = useTheme();
     const colorScheme = useColorScheme();
     const isFirstRun = React.useRef(true);
     React.useLayoutEffect(() => {
-      if (t) {
-        if (isFirstRun.current) {
-          isFirstRun.current = false;
-          return;
-        }
-        refreshScreenTheme(wrapperProps.componentId);
+      if (isFirstRun.current) {
+        isFirstRun.current = false;
+        return;
       }
-    }, [t, wrapperProps.componentId, colorScheme]);
+      refreshScreenTheme(wrapperProps.componentId);
+    }, [theme, wrapperProps.componentId, colorScheme]);
     return <WrappedComponent {...wrapperProps} />;
   }
 
@@ -412,12 +411,12 @@ function registerScreens<ScreenItems extends BaseScreen[]>(
 }
 
 export function createNavigation<ScreenItems extends BaseScreen[]>(
-  themeState: StateWithValue<ThemeSettings>,
+  themeSettings: ThemeSettings,
   screens: ScreenItems,
   r: Root,
   appHoc: (WrappedComponent: React.ComponentType<any>) => React.FC<any>
 ) {
-  theme = themeState;
+  setTheme(themeSettings);
   root = r;
 
   registerScreens(screens, appHoc);

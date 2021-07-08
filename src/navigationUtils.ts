@@ -1,71 +1,87 @@
 import type { ComponentType } from 'react';
 import preloader from './Preloader';
-import { newRidgeState } from 'react-ridge-state';
+import { newRidgeState, StateWithValue } from 'react-ridge-state';
 import { refreshTheme } from './Navigation';
-import { Platform } from 'react-native';
 declare type Color = string | symbol;
 
-export const defaultTheme: ThemeSettings = {
-  light: {
-    statusBar: Platform.select({
-      android: {
+export function createSimpleTheme(
+  simpleTheme: SimpleThemeSettings
+): ThemeSettings {
+  return {
+    light: {
+      statusBar: {
         translucent: false,
         drawBehind: true,
         style: 'light',
         backgroundColor: 'transparent',
       },
-      default: {
+      layout: {
+        backgroundColor: '#fff',
+      },
+      bottomBar: {
+        backgroundColor: '#fff',
+        textColor: simpleTheme.light.text,
+        iconColor: simpleTheme.light.text,
+        selectedIconColor: simpleTheme.light.accent,
+        selectedTextColor: simpleTheme.light.accent,
+        badgeColor: 'red',
+        badgeTextColor: '#fff', // not supported yet in iOS/Android
+      },
+    },
+    dark: {
+      statusBar: {
         translucent: false,
         drawBehind: true,
+        style: 'light',
+        backgroundColor: 'transparent',
       },
-    }),
-    layout: {
-      backgroundColor: '#fff',
+      layout: {
+        backgroundColor: '#000',
+      },
+      bottomBar: {
+        backgroundColor: '#121212',
+        textColor: simpleTheme.dark.text,
+        iconColor: simpleTheme.dark.text,
+        selectedIconColor: simpleTheme.dark.accent,
+        selectedTextColor: simpleTheme.dark.accent,
+        badgeColor: 'red',
+        badgeTextColor: '#fff', // not supported yet in iOS/Android
+      },
     },
-    bottomBar: {
-      backgroundColor: '#fff',
-      textColor: '#000',
-      iconColor: '#000',
-      selectedIconColor: '#F59E00',
-      selectedTextColor: '#F59E00',
-      badgeColor: '#F59E00',
-      badgeTextColor: '#fff', // not supported yet in iOS/Android
-    },
+  };
+}
+export const defaultTheme: ThemeSettings = createSimpleTheme({
+  light: {
+    primary: '#6200ee',
+    accent: '#6200ee',
+    text: '#000',
   },
   dark: {
-    statusBar: Platform.select({
-      android: {
-        translucent: false,
-        drawBehind: true,
-        style: 'light',
-        backgroundColor: 'transparent',
-      },
-      default: {
-        translucent: false,
-        drawBehind: true,
-      },
-    }),
-    layout: {
-      backgroundColor: '#000',
-    },
-    bottomBar: {
-      backgroundColor: '#121212',
-      textColor: '#fff',
-      iconColor: '#fff',
-      selectedIconColor: '#FDDFAF',
-      selectedTextColor: '#FDDFAF',
-      badgeColor: 'red',
-      badgeTextColor: '#fff', // not supported yet in iOS/Android
-    },
+    primary: '#edabff',
+    accent: '#edabff',
+    text: '#fff',
   },
-};
+});
 
-export function createTheme(theme: ThemeSettings) {
-  return newRidgeState<ThemeSettings>(theme, {
+let theme: StateWithValue<ThemeSettings> = newRidgeState<ThemeSettings>(
+  defaultTheme,
+  {
     onSet: () => {
       refreshTheme();
     },
-  });
+  }
+);
+
+export function getTheme() {
+  return theme.get();
+}
+
+export function useTheme() {
+  return theme.useValue();
+}
+
+export function setTheme(v: ThemeSettings) {
+  return theme.set(v);
 }
 
 export type ExtractRouteParams<T extends string> = string extends T
@@ -155,9 +171,20 @@ export interface Theme {
   statusBar: OptionsStatusBar;
 }
 
+export interface SimpleTheme {
+  text: Color;
+  primary: Color;
+  accent: Color;
+}
+
 export interface ThemeSettings {
   light: Theme;
   dark: Theme;
+}
+
+export interface SimpleThemeSettings {
+  light: SimpleTheme;
+  dark: SimpleTheme;
 }
 
 export interface SideMenuItem {
