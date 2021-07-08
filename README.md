@@ -12,12 +12,10 @@ Simple and performant cross platform navigation with simple api, but not yet rea
 Things which need to be done:
 - useFocus on web
 - documentation
-- Configure theme dark/light
 - Remove react-native-paper dependency
 - create universal lazyWithPreload for screens (React.lazy not working yet in React Native :( )
-- example app with example stacks
-- create website
-- universal modals (web support too)
+- create website for library
+- universal modal screens (web support too)
 
 ## Features
 - Superior performance (we use [wix/react-native-navigation](https://github.com/wix/react-native-navigation))
@@ -26,6 +24,10 @@ Things which need to be done:
 - Preload data on hover
 - Automatic deep-linking
 - Lazy load components
+- Real-time light/dark mode
+
+## Example
+See https://github.com/web-ridge/react-native-ridge-navigation/tree/main/example
 
 ## Supported stacks
 - normal
