@@ -605,17 +605,17 @@ function flattenRoutes(
 ): RouteBranch[] {
   routes.forEach((route, index) => {
     let path = joinPaths([parentPath, route.path]);
-    let routes = parentRoutes.concat(route);
+    let allRoutes = parentRoutes.concat(route);
     let indexes = parentIndexes.concat(index);
 
     // Add the children before adding this route to the array so we traverse the
     // route tree depth-first and child routes appear before their parents in
     // the "flattened" version.
     if (route.children) {
-      flattenRoutes(route.children, branches, path, routes, indexes);
+      flattenRoutes(route.children, branches, path, allRoutes, indexes);
     }
 
-    branches.push([path, routes, indexes]);
+    branches.push([path, allRoutes, indexes]);
   });
 
   return branches;

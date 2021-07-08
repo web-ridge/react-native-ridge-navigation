@@ -11,6 +11,7 @@ import SimpleSnackbar from '../helpers/SimpleSnackbar';
 import { defaultStyles } from '../helpers/utils';
 import { SwitchRoot } from '../../../src';
 import { NavigationRoots } from '../Navigator';
+import { fetchAndSaveProfileForToken } from './AuthorizationUtils';
 
 interface SignInFormState {
   username: string;
@@ -32,11 +33,21 @@ export default function AuthScreen() {
     setLoading(true);
     setError(undefined);
 
-    // TODO fake a timeout
-    console.log({ values });
-    setError(undefined);
-    setLoading(false);
-    setDone(true);
+    async function login() {
+      try {
+        // const token = await resolveTokenFromOAuth({ username, password });
+        const token = `${values.username}_SHOULD_BE_TOKEN_FROM_OAUTH`;
+        await fetchAndSaveProfileForToken({ token });
+        setError(undefined);
+        setLoading(false);
+        setDone(true);
+      } catch (e) {
+        setError(e.message);
+        setLoading(false);
+      }
+    }
+
+    login();
   };
 
   if (done) {
@@ -82,6 +93,7 @@ export default function AuthScreen() {
                   {!loading && !error ? 'Inloggen' : ''}
                 </Button>
               </Form>
+
               <Spacer />
             </PaddingView>
           </View>

@@ -1,10 +1,34 @@
 import routes from './NavigatorRoutes';
 import AppHOC from './App';
-import { createNormalRoot, createNavigation } from '../../src/index';
+import {
+  createNormalRoot,
+  createNavigation,
+  createBottomTabsRoot,
+  createScreens,
+  createTheme,
+  defaultTheme,
+} from '../../src/index';
 
 export const NavigationRoots = {
   RootHome: 'home',
   RootAuth: 'auth',
+};
+
+export const BottomRoots = {
+  Posts: {
+    path: '/post',
+    title: () => 'Posts',
+    icon: require('./img/palette-swatch-outline/icon-20.png'),
+    selectedIcon: require('./img/palette-swatch/icon-20.png'),
+    child: routes.PostsScreen,
+  },
+  Account: {
+    path: '/account',
+    title: () => 'Account',
+    icon: require('./img/account-circle-outline/icon-20.png'),
+    selectedIcon: require('./img/account-circle/icon-20.png'),
+    child: routes.AccountScreen,
+  },
 };
 
 // svg to png
@@ -14,12 +38,13 @@ export const NavigationRoots = {
 // http://nsimage.brosteins.com/Home
 
 const Navigator = createNavigation(
-  Object.keys(routes).map((key) => {
-    // console.log({ routes });
-    return routes[key as keyof typeof routes]!;
-  }),
+  createTheme(defaultTheme),
+  createScreens(routes),
   {
-    [NavigationRoots.RootHome]: createNormalRoot(routes.PostsScreen),
+    [NavigationRoots.RootHome]: createBottomTabsRoot([
+      BottomRoots.Posts,
+      BottomRoots.Account,
+    ]),
     [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
   },
   AppHOC

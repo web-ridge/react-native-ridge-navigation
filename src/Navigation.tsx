@@ -6,6 +6,7 @@ import {
   ExtractRouteParams,
   preloadRoot,
   Root,
+  ThemeSettings,
 } from './navigationUtils';
 import { BrowserRouter } from './react-router-dom';
 import {
@@ -22,7 +23,11 @@ import { View, useWindowDimensions, StyleSheet } from 'react-native';
 
 import BottomTabs from './BottomTabs';
 import SwitchRoot from './SwitchRoot';
-import { newRidgeState } from 'react-ridge-state';
+import { newRidgeState, StateWithValue } from 'react-ridge-state';
+
+let screenItems: BaseScreen[] = [];
+let root: Root = {};
+export let theme: StateWithValue<ThemeSettings> | undefined;
 
 export function useParams<T extends BaseScreen>(
   _: T,
@@ -46,6 +51,9 @@ export function refreshBottomTabs() {
   bottomTabRenderIndex.set((prev) => prev + 1);
 }
 
+export function refreshTheme() {
+  // web automatically subscribes since we don't have native components
+}
 export function useFocus(_: () => void) {
   // TODO implement
 }
@@ -125,9 +133,6 @@ function useIsBigScreen() {
   const { width } = useWindowDimensions();
   return width > 1200;
 }
-
-let screenItems: BaseScreen[] = [];
-let root: Root = {};
 
 function NavContainer({ children }: { children: any }) {
   const isBigScreen = useIsBigScreen();
@@ -221,11 +226,14 @@ export function NavigationRoot({
 }
 
 export function createNavigation<ScreenItems extends BaseScreen[]>(
+  themeState: StateWithValue<ThemeSettings>,
   screens: ScreenItems,
   r: Root,
   _: any
 ): any {
-  screenItems = screens;
+  theme = themeState;
   root = r;
+  screenItems = screens;
+
   return;
 }

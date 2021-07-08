@@ -18,19 +18,22 @@ import {
   ExtractRouteParams,
   preloadRoot,
   Root,
+  ThemeSettings,
 } from './navigationUtils';
 import * as React from 'react';
 import preloader from './Preloader';
 import {
-  Platform,
   Appearance,
   ColorSchemeName,
   EmitterSubscription,
+  useColorScheme,
 } from 'react-native';
 import useLatest from './useLatest';
+import type { StateWithValue } from 'react-ridge-state';
 
 const stackId = 'AppStack';
 let root: Root = {};
+export let theme: StateWithValue<ThemeSettings> | undefined;
 
 let currentRootKey: string | undefined;
 export async function setRoot(rootKey?: string) {
@@ -46,7 +49,8 @@ export function useParams<T extends BaseScreen>(
 }
 
 function getBottomLayout(colorScheme: ColorSchemeName): OptionsLayout {
-  const backgroundColor = colorScheme === 'dark' ? '#121212' : '#fff';
+  const { bottomBar } = theme!.get()[colorScheme || 'light'];
+  const backgroundColor = bottomBar.backgroundColor;
   return {
     backgroundColor,
     componentBackgroundColor: backgroundColor,
@@ -54,21 +58,25 @@ function getBottomLayout(colorScheme: ColorSchemeName): OptionsLayout {
 }
 
 function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
-  const isDark = colorScheme === 'dark';
+  const { bottomBar } = theme!.get()[colorScheme || 'light'];
+
   return {
-    textColor: isDark ? '#fff' : '#000',
-    iconColor: isDark ? '#fff' : '#000',
-    selectedIconColor: isDark ? '#FDDFAF' : '#F59E00',
-    selectedTextColor: isDark ? '#FDDFAF' : '#F59E00',
-    badgeColor: isDark ? 'red' : '#F59E00',
+    textColor: bottomBar.textColor,
+    iconColor: bottomBar.iconColor,
+    selectedIconColor: bottomBar.selectedIconColor,
+    selectedTextColor: bottomBar.selectedTextColor,
+    //@ts-ignore
+    badgeColor: bottomBar.badgeColor,
+    //@ts-ignore
+    badgeTextColor: bottomBar.badgeTextColor,
   };
 }
 
 function getLayout(colorScheme: ColorSchemeName): OptionsLayout {
-  const backgroundColor = colorScheme === 'dark' ? '#000' : '#fff';
+  const { layout } = theme!.get()[colorScheme || 'light'];
   return {
-    backgroundColor,
-    componentBackgroundColor: backgroundColor,
+    backgroundColor: layout.backgroundColor,
+    componentBackgroundColor: layout.backgroundColor,
   };
 }
 
@@ -109,7 +117,6 @@ function getRoot(r: Root, rootKey?: string): LayoutRoot {
                 children: [
                   {
                     component: {
-                      id: child.child.path,
                       name: child.child.path,
                     },
                   },
@@ -136,6 +143,7 @@ function getRoot(r: Root, rootKey?: string): LayoutRoot {
             children: [
               {
                 component: {
+                  id: currentRoot.child.path,
                   name: currentRoot.child.path,
                 },
               },
@@ -163,18 +171,8 @@ const topBar: OptionsTopBar = {
 };
 
 function getStatusBar(colorScheme: ColorSchemeName): OptionsStatusBar {
-  return Platform.select({
-    android: {
-      translucent: false,
-      drawBehind: true,
-      style: colorScheme === 'dark' ? 'light' : 'dark',
-      backgroundColor: 'transparent',
-    },
-    default: {
-      translucent: false,
-      drawBehind: true,
-    },
-  });
+  const { statusBar } = theme!.get()[colorScheme || 'light'];
+  return statusBar;
 }
 
 export function getDefaultOptions(colorScheme: ColorSchemeName) {
@@ -198,16 +196,29 @@ Appearance.addChangeListener(() => {
   refreshTheme();
   // setRoot();
 });
+
+export function refreshScreenTheme(componentId: string) {
+  const newOptions = getDefaultOptions(Appearance.getColorScheme());
+  Navigation.mergeOptions(componentId, newOptions);
+}
+
 export function refreshTheme() {
   const currentRoot = getCurrentRoot(root, currentRootKey);
   const newOptions = getDefaultOptions(Appearance.getColorScheme());
   NativeNavigation.setDefaultOptions(newOptions);
+
   if (currentRoot.type === 'bottomTabs') {
     currentRoot.children.forEach((b) => {
       Navigation.mergeOptions(b.path, newOptions);
     });
+    Navigation.mergeOptions(stackId, newOptions);
+    Navigation.mergeOptions(getCurrentStackId(), newOptions);
+  } else if (currentRoot.type === 'normal') {
+    // TODO: verify if this works
+    Navigation.mergeOptions(currentRoot.child.path, newOptions);
   }
 }
+
 export function refreshBottomTabs() {
   const currentRoot = getCurrentRoot(root, currentRootKey);
   if (currentRoot.type === 'bottomTabs') {
@@ -264,7 +275,7 @@ export async function staticPush<T extends BaseScreen>(
     preloader.setPreloadResult(screen, screen.preload(params));
   }
   const currentStackId = getCurrentStackId();
-  console.log({ currentStackId });
+
   await NativeNavigation.push(currentStackId, {
     component: {
       name: screen.path,
@@ -362,6 +373,28 @@ export function useNavigation() {
   };
 }
 
+export default function withUpdatableScreenTheme<
+  T extends { componentId: string }
+>(WrappedComponent: React.ComponentType<T>): React.FC<T> {
+  function Wrapper(wrapperProps: T) {
+    const t = theme?.useValue();
+    const colorScheme = useColorScheme();
+    const isFirstRun = React.useRef(true);
+    React.useLayoutEffect(() => {
+      if (t) {
+        if (isFirstRun.current) {
+          isFirstRun.current = false;
+          return;
+        }
+        refreshScreenTheme(wrapperProps.componentId);
+      }
+    }, [t, wrapperProps.componentId, colorScheme]);
+    return <WrappedComponent {...wrapperProps} />;
+  }
+
+  return Wrapper;
+}
+
 function registerScreens<ScreenItems extends BaseScreen[]>(
   screens: ScreenItems,
   appHoc: (WrappedComponent: React.ComponentType<any>) => React.FC<any>
@@ -369,19 +402,25 @@ function registerScreens<ScreenItems extends BaseScreen[]>(
   screens.forEach((screen) => {
     NativeNavigation.registerComponent(
       screen.path,
-      () => withNavigationProvider(appHoc(screen.element)),
+      () =>
+        withNavigationProvider(
+          withUpdatableScreenTheme(appHoc(screen.element))
+        ),
       () => screen.element
     );
   });
 }
 
 export function createNavigation<ScreenItems extends BaseScreen[]>(
+  themeState: StateWithValue<ThemeSettings>,
   screens: ScreenItems,
   r: Root,
   appHoc: (WrappedComponent: React.ComponentType<any>) => React.FC<any>
 ) {
-  registerScreens(screens, appHoc);
+  theme = themeState;
   root = r;
+
+  registerScreens(screens, appHoc);
   Navigation.setDefaultOptions(getDefaultOptions(Appearance.getColorScheme()));
   NativeNavigation.events().registerAppLaunchedListener(() => {
     setRoot();

@@ -10,6 +10,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncBoundary from './helpers/AsyncBoundary';
 import LimitedView from './helpers/LimitedView';
 
+import { QueryClientProvider } from 'react-query';
+import queryClient from './queryClient';
+
 function getTheme(colorScheme: ColorSchemeName): typeof DarkTheme {
   const isDark = colorScheme === 'dark';
   const baseTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -36,15 +39,17 @@ export default function AppHOC<T extends object>(
     const memoTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
 
     return (
-      <SafeAreaProvider>
-        <PaperProvider theme={memoTheme}>
-          <LimitedView>
-            <AsyncBoundary>
-              <WrappedComponent {...wrapperProps} />
-            </AsyncBoundary>
-          </LimitedView>
-        </PaperProvider>
-      </SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+          <PaperProvider theme={memoTheme}>
+            <LimitedView>
+              <AsyncBoundary>
+                <WrappedComponent {...wrapperProps} />
+              </AsyncBoundary>
+            </LimitedView>
+          </PaperProvider>
+        </SafeAreaProvider>
+      </QueryClientProvider>
     );
   }
 

@@ -10,12 +10,14 @@ Simple and performant cross platform navigation with simple api, but not yet rea
 ⚠️ This is a very early release, not recommended for production yet.
 
 Things which need to be done:
+- useFocus on web
+- documentation
 - Configure theme dark/light
 - Remove react-native-paper dependency
-- wait for new experimental react-router-dom release: [react-router/pull/7838](https://github.com/ReactTraining/react-router/pull/7838)
-- create universal lazyWithPreload for screens
+- create universal lazyWithPreload for screens (React.lazy not working yet in React Native :( )
 - example app with example stacks
 - create website
+- universal modals (web support too)
 
 ## Features
 - Superior performance (we use [wix/react-native-navigation](https://github.com/wix/react-native-navigation))
@@ -41,11 +43,11 @@ npx create-react-native-web-application --name myappname
 #### 1. Install deps + library
 
 ```
-yarn add react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation && npx rnn-link && npx pod-install
+yarn add react-native-navigation react-native-navigation-hooks react-native-ridge-navigation history && npx rnn-link && npx pod-install
 ```
 or with npm
 ```
-npm install react-native-navigation react-native-navigation-hooks react-native-paper react-router-dom@experimental react-native-ridge-navigation history && npx rnn-link && npx pod-install
+npm install react-native-navigation react-native-navigation-hooks react-native-ridge-navigation history && npx rnn-link && npx pod-install
 ```
 
 
