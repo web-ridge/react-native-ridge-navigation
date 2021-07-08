@@ -19,9 +19,12 @@ Things which need to be done:
 
 ## Features
 - Superior performance (we use [wix/react-native-navigation](https://github.com/wix/react-native-navigation))
-- Type safety is important for us
+- Type safety
+- Type safe routes
+- TYpe safe params
 - Android, iOS, web ([ReactTraining/react-router](https://github.com/ReactTraining/react-router)))
-- Preload data on hover
+- Preload data on mouseDown (or more sensitive on hover, see `<Link />` example)
+- Preload component on hover
 - Automatic deep-linking
 - Lazy load components
 - Real-time light/dark mode
