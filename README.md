@@ -22,7 +22,7 @@ Things which need to be done:
 - Type safety
 - Type safe routes
 - TYpe safe params
-- Android, iOS, web ([ReactTraining/react-router](https://github.com/ReactTraining/react-router)))
+- Android, iOS & web!
 - Preload data on mouseDown (or more sensitive on hover, see `<Link />` example)
 - Preload component on hover
 - Automatic deep-linking
