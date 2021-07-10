@@ -1,11 +1,11 @@
 import * as React from 'react';
 import type { RootChildBottomTabs } from './navigationUtils';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { ColorValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { useLocation } from './react-router';
 import BottomTab from './BottomTab';
-// import Link from './Link';
-// import { TouchableRipple } from 'react-native-paper';
+
 import { badgesCount } from './Navigation';
+import { useTheme } from './navigationUtils';
 
 function BottomTabs({
   rootKey,
@@ -17,15 +17,17 @@ function BottomTabs({
   bottomTabsRoot: RootChildBottomTabs;
 }) {
   const badgesCounts = badgesCount.useValue();
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() || 'light';
   const location = useLocation();
-  const isDark = colorScheme === 'dark';
-
+  const theme = useTheme();
   return (
     <View
       style={[
         styles.root,
-        isDark ? styles.rootDark : styles.rootLight,
+        {
+          backgroundColor: theme[colorScheme].bottomBar
+            .backgroundColor as ColorValue,
+        },
         isBigScreen ? styles.rootBigScreen : styles.rootSmall,
       ]}
     >
@@ -57,8 +59,9 @@ function BottomTabs({
           key={child.path}
           bottomTab={child}
           isSelected={location.pathname.startsWith(`/${rootKey}${child.path}`)}
-          isDark={isDark}
+          colorScheme={colorScheme}
           count={badgesCounts[child.path]}
+          theme={theme}
         />
       ))}
     </View>
@@ -91,12 +94,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  rootLight: {
-    backgroundColor: '#fff',
-  },
-  rootDark: {
-    backgroundColor: '#121212',
-  },
+
   logoRipple: {
     padding: 10,
     borderRadius: 10,

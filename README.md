@@ -39,8 +39,8 @@ See https://github.com/web-ridge/react-native-ridge-navigation/tree/main/example
 
 ## Installation
 
-#### 1. If you don't have an app yet (optional)
-Create one with our tool [web-ridge/create-react-native-web-application](https://github.com/web-ridge/create-react-native-web-application)
+#### 1. If you don't have an app yet (optional, but recommended)
+Create the app with our tool [web-ridge/create-react-native-web-application](https://github.com/web-ridge/create-react-native-web-application)
 ```
 npx create-react-native-web-application --name myappname
 ```
@@ -53,6 +53,25 @@ yarn add react-native-navigation react-native-navigation-hooks react-native-ridg
 or with npm
 ```
 npm install react-native-navigation react-native-navigation-hooks react-native-ridge-navigation history && npx rnn-link && npx pod-install
+```
+
+### 2. Extra (optional)
+Add react-native-web-image-loader (see example), this will make sure the images in the BottomBar will be in good quality on the web.
+```js
+const {
+  addWebpackModuleRule,
+} = require('customize-cra');
+
+// ...
+  addWebpackModuleRule({
+    test: /\.(png|jpe?g|gif)$/,
+    options: {
+      name: 'static/media/[name].[hash:8].[ext]',
+      scalings: { '@3x': 1 },
+    },
+    loader: 'react-native-web-image-loader',
+  })
+// ...
 ```
 
 

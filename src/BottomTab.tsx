@@ -1,91 +1,110 @@
 import * as React from 'react';
-import { Badge, Text, TouchableRipple } from 'react-native-paper';
-import { Image, StyleSheet, View } from 'react-native';
+import {
+  ColorValue,
+  Image,
+  StyleSheet,
+  View,
+  Pressable,
+  Text,
+  Platform,
+} from 'react-native';
 import Link from './Link';
-import type { BottomTabType } from './navigationUtils';
+import type { BottomTabType, ThemeSettings } from './navigationUtils';
 import { bottomTabRenderIndex } from './Navigation';
+import BottomTabBadge from './BottomTabBadge';
 
 function BottomTab({
   isSelected,
   bottomTab: { path, child, selectedIcon, icon, title },
-  isDark,
+  colorScheme,
   count,
   isBigScreen,
+  theme,
 }: {
   isBigScreen: boolean;
   isSelected: boolean;
   bottomTab: BottomTabType;
-  isDark: boolean;
+  colorScheme: 'light' | 'dark';
   count?: string | undefined;
+  theme: ThemeSettings;
 }) {
   bottomTabRenderIndex.use();
-  console.log({ path, selectedIcon, icon });
+
   return (
     <Link key={path} to={child} params={{}}>
       {(linkProps) => (
-        <TouchableRipple
+        <Pressable
           {...linkProps}
           testID={`bottomTab-${child.path}`}
-          style={styles.touchable}
+          style={({ pressed, hovered }: any) => [
+            styles.touchable,
+            Platform.OS === 'web' && { transition: 'all 300ms' },
+            pressed && styles.touchablePressed,
+            hovered && styles.touchableHovered,
+          ]}
           accessibilityRole="button"
           accessibilityLabel={title()}
         >
           <View style={styles.touchableInner}>
-            {count ? (
-              <Badge
-                style={[
-                  styles.badge,
-                  {
-                    backgroundColor: isDark ? selectedColorDark : selectedColor,
-                  },
-                ]}
+            <View style={styles.badge}>
+              <BottomTabBadge
+                theme={theme}
+                colorScheme={colorScheme}
+                visible={!!count}
               >
                 {count}
-              </Badge>
-            ) : null}
+              </BottomTabBadge>
+            </View>
+
             <Image
               source={isSelected ? selectedIcon.default : icon.default}
               style={[
                 isBigScreen ? styles.iconBig : styles.icon,
-                isDark ? styles.iconDark : styles.iconLight,
-                isSelected
-                  ? isDark
-                    ? styles.iconDarkSelected
-                    : styles.iconLightSelected
-                  : null,
+                {
+                  tintColor: isSelected
+                    ? (theme[colorScheme].bottomBar
+                        .selectedIconColor as ColorValue)
+                    : (theme[colorScheme].bottomBar.iconColor as ColorValue),
+                },
               ]}
             />
             <Text
               style={[
                 styles.title,
-                isDark ? styles.titleDark : styles.titleLight,
-                isSelected
-                  ? isDark
-                    ? styles.titleDarkSelected
-                    : styles.titleLightSelected
-                  : null,
+                {
+                  color: isSelected
+                    ? (theme[colorScheme].bottomBar
+                        .selectedTextColor as ColorValue)
+                    : (theme[colorScheme].bottomBar.textColor as ColorValue),
+                },
               ]}
             >
               {title()}
             </Text>
           </View>
-        </TouchableRipple>
+        </Pressable>
       )}
     </Link>
   );
 }
-
-const selectedColor = '#F59E00';
-const selectedColorDark = '#FDDFAF';
 
 const styles = StyleSheet.create({
   touchable: {
     flex: 1,
     maxWidth: 100,
     maxHeight: 100,
-    borderRadius: 10,
-    margin: 3,
+    borderRadius: 5,
+    padding: 3,
+    width: '100%',
+    // margin: 3,
   },
+  touchableHovered: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  touchablePressed: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+
   touchableInner: {
     flex: 1,
     height: 46,
@@ -96,8 +115,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 12,
+    right: 3,
   },
   icon: {
     width: 20,
@@ -109,32 +128,10 @@ const styles = StyleSheet.create({
     height: 24,
     margin: 10,
   },
-  iconLight: {
-    tintColor: 'black',
-  },
-  iconDark: {
-    tintColor: 'white',
-  },
   title: {
     fontSize: 13,
-  },
-  titleLight: {
-    color: 'black',
-  },
-  titleDark: {
-    color: 'white',
-  },
-  iconLightSelected: {
-    tintColor: selectedColor,
-  },
-  iconDarkSelected: {
-    tintColor: selectedColorDark,
-  },
-  titleLightSelected: {
-    color: selectedColor,
-  },
-  titleDarkSelected: {
-    color: selectedColorDark,
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
   },
 });
 

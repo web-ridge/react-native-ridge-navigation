@@ -26,6 +26,7 @@
     "react-native-safe-area-context": "^3.2.0",
     "react-native-use-form": "^0.2.6",
     "react-native-web": "^0.17.1",
+    "react-native-web-image-loader": "^0.1.1",
     "react-query": "^3.18.1",
     "react-scripts": "4.0.3"
   },

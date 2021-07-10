@@ -31,6 +31,7 @@ export default function PostsScreen() {
         <Appbar.Content title="Posts" />
       </Appbar.Header>
       <RidgeList
+        style={{ flex: 1 }}
         data={data}
         renderItem={({ item }) => (
           <Link to={routes.PostScreen} params={{ id: `${item.id}` }}>
