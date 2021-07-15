@@ -7699,6 +7699,10 @@ react-native-paper@^4.9.2:
     color "^3.1.2"
     react-native-iphone-x-helper "^1.3.1"
 
+"react-native-vector-icons@https://github.com/RichardLindhout/react-native-vector-icons":
+  version "7.0.0"
+  resolved "https://github.com/RichardLindhout/react-native-vector-icons#651a426f30a6629ac54a911b46ef0b702e5cb4c4"
+
 react-native@^0.64.2:
   version "0.64.2"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.64.2.tgz#233b6ed84ac4749c8bc2a2d6cf63577a1c437d18"

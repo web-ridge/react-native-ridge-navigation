@@ -12,7 +12,6 @@ Simple and performant cross platform navigation with simple api, but not yet rea
 Things which need to be done:
 - useFocus on web
 - documentation
-- Remove react-native-paper dependency (BottomTabs, BottomTab)
 - create universal lazyWithPreload for screens (React.lazy not working yet in React Native :( )
 - create website with examples
 - universal modal screens (web support too)

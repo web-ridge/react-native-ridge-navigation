@@ -30,6 +30,7 @@ function BottomTab({
 }) {
   bottomTabRenderIndex.use();
 
+  console.log({ colorScheme });
   return (
     <Link key={path} to={child} params={{}}>
       {(linkProps) => (
@@ -38,9 +39,20 @@ function BottomTab({
           testID={`bottomTab-${child.path}`}
           style={({ pressed, hovered }: any) => [
             styles.touchable,
-            Platform.OS === 'web' && { transition: 'all 300ms' },
-            pressed && styles.touchablePressed,
-            hovered && styles.touchableHovered,
+            Platform.OS === 'web'
+              ? ({ transition: 'all 150ms' } as any)
+              : undefined,
+
+            hovered
+              ? colorScheme === 'dark'
+                ? styles.touchableHoveredDark
+                : styles.touchableHovered
+              : undefined,
+            pressed
+              ? colorScheme === 'dark'
+                ? styles.touchablePressedDark
+                : styles.touchablePressed
+              : undefined,
           ]}
           accessibilityRole="button"
           accessibilityLabel={title()}
@@ -99,10 +111,17 @@ const styles = StyleSheet.create({
     // margin: 3,
   },
   touchableHovered: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
   },
   touchablePressed: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+  },
+
+  touchableHoveredDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  touchablePressedDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.32)',
   },
 
   touchableInner: {

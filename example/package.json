@@ -25,6 +25,7 @@
     "react-native-ridge-list": "^0.3.0",
     "react-native-safe-area-context": "^3.2.0",
     "react-native-use-form": "^0.2.6",
+    "react-native-vector-icons": "https://github.com/RichardLindhout/react-native-vector-icons",
     "react-native-web": "^0.17.1",
     "react-native-web-image-loader": "^0.1.1",
     "react-query": "^3.18.1",

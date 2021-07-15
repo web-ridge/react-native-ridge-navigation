@@ -33,6 +33,6 @@ module.exports = override(
     path.resolve('src'),
     path.resolve('app.json'),
     // any react-native modules you need babel to compile
-    // e.g.  path.resolve('./node_modules/react-native-vector-icons'),
+    path.resolve('./node_modules/react-native-vector-icons'),
   ])
 );

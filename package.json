@@ -161,5 +161,8 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "react-native-vector-icons": "https://github.com/RichardLindhout/react-native-vector-icons"
   }
 }

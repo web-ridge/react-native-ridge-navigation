@@ -4,7 +4,7 @@ import {
   DarkTheme,
   Provider as PaperProvider,
 } from 'react-native-paper';
-import { ColorSchemeName, useColorScheme } from 'react-native';
+import { Platform, ColorSchemeName, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AsyncBoundary from './helpers/AsyncBoundary';
@@ -42,6 +42,17 @@ export default function AppHOC<T extends object>(
               </AsyncBoundary>
             </LimitedView>
           </PaperProvider>
+          {Platform.OS === 'web' ? (
+            <style type="text/css">{`
+                      @font-face {
+                        font-family: 'MaterialCommunityIcons';
+                        src: url(${
+                          require('react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf')
+                            .default
+                        }) format('truetype');
+                      }
+                    `}</style>
+          ) : null}
         </SafeAreaProvider>
       </QueryClientProvider>
     );
