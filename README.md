@@ -7,13 +7,12 @@
 
 Simple and performant cross platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (alpha)
 
-⚠️ This is a very early release, not recommended for production yet.
+⚠️ This is beta software, things can break.
 
-Things which need to be done:
-- useFocus on web
+Things which are not finished yet:
+- useFocus (like useEffect but for when screen is focused)
 - documentation
-- create universal lazyWithPreload for screens (React.lazy not working yet in React Native :( )
-- create website with examples
+- create universal lazyWithPreload for screens (only on web, but [callstack/repack](https://github.com/callstack/repack) can fix it native too)
 - universal modal (web support too)
 
 ## Features
