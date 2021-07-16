@@ -5,21 +5,21 @@ let subscribed: Record<string, boolean> = {
 };
 export default function OnlyRenderOnce({
   children,
-  key = 'default',
+  subscribeKey = 'default',
 }: {
   children: any;
-  key?: string;
+  subscribeKey?: string;
 }) {
   const [loadChildren, setLoadChildren] = React.useState<boolean>(false);
   React.useLayoutEffect(() => {
-    if (!subscribed[key]) {
-      subscribed[key] = true;
+    if (!subscribed[subscribeKey]) {
+      subscribed[subscribeKey] = true;
       setLoadChildren(true);
       return () => {
-        subscribed[key] = false;
+        subscribed[subscribeKey] = false;
       };
     }
     return;
-  }, [key]);
+  }, [subscribeKey]);
   return loadChildren ? children : null;
 }

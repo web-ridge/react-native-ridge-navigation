@@ -12,7 +12,7 @@ export function createSimpleTheme(
       statusBar: {
         translucent: false,
         drawBehind: true,
-        style: 'light',
+        style: 'dark',
         backgroundColor: 'transparent',
       },
       layout: {

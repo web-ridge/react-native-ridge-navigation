@@ -12,7 +12,7 @@ import { defaultStyles } from '../helpers/utils';
 import { SwitchRoot } from '../../../src';
 import { NavigationRoots } from '../Navigator';
 import { fetchAndSaveProfileForToken } from './AuthorizationUtils';
-import Introduction from '../Title';
+import Introduction from '../Introduction';
 
 interface SignInFormState {
   username: string;

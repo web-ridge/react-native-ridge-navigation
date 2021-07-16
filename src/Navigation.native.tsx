@@ -35,8 +35,6 @@ import useLatest from './useLatest';
 import OnlyRenderOnce from './OnlyRenderOnce';
 import DeepLinking from './DeepLinking';
 
-import { useRootKey } from './Navigation';
-
 const stackId = 'AppStack';
 let root: Root = {};
 let allScreens: BaseScreen[] = [];
@@ -192,7 +190,7 @@ export function getDefaultOptions(colorScheme: ColorSchemeName) {
 }
 
 export function updateBadge<T extends BottomTabType>(tab: T, badge: string) {
-  Navigation.mergeOptions(tab.path, {
+  Navigation.mergeOptions(stackId + '_' + tab.path, {
     bottomTab: {
       badge,
     },
@@ -384,7 +382,6 @@ export default function withRidgeNavigation<T extends { componentId: string }>(
 ): React.FC<T> {
   function Wrapper(wrapperProps: T) {
     const theme = useTheme();
-    const rootKey = useRootKey();
     const colorScheme = useColorScheme();
     const isFirstRun = React.useRef(true);
     React.useLayoutEffect(() => {
@@ -397,7 +394,7 @@ export default function withRidgeNavigation<T extends { componentId: string }>(
     return (
       <>
         <WrappedComponent {...wrapperProps} />
-        <OnlyRenderOnce key={rootKey}>
+        <OnlyRenderOnce subscribeKey={currentRootKey}>
           <DeepLinking routes={allScreens} />
         </OnlyRenderOnce>
       </>

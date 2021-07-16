@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, ScrollView, View, Linking } from 'react-native';
 import { Button } from 'react-native-paper';
-import Introduction from '../Title';
+import Introduction from '../Introduction';
 
 function HomeScreen() {
   return (

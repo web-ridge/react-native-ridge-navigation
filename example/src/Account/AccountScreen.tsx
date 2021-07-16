@@ -16,7 +16,7 @@ export default function AccountScreen() {
   return (
     <>
       <Header title={user?.name} />
-      <ScrollView style={{ padding: 12, paddingTop: 0 }}>
+      <ScrollView style={{ padding: 12 }}>
         <View style={{ alignItems: 'flex-start' }}>
           <Paragraph>{user.email}</Paragraph>
           <Paragraph>{user.website}</Paragraph>

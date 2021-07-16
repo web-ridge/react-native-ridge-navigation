@@ -4,7 +4,12 @@ import {
   DarkTheme,
   Provider as PaperProvider,
 } from 'react-native-paper';
-import { Platform, ColorSchemeName, useColorScheme } from 'react-native';
+import {
+  LogBox,
+  Platform,
+  ColorSchemeName,
+  useColorScheme,
+} from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AsyncBoundary from './helpers/AsyncBoundary';
@@ -31,7 +36,11 @@ export default function AppHOC<T extends object>(
   function Wrapper(wrapperProps: T) {
     const colorScheme = useColorScheme(); // Can be dark | light | no-preference
     const memoTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
-
+    React.useEffect(() => {
+      if (Platform.OS === 'android') {
+        LogBox.ignoreLogs(['Setting a timer']);
+      }
+    }, []);
     return (
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>

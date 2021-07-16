@@ -1,15 +1,14 @@
 import { Image, Linking, StyleSheet, View } from 'react-native';
 import * as React from 'react';
 import { Paragraph, Text, Title } from 'react-native-paper';
+import Superman from './img/superman.png';
 
 function Introduction() {
   return (
     <>
       <View style={styles.titleContainer}>
-        <Image
-          source={require('./img/superman.png').default}
-          style={styles.logo}
-        />
+        {/*// @ts-ignore*/}
+        <Image source={Superman} style={styles.logo} />
         <Title>react-native-ridge-navigation</Title>
       </View>
       <Paragraph>

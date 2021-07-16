@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Appbar } from 'react-native-paper';
 
 import { BackLink } from '../../src';
-import { useColorScheme } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
 
 function Header({ title, withBack }: { title: string; withBack?: boolean }) {
   const colorScheme = useColorScheme();
@@ -10,7 +10,10 @@ function Header({ title, withBack }: { title: string; withBack?: boolean }) {
   return (
     <Appbar.Header
       dark={isDark}
-      style={{ backgroundColor: 'transparent', elevation: 0 }}
+      statusBarHeight={StatusBar.currentHeight}
+      style={
+        isDark ? undefined : { backgroundColor: 'transparent', elevation: 0 }
+      }
     >
       {withBack ? (
         <BackLink>
