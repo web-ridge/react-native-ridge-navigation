@@ -30,6 +30,10 @@ Things which need to be done:
 - Real-time light/dark mode
 
 ## Example
+[![Demo of react-native-ridge-navigation](https://drive.google.com/uc?id=1nE0DzlaVza_h3K1KCkPnK5NfIXfYM5c-)
+
+View video in better frame [on YouTube](https://www.youtube.com/watch?v=EvNxrRIF7C0)
+
 ### Demo
 [See example: reactnativeridgenavigation.com](https://www.reactnativeridgenavigation.com/)
 ### Source
