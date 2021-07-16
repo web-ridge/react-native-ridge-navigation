@@ -2,7 +2,7 @@ import * as React from 'react';
 import type { BaseScreen, ExtractRouteParams } from './navigationUtils';
 import { useNavigation } from './Navigation';
 import type { GestureResponderEvent } from 'react-native';
-import preloader from './Preloader';
+import { setPreloadResult } from './Preloader';
 
 interface RenderProps {
   onPressIn: (e: GestureResponderEvent) => any;
@@ -31,7 +31,7 @@ export default function Link<T extends BaseScreen>({
   }, [isPushing, navigation, to, params]);
 
   const onPressIn = React.useCallback(() => {
-    preloader.setPreloadResult(to, to.preload(params));
+    setPreloadResult(to, to.preload(params));
   }, [to, params]);
 
   return children({

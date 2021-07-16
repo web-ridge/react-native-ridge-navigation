@@ -4,7 +4,7 @@ import { useNavigation } from './Navigation';
 import { generatePath } from './react-router';
 import type { GestureResponderEvent } from 'react-native';
 import type { PreloadableComponent } from './LazyWithPreload';
-import preloader from './Preloader';
+import { setPreloadResult } from './Preloader';
 
 interface RenderProps {
   onMouseDown?: (e: GestureResponderEvent) => any | undefined;
@@ -32,7 +32,7 @@ export default function Link<T extends BaseScreen>({
   }, [to]);
 
   const preloadData = React.useCallback(() => {
-    preloader.setPreloadResult(to, to.preload(params));
+    setPreloadResult(to, to.preload(params));
   }, [to, params]);
 
   const preloadDataAndElement = React.useCallback(() => {

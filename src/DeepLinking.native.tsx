@@ -3,7 +3,7 @@ import { Linking } from 'react-native';
 import { useNavigation } from './Navigation';
 import { getConfiguredRoot, staticPush } from './Navigation.native';
 
-function DeepLinking({ routes }: { routes: Record<string, { path: string }> }) {
+function DeepLinking({ routes }: { routes: { path: string }[] }) {
   const { push, preload, switchRoot, switchBottomTabIndex } = useNavigation();
   const handleOpenURL = React.useCallback(
     async (event) => {
@@ -13,19 +13,18 @@ function DeepLinking({ routes }: { routes: Record<string, { path: string }> }) {
       // get root key and rest of url
       const { firstPart, pathSplit } = getFirstPartAndOthers(splitPath(path));
 
-      const matchedRouteKey = Object.keys(routes).find((routeKey) => {
-        const matchRoute = routes[routeKey];
+      const matchedRoute = routes.find((matchRoute) => {
         const matchPathSplit = splitPath(matchRoute.path);
         return (
           pathSplit.every((u, i) => partMatches(u, matchPathSplit[i])) &&
           matchPathSplit.every((m, i) => partMatches(pathSplit[i], m))
         );
       });
-      if (!matchedRouteKey) {
+      if (!matchedRoute) {
         console.log('no matched route found for url: ', path);
         return;
       }
-      const matchedRoute = routes[matchedRouteKey];
+
       const params = getParams(pathSplit, splitPath(matchedRoute.path));
 
       // switch to the right root

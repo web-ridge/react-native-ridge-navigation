@@ -210,9 +210,21 @@ const {
 } = useNavigation()
 ```
 
+## Deep linking
+You have to enable url schemes etc in your app and it'll work!
+
+
 ## More
+
 ```ts
 // global
+  DeepLinking // see deep linking documentation
+  OnlyRenderOnce // see deep linking documentation
+  SwitchRoot
+  Link
+  BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
+  lazyWithPreload // only available on the web: see example app
+  Redirect
   NavigationRoot,
   createNavigation,
   refreshBottomTabs,
@@ -226,12 +238,14 @@ const {
   setTheme,
   getTheme,
   createSimpleTheme,
+  setPreloadResult, // should not need this as it is done automatically
 
   // hooks
   useTheme,
   useParams,
   useNavigation,
   useFocus
+  usePreloadResult // e.g. usePreloadResult(routes.PostScreen)
 ```
 
 

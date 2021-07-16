@@ -39,6 +39,9 @@ export default function AppHOC<T extends object>(
             <LimitedView>
               <AsyncBoundary>
                 <WrappedComponent {...wrapperProps} />
+                {/*<OnlyRenderOnce>*/}
+
+                {/*</OnlyRenderOnce>*/}
               </AsyncBoundary>
             </LimitedView>
           </PaperProvider>

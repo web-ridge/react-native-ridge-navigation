@@ -1,4 +1,4 @@
-function DeepLinking(_: { routes: Record<string, { path: string }> }) {
+function DeepLinking(_: { routes: { path: string }[] }) {
   return null;
 }
 

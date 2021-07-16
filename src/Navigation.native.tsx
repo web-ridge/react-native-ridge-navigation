@@ -24,7 +24,7 @@ import {
   useTheme,
 } from './navigationUtils';
 import * as React from 'react';
-import preloader from './Preloader';
+import { setPreloadResult } from './Preloader';
 import {
   Appearance,
   ColorSchemeName,
@@ -32,9 +32,14 @@ import {
   useColorScheme,
 } from 'react-native';
 import useLatest from './useLatest';
+import OnlyRenderOnce from './OnlyRenderOnce';
+import DeepLinking from './DeepLinking';
+
+import { useRootKey } from './Navigation';
 
 const stackId = 'AppStack';
 let root: Root = {};
+let allScreens: BaseScreen[] = [];
 
 let currentRootKey: string | undefined;
 export async function setRoot(rootKey?: string) {
@@ -273,7 +278,7 @@ export async function staticPush<T extends BaseScreen>(
   preload = true
 ) {
   if (preload) {
-    preloader.setPreloadResult(screen, screen.preload(params));
+    setPreloadResult(screen, screen.preload(params));
   }
   const currentStackId = getCurrentStackId();
 
@@ -313,7 +318,7 @@ export function useNavigation() {
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      preloader.setPreloadResult(screen, screen.preload(params));
+      setPreloadResult(screen, screen.preload(params));
     },
     push: async <T extends BaseScreen>(
       screen: T,
@@ -321,7 +326,7 @@ export function useNavigation() {
       preload = true
     ) => {
       if (preload) {
-        preloader.setPreloadResult(screen, screen.preload(params));
+        setPreloadResult(screen, screen.preload(params));
       }
       return navigation.push(screen.path, params);
     },
@@ -341,7 +346,7 @@ export function useNavigation() {
       preload = true
     ) => {
       if (preload) {
-        preloader.setPreloadResult(screen, screen.preload(params));
+        setPreloadResult(screen, screen.preload(params));
       }
 
       // pop and push without animation?
@@ -374,11 +379,12 @@ export function useNavigation() {
   };
 }
 
-export default function withUpdatableScreenTheme<
-  T extends { componentId: string }
->(WrappedComponent: React.ComponentType<T>): React.FC<T> {
+export default function withRidgeNavigation<T extends { componentId: string }>(
+  WrappedComponent: React.ComponentType<T>
+): React.FC<T> {
   function Wrapper(wrapperProps: T) {
     const theme = useTheme();
+    const rootKey = useRootKey();
     const colorScheme = useColorScheme();
     const isFirstRun = React.useRef(true);
     React.useLayoutEffect(() => {
@@ -388,7 +394,14 @@ export default function withUpdatableScreenTheme<
       }
       refreshScreenTheme(wrapperProps.componentId);
     }, [theme, wrapperProps.componentId, colorScheme]);
-    return <WrappedComponent {...wrapperProps} />;
+    return (
+      <>
+        <WrappedComponent {...wrapperProps} />
+        <OnlyRenderOnce key={rootKey}>
+          <DeepLinking routes={allScreens} />
+        </OnlyRenderOnce>
+      </>
+    );
   }
 
   return Wrapper;
@@ -401,10 +414,7 @@ function registerScreens<ScreenItems extends BaseScreen[]>(
   screens.forEach((screen) => {
     NativeNavigation.registerComponent(
       screen.path,
-      () =>
-        withNavigationProvider(
-          withUpdatableScreenTheme(appHoc(screen.element))
-        ),
+      () => withNavigationProvider(withRidgeNavigation(appHoc(screen.element))),
       () => screen.element
     );
   });
@@ -416,6 +426,7 @@ export function createNavigation<ScreenItems extends BaseScreen[]>(
   r: Root,
   appHoc: (WrappedComponent: React.ComponentType<any>) => React.FC<any>
 ) {
+  allScreens = screens;
   setTheme(themeSettings);
   root = r;
 

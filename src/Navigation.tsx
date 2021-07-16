@@ -21,7 +21,7 @@ import {
   useLocation,
 } from './react-router';
 
-import preloader from './Preloader';
+import { setPreloadResult } from './Preloader';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';
 
 import BottomTabs from './BottomTabs';
@@ -107,7 +107,7 @@ export function useNavigation() {
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      preloader.setPreloadResult(screen, screen.preload(params));
+      setPreloadResult(screen, screen.preload(params));
     },
     push: async <T extends BaseScreen>(
       screen: T,
@@ -115,7 +115,7 @@ export function useNavigation() {
       preload = true
     ) => {
       if (preload) {
-        preloader.setPreloadResult(screen, screen.preload(params));
+        setPreloadResult(screen, screen.preload(params));
       }
       navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params));
     },
@@ -125,7 +125,7 @@ export function useNavigation() {
       preload = true
     ) => {
       if (preload) {
-        preloader.setPreloadResult(screen, screen.preload(params));
+        setPreloadResult(screen, screen.preload(params));
       }
       navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params), {
         replace: true,
@@ -231,7 +231,7 @@ function NavigationInnerRoot({
                 key={i}
                 path={'/:rootKey' + screen.path}
                 preload={(params) => {
-                  preloader.setPreloadResult(screen, screen.preload(params));
+                  setPreloadResult(screen, screen.preload(params));
                 }}
                 element={
                   <SuspenseContainer>

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import preloader from './Preloader';
+import { setPreloadResult } from './Preloader';
 import { newRidgeState, StateWithValue } from 'react-ridge-state';
 import { refreshTheme } from './Navigation';
 declare type Color = string | symbol;
@@ -270,11 +270,11 @@ export function preloadRoot(root: Root, rootKey: string, params: any) {
   const b = root[rootKey];
   switch (b.type) {
     case 'normal':
-      preloader.setPreloadResult(b.child, b.child.preload(params));
+      setPreloadResult(b.child, b.child.preload(params));
       break;
     case 'bottomTabs':
       b.children.forEach(({ child }) =>
-        preloader.setPreloadResult(child, child.preload(params))
+        setPreloadResult(child, child.preload(params))
       );
       break;
     case 'sideMenu':
