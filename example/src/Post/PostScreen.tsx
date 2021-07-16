@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { Appbar, Paragraph, Title } from 'react-native-paper';
+import { Paragraph } from 'react-native-paper';
 
-import { BackLink, useParams } from '../../../src';
+import { useParams } from '../../../src';
 import api from '../api';
 import { useQuery } from 'react-query';
 import routes from '../NavigatorRoutes';
 import { ScrollView } from 'react-native';
+import Header from '../Header';
 
 export interface PostType {
   userId: number;
@@ -32,14 +33,8 @@ export default function PostScreen(props: any) {
 
   return (
     <>
-      <Appbar.Header>
-        <BackLink>
-          {(linkProps) => <Appbar.BackAction {...linkProps} color={'pink'} />}
-        </BackLink>
-        <Appbar.Content title={data!.title} />
-      </Appbar.Header>
-      <ScrollView style={{ padding: 24 }}>
-        <Title>{data!.title}</Title>
+      <Header title={data!.title} withBack />
+      <ScrollView style={{ padding: 12 }}>
         <Paragraph>{data!.body}</Paragraph>
       </ScrollView>
     </>

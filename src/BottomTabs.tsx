@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { RootChildBottomTabs } from './navigationUtils';
+import type { Orientation, RootChildBottomTabs } from './navigationUtils';
 import { ColorValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { useLocation } from './react-router';
 import BottomTab from './BottomTab';
@@ -10,9 +10,9 @@ import { useTheme } from './navigationUtils';
 function BottomTabs({
   rootKey,
   bottomTabsRoot,
-  isBigScreen,
+  orientation,
 }: {
-  isBigScreen: boolean;
+  orientation: Orientation;
   rootKey: string;
   bottomTabsRoot: RootChildBottomTabs;
 }) {
@@ -28,34 +28,15 @@ function BottomTabs({
           backgroundColor: theme[colorScheme].bottomBar
             .backgroundColor as ColorValue,
         },
-        isBigScreen ? styles.rootBigScreen : styles.rootSmall,
+        styles[orientation],
       ]}
     >
-      {/*{isBigScreen ? (*/}
-      {/*  <Link to={bottomTabsRoot.children[0].child} params={{}}>*/}
-      {/*    {(linkProps) => (*/}
-      {/*      <TouchableRipple*/}
-      {/*        {...linkProps}*/}
-      {/*        accessibilityRole="button"*/}
-      {/*        accessibilityLabel={'Go to home'}*/}
-      {/*        style={styles.logoRipple}*/}
-      {/*      >*/}
-      {/*        <Image*/}
-      {/*          source={*/}
-      {/*            isDark*/}
-      {/*              ? require('../img/logo_small_dark.png').default*/}
-      {/*              : require('../img/logo_small.png').default*/}
-      {/*          }*/}
-      {/*          style={styles.logo}*/}
-      {/*          resizeMethod="auto"*/}
-      {/*        />*/}
-      {/*      </TouchableRipple>*/}
-      {/*    )}*/}
-      {/*  </Link>*/}
-      {/*) : null}*/}
+      {bottomTabsRoot?.components?.start ? (
+        <bottomTabsRoot.components.start />
+      ) : null}
       {bottomTabsRoot.children.map((child) => (
         <BottomTab
-          isBigScreen={isBigScreen}
+          orientation={orientation}
           key={child.path}
           bottomTab={child}
           isSelected={location.pathname.startsWith(`/${rootKey}${child.path}`)}
@@ -64,6 +45,9 @@ function BottomTabs({
           theme={theme}
         />
       ))}
+      {bottomTabsRoot?.components?.end ? (
+        <bottomTabsRoot.components.end />
+      ) : null}
     </View>
   );
 }
@@ -78,7 +62,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  rootBigScreen: {
+  horizontal: {
     shadowOffset: {
       width: 0,
       height: 2,
@@ -86,7 +70,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
   },
-  rootSmall: {
+  vertical: {
     shadowOffset: {
       width: 0,
       height: -1,
@@ -94,12 +78,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-
-  logoRipple: {
-    padding: 10,
-    borderRadius: 10,
-  },
-  logo: { width: 46, height: 76, marginBottom: 12 },
 });
 
 export default React.memo(BottomTabs);

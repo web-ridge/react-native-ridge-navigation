@@ -204,6 +204,7 @@ export interface RootChildBottomTabs {
   type: 'bottomTabs';
   children: BottomTabType[];
   components?: BottomTabComponents;
+  breakingPointWidth: undefined | null | number;
 }
 export interface RootChildSideMenu {
   type: 'sideMenu';
@@ -213,15 +214,19 @@ export interface RootChildNormal {
   type: 'normal';
   child: BaseScreen;
 }
-
+export type Orientation = 'vertical' | 'horizontal';
 export function createBottomTabsRoot(
   children: BottomTabType[],
-  components?: BottomTabComponents
+  extra?:
+    | { components?: BottomTabComponents; breakingPointWidth?: number | null }
+    | undefined
+    | null
 ): RootChildBottomTabs {
   return {
     type: 'bottomTabs',
     children,
-    components,
+    components: extra?.components,
+    breakingPointWidth: extra?.breakingPointWidth,
   };
 }
 
@@ -241,10 +246,11 @@ export function createNormalRoot(child: BaseScreen): RootChildNormal {
   };
 }
 
-export type Root = Record<
-  string,
-  RootChildNormal | RootChildBottomTabs | RootChildSideMenu
->;
+export type RootValue =
+  | RootChildNormal
+  | RootChildBottomTabs
+  | RootChildSideMenu;
+export type Root = Record<string, RootValue>;
 
 export function registerScreen<
   Path extends string,

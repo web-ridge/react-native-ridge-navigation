@@ -4,8 +4,10 @@ import {
   BaseScreen,
   BottomTabType,
   ExtractRouteParams,
+  Orientation,
   preloadRoot,
   Root,
+  RootValue,
   setTheme,
   ThemeSettings,
 } from './navigationUtils';
@@ -129,22 +131,20 @@ export function useNavigation() {
   };
 }
 
-function useIsBigScreen() {
+function useAboveBreakingPoint(breakingPoint: number) {
   const { width } = useWindowDimensions();
-  return width > 1200;
+  return width > breakingPoint;
 }
 
-function NavContainer({ children }: { children: any }) {
-  const isBigScreen = useIsBigScreen();
+function NavContainer({
+  orientation,
+  children,
+}: {
+  orientation: Orientation;
+  children: any;
+}) {
   return (
-    <View
-      style={[
-        navStyles.root,
-        isBigScreen ? navStyles.rootBig : navStyles.rootSmall,
-      ]}
-    >
-      {children}
-    </View>
+    <View style={[navStyles.root, navStyles[orientation]]}>{children}</View>
   );
 }
 
@@ -152,27 +152,48 @@ const navStyles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  rootBig: { flexDirection: 'row' },
-  rootSmall: { flexDirection: 'column-reverse' },
+  horizontal: { flexDirection: 'row' },
+  vertical: { flexDirection: 'column-reverse' },
   full: { flex: 1 },
 });
 
-function Nav() {
-  const rootKey = useRootKey();
-  const currentRoot = root[rootKey];
-  const isBigScreen = useIsBigScreen();
-
+function Nav({
+  orientation,
+  currentRoot,
+  rootKey,
+}: {
+  orientation: Orientation;
+  currentRoot: RootValue;
+  rootKey: string;
+}) {
   return (
     <>
       {currentRoot?.type === 'bottomTabs' ? (
         <BottomTabs
           bottomTabsRoot={currentRoot}
           rootKey={rootKey}
-          isBigScreen={isBigScreen}
+          orientation={orientation}
         />
       ) : null}
     </>
   );
+}
+
+const defaultBreakingPoint = 1200;
+function getBreakingPointFromRoot(v?: RootValue): number {
+  let configuredBreakingPoint: number | null | undefined;
+  if (v?.type === 'bottomTabs') {
+    configuredBreakingPoint = v.breakingPointWidth;
+  }
+  if (v?.type === 'sideMenu') {
+    // configuredBreakingPoints = v.breakingPointWidth;
+  }
+
+  // user explicitly set the breaking point to null, so we never will make sure the breaking point will never happen
+  if (configuredBreakingPoint === null) {
+    configuredBreakingPoint = Infinity;
+  }
+  return configuredBreakingPoint || defaultBreakingPoint;
 }
 
 function NavigationInnerRoot({
@@ -180,9 +201,19 @@ function NavigationInnerRoot({
 }: {
   SuspenseContainer: any;
 }) {
+  const rootKey = useRootKey();
+  const currentRoot = root[rootKey];
+  const aboveBreakingPoint = useAboveBreakingPoint(
+    getBreakingPointFromRoot(currentRoot)
+  );
+  const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
   return (
-    <NavContainer>
-      <Nav />
+    <NavContainer orientation={orientation}>
+      <Nav
+        orientation={orientation}
+        rootKey={rootKey}
+        currentRoot={currentRoot}
+      />
       <View style={navStyles.full}>
         <SuspenseContainer>
           <Routes>

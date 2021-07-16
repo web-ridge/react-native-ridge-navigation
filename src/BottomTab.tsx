@@ -9,7 +9,11 @@ import {
   Platform,
 } from 'react-native';
 import Link from './Link';
-import type { BottomTabType, ThemeSettings } from './navigationUtils';
+import type {
+  BottomTabType,
+  Orientation,
+  ThemeSettings,
+} from './navigationUtils';
 import { bottomTabRenderIndex } from './Navigation';
 import BottomTabBadge from './BottomTabBadge';
 
@@ -18,10 +22,10 @@ function BottomTab({
   bottomTab: { path, child, selectedIcon, icon, title },
   colorScheme,
   count,
-  isBigScreen,
+  orientation,
   theme,
 }: {
-  isBigScreen: boolean;
+  orientation: Orientation;
   isSelected: boolean;
   bottomTab: BottomTabType;
   colorScheme: 'light' | 'dark';
@@ -30,7 +34,6 @@ function BottomTab({
 }) {
   bottomTabRenderIndex.use();
 
-  console.log({ colorScheme });
   return (
     <Link key={path} to={child} params={{}}>
       {(linkProps) => (
@@ -71,7 +74,8 @@ function BottomTab({
             <Image
               source={isSelected ? selectedIcon.default : icon.default}
               style={[
-                isBigScreen ? styles.iconBig : styles.icon,
+                orientation === 'horizontal' && styles.horizontalIcon,
+                orientation === 'vertical' && styles.verticalIcon,
                 {
                   tintColor: isSelected
                     ? (theme[colorScheme].bottomBar
@@ -135,12 +139,12 @@ const styles = StyleSheet.create({
     top: 12,
     right: 3,
   },
-  icon: {
+  verticalIcon: {
     width: 20,
     height: 20,
     margin: 6,
   },
-  iconBig: {
+  horizontalIcon: {
     width: 24,
     height: 24,
     margin: 10,

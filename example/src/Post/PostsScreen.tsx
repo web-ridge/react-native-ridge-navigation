@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Appbar, List } from 'react-native-paper';
+import { List } from 'react-native-paper';
 
 import { Link } from '../../../src';
 import routes from '../NavigatorRoutes';
@@ -7,6 +7,7 @@ import RidgeList from 'react-native-ridge-list';
 import { useQuery } from 'react-query';
 import api from '../api';
 import type { PostType } from './PostScreen';
+import Header from '../Header';
 
 const ITEM_HEIGHT = 65;
 
@@ -27,9 +28,7 @@ export default function PostsScreen() {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.Content title="Posts" />
-      </Appbar.Header>
+      <Header title="Posts" />
       <RidgeList
         style={{ flex: 1 }}
         data={data}

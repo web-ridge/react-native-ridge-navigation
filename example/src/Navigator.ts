@@ -40,10 +40,15 @@ const Navigator = createNavigation(
   defaultTheme,
   createScreens(routes),
   {
-    [NavigationRoots.RootHome]: createBottomTabsRoot([
-      BottomRoots.Posts,
-      BottomRoots.Account,
-    ]),
+    [NavigationRoots.RootHome]: createBottomTabsRoot(
+      [BottomRoots.Posts, BottomRoots.Account],
+      {
+        breakingPointWidth: 500,
+        components: {
+          // start:
+        },
+      }
+    ),
     [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
   },
   AppHOC

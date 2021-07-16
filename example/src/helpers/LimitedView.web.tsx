@@ -30,7 +30,7 @@ export default function LimitedView({ children }: { children: any }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f2efe9',
+    backgroundColor: '#EDEDED',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 5,
     overflow: 'hidden',
-    shadowColor: '#8c5e00',
+    shadowColor: '#525252',
     shadowOffset: {
       width: 0,
       height: 6,

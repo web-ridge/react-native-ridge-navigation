@@ -15,7 +15,11 @@ import {
 } from './Post/PostScreen';
 
 const AuthScreen = registerScreen('/auth', AuthScreenLazy, () => {});
-const AccountScreen = registerScreen('/account', AccountScreenLazy, () => {});
+const AccountScreen = registerScreen(
+  '/account',
+  RequireAuthHOC(AccountScreenLazy),
+  () => {}
+);
 
 const PostsScreen = registerScreen(
   '/posts',
