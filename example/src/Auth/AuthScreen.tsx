@@ -12,6 +12,7 @@ import { defaultStyles } from '../helpers/utils';
 import { SwitchRoot } from '../../../src';
 import { NavigationRoots } from '../Navigator';
 import { fetchAndSaveProfileForToken } from './AuthorizationUtils';
+import Introduction from '../Title';
 
 interface SignInFormState {
   username: string;
@@ -25,8 +26,8 @@ export default function AuthScreen() {
 
   const [{ values, formProps }, { username, password }] =
     useFormState<SignInFormState>({
-      username: '',
-      password: '',
+      username: 'demo',
+      password: 'demo',
     });
 
   const onSubmit = () => {
@@ -64,6 +65,7 @@ export default function AuthScreen() {
         >
           <View style={styles.container} testID="loginScreen">
             <PaddingView>
+              <Introduction />
               <Spacer />
 
               <Form {...formProps}>

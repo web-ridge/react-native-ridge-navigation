@@ -14,6 +14,13 @@ export const NavigationRoots = {
 };
 
 export const BottomRoots = {
+  Home: {
+    path: '/home',
+    title: () => 'Home',
+    icon: require('./img/bell-outline/icon-20.png'),
+    selectedIcon: require('./img/bell/icon-20.png'),
+    child: routes.HomeScreen,
+  },
   Posts: {
     path: '/post',
     title: () => 'Posts',
@@ -41,7 +48,7 @@ const Navigator = createNavigation(
   createScreens(routes),
   {
     [NavigationRoots.RootHome]: createBottomTabsRoot(
-      [BottomRoots.Posts, BottomRoots.Account],
+      [BottomRoots.Home, BottomRoots.Posts, BottomRoots.Account],
       {
         breakingPointWidth: 500,
         components: {

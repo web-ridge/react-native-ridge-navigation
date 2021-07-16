@@ -30,7 +30,10 @@ Things which need to be done:
 - Real-time light/dark mode
 
 ## Example
-[See example app](https://github.com/web-ridge/react-native-ridge-navigation/tree/main/example)
+### Demo
+[See example: reactnativeridgenavigation.com](https://www.reactnativeridgenavigation.com/)
+### Source
+[See source of example app](https://github.com/web-ridge/react-native-ridge-navigation/tree/main/example)
 
 ### Register screens
 You can register screens with a preload function, the params will be automatically in string format based on the url.
