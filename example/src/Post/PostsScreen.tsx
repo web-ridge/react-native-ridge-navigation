@@ -5,9 +5,9 @@ import { Link } from '../../../src';
 import routes from '../NavigatorRoutes';
 import RidgeList from 'react-native-ridge-list';
 import { useQuery } from 'react-query';
-import api from '../api';
-import type { PostType } from './PostScreen';
+
 import Header from '../Header';
+import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from '../queryKeys';
 
 const ITEM_HEIGHT = 65;
 
@@ -18,10 +18,6 @@ function getDefaultItemLayout(_: any, index: number) {
     index,
   };
 }
-
-export const queryKeyPostsScreen = ['QUERY_KEY_POSTS_SCREEN'];
-export const queryKeyPostsScreenPromise = () =>
-  api({ path: 'posts' }) as Promise<PostType[]>;
 
 export default function PostsScreen() {
   const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);

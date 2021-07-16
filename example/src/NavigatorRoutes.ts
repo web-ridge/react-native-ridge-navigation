@@ -6,13 +6,11 @@ import AccountScreenLazy from './Account/AccountScreenLazy';
 import PostScreenLazy from './Post/PostScreenLazy';
 import queryClient from './queryClient';
 import {
-  queryKeyPostsScreenPromise,
-  queryKeyPostsScreen,
-} from './Post/PostsScreen';
-import {
-  queryKeyPostScreenPromise,
   queryKeyPostScreen,
-} from './Post/PostScreen';
+  queryKeyPostScreenPromise,
+  queryKeyPostsScreen,
+  queryKeyPostsScreenPromise,
+} from './queryKeys';
 
 const AuthScreen = registerScreen('/auth', AuthScreenLazy, () => {});
 const AccountScreen = registerScreen(
