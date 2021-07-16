@@ -151,11 +151,13 @@ export interface BottomTabType {
   selectedIcon?: any;
 }
 
+export type BottomTabComponent = ComponentType<{ orientation: Orientation }>;
+
 export interface BottomTabComponents {
   // you can specify a end component which will be included in the bottom tabs
-  start?: ComponentType;
+  start?: BottomTabComponent;
   // you can specify a end component which will be included in the bottom tabs
-  end?: ComponentType;
+  end?: BottomTabComponent;
 }
 
 export interface ThemeLayout {

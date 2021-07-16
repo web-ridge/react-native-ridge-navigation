@@ -32,7 +32,7 @@ function BottomTabs({
       ]}
     >
       {bottomTabsRoot?.components?.start ? (
-        <bottomTabsRoot.components.start />
+        <bottomTabsRoot.components.start orientation={orientation} />
       ) : null}
       {bottomTabsRoot.children.map((child) => (
         <BottomTab
@@ -46,7 +46,7 @@ function BottomTabs({
         />
       ))}
       {bottomTabsRoot?.components?.end ? (
-        <bottomTabsRoot.components.end />
+        <bottomTabsRoot.components.end orientation={orientation} />
       ) : null}
     </View>
   );
