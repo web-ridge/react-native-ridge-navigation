@@ -77,9 +77,12 @@ export function useNavigation() {
       // For example, navigate(-1) is equivalent to hitting the back button.
       navigate(-1);
     },
-    switchBottomTabIndex: async (_: number) => {
-      // alert('not implemented');
-      console.log('not im');
+    switchBottomTabIndex: async (index: number) => {
+      const currentRoot = root[oldRootKey];
+      if (currentRoot?.type === 'bottomTabs') {
+        const child = currentRoot.children?.[index]?.child;
+        navigate(generatePath(rootKeyAndPath(oldRootKey, child.path), {}));
+      }
     },
     switchRoot: async (rootKey: string, params: any, preload = true) => {
       if (preload) {
