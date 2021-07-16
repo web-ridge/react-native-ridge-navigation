@@ -30,9 +30,22 @@ Things which need to be done:
 - Real-time light/dark mode
 
 ## Example
-[![Demo of react-native-ridge-navigation](https://drive.google.com/uc?id=1nE0DzlaVza_h3K1KCkPnK5NfIXfYM5c-)
+[![Demo of react-native-ridge-navigation](https://drive.google.com/uc?id=1nE0DzlaVza_h3K1KCkPnK5NfIXfYM5c-)](https://www.youtube.com/watch?v=EvNxrRIF7C0)
 
 View video in better frame [on YouTube](https://www.youtube.com/watch?v=EvNxrRIF7C0)
+
+## About us
+We want developers to be able to build software faster using modern tools like GraphQL, Golang and React Native.
+
+Give us a follow on Twitter:
+[RichardLindhout](https://twitter.com/RichardLindhout),
+[web_ridge](https://twitter.com/web_ridge)
+
+## Donate
+Please contribute or donate so we can spend more time on this library
+
+[Donate with PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7B9KKQLXTEW9Q&source=url)
+
 
 ### Demo
 [See example: reactnativeridgenavigation.com](https://www.reactnativeridgenavigation.com/)
