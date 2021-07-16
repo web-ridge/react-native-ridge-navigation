@@ -116,14 +116,12 @@ const styles = StyleSheet.create({
   touchablePressed: {
     backgroundColor: 'rgba(0, 0, 0, 0.12)',
   },
-
   touchableHoveredDark: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   touchablePressedDark: {
     backgroundColor: 'rgba(255, 255, 255, 0.32)',
   },
-
   touchableInner: {
     flex: 1,
     height: 46,

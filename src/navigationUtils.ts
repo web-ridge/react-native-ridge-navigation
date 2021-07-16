@@ -151,6 +151,13 @@ export interface BottomTabType {
   selectedIcon?: any;
 }
 
+export interface BottomTabComponents {
+  // you can specify a end component which will be included in the bottom tabs
+  start?: ComponentType;
+  // you can specify a end component which will be included in the bottom tabs
+  end?: ComponentType;
+}
+
 export interface ThemeLayout {
   backgroundColor: Color;
 }
@@ -196,6 +203,7 @@ export interface SideMenuItem {
 export interface RootChildBottomTabs {
   type: 'bottomTabs';
   children: BottomTabType[];
+  components?: BottomTabComponents;
 }
 export interface RootChildSideMenu {
   type: 'sideMenu';
@@ -207,11 +215,13 @@ export interface RootChildNormal {
 }
 
 export function createBottomTabsRoot(
-  children: BottomTabType[]
+  children: BottomTabType[],
+  components?: BottomTabComponents
 ): RootChildBottomTabs {
   return {
     type: 'bottomTabs',
     children,
+    components,
   };
 }
 
