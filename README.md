@@ -63,6 +63,12 @@ const PostScreen = registerScreen(
       queryKeyPostScreen({ id }),
       queryKeyPostScreenPromise({ id })
     );
+
+    // if you return something here it can be used in the screen itself or somewhere else with
+    // usePreloadResult(routes.PostScreen)
+    // in this case react-query handles it based on queryKey so it's not needed but with Relay.dev it is. 
+    // you can put the result of the usePreloadResult in your usePreloadedQuery if you use Relay.dev
+
   }
 );
 
