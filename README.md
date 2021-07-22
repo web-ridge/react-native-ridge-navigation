@@ -176,6 +176,8 @@ const Navigator = createNavigation(
       // }
     ),
     [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
+    // You can add endless more roots for your app e.g. for different roles of users
+    // ...
   },
   AppHOC
 );
