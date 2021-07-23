@@ -32,7 +32,7 @@ function DeepLinking({ routes }: { routes: { path: string }[] }) {
 
       const root = getConfiguredRoot();
 
-      switch (root.type) {
+      switch (root?.type) {
         case 'sideMenu':
           break;
         case 'bottomTabs':

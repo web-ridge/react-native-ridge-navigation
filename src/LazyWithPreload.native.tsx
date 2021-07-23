@@ -1,7 +1,7 @@
 import type * as React from 'react';
 
 export default function lazyWithPreload<T extends React.ComponentType<any>>(
-  factory: () => any
+  _: () => any
 ): T {
-  return factory().default;
+  throw Error('currently not supported on native');
 }

@@ -91,7 +91,7 @@ export function useNavigation() {
 
       const currentRoot = root[rootKey];
 
-      switch (currentRoot.type) {
+      switch (currentRoot?.type) {
         case 'normal':
           const s = currentRoot.child;
           navigate(generatePath(rootKeyAndPath(rootKey, s.path), params));

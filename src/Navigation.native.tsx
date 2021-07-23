@@ -97,7 +97,7 @@ export function getConfiguredRoot() {
 
 function getRoot(r: Root, rootKey?: string): LayoutRoot {
   const currentRoot = getCurrentRoot(r, rootKey);
-  if (currentRoot.type === 'bottomTabs') {
+  if (currentRoot?.type === 'bottomTabs') {
     if (!bottomTabEventListener) {
       bottomTabEventListener =
         Navigation.events().registerBottomTabSelectedListener((args) => {
@@ -211,7 +211,7 @@ export function refreshTheme() {
   const newOptions = getDefaultOptions(Appearance.getColorScheme());
   NativeNavigation.setDefaultOptions(newOptions);
 
-  if (currentRoot.type === 'bottomTabs') {
+  if (currentRoot?.type === 'bottomTabs') {
     currentRoot.children.forEach((b) => {
       Navigation.mergeOptions(b.path, newOptions);
     });
@@ -225,7 +225,7 @@ export function refreshTheme() {
 
 export function refreshBottomTabs() {
   const currentRoot = getCurrentRoot(root, currentRootKey);
-  if (currentRoot.type === 'bottomTabs') {
+  if (currentRoot?.type === 'bottomTabs') {
     currentRoot.children.forEach((b) => {
       Navigation.mergeOptions(b.path, {
         bottomTab: {
