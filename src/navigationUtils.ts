@@ -268,11 +268,14 @@ export function registerScreen<
 
 export function preloadRoot(root: Root, rootKey: string, params: any) {
   const b = root[rootKey];
+  console.log('b', { root, rootKey, params, b });
+
   switch (b.type) {
     case 'normal':
       setPreloadResult(b.child, b.child.preload(params));
       break;
     case 'bottomTabs':
+      console.log('preloadroot', { root, rootKey, params, b });
       b.children.forEach(({ child }) =>
         setPreloadResult(child, child.preload(params))
       );

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { List } from 'react-native-paper';
 
-import { Link } from '../../../src';
+import { Link, usePreloadResult } from '../../../src';
 import routes from '../NavigatorRoutes';
 import RidgeList from 'react-native-ridge-list';
 import { useQuery } from 'react-query';
@@ -20,6 +20,15 @@ function getDefaultItemLayout(_: any, index: number) {
 }
 
 export default function PostsScreen() {
+  // optional with react-query  but could be used i.c.w. Relay.dev etc.
+  // for now we use this to test if it keeps working
+  const queryReference = usePreloadResult(routes.PostsScreen);
+  console.log({ queryReference });
+
+  if (!queryReference) {
+    throw Error('no preloaded results');
+  }
+
   const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);
 
   return (

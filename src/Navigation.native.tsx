@@ -40,9 +40,16 @@ let root: Root = {};
 let allScreens: BaseScreen[] = [];
 
 let currentRootKey: string | undefined;
+
 export async function setRoot(rootKey?: string) {
   currentRootKey = rootKey;
-  return NativeNavigation.setRoot(getRoot(root, rootKey));
+  const r = getRoot(root, rootKey);
+
+  const preloadKey = getCurrentRootKey(root, rootKey);
+  if (preloadKey) {
+    preloadRoot(root, preloadKey, {});
+  }
+  return NativeNavigation.setRoot(r);
 }
 
 export function useParams<T extends BaseScreen>(
@@ -88,7 +95,12 @@ let bottomTabEventListener: undefined | EmitterSubscription;
 let selectedTabIndex = 0;
 
 function getCurrentRoot(r: Root, rootKey?: string) {
-  return rootKey ? r[rootKey] : r[Object.keys(r)[0]];
+  const k = getCurrentRootKey(r, rootKey);
+  return r[k];
+}
+
+function getCurrentRootKey(r: Root, rootKey?: string) {
+  return rootKey || Object.keys(r)[0];
 }
 
 export function getConfiguredRoot() {
@@ -305,6 +317,7 @@ export function useNavigation() {
       return navigation.pop();
     },
     switchRoot: async (rootKey: string, params: any, preload = true) => {
+      console.log('switchRoot', { rootKey, preload });
       if (preload) {
         preloadRoot(root, rootKey, params);
       }
@@ -400,8 +413,6 @@ export default function withRidgeNavigation<T extends { componentId: string }>(
       </>
     );
   }
-
-  (Wrapper as any).preload = (WrappedComponent as any).preload;
 
   return Wrapper;
 }
