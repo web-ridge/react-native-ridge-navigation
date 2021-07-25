@@ -401,6 +401,8 @@ export default function withRidgeNavigation<T extends { componentId: string }>(
     );
   }
 
+  (Wrapper as any).preload = (WrappedComponent as any).preload;
+
   return Wrapper;
 }
 
