@@ -12,7 +12,6 @@ export function setPreloadResult<T extends BaseScreen>(
 ) {
   cache[screen.path] = result;
   const sub = subs[screen.path];
-  console.log('setPreloadResult', { cache });
   if (sub) {
     sub(result);
   }
@@ -24,7 +23,6 @@ export function usePreloadResult<T extends BaseScreen>(
   const [result, setResult] = React.useState<ReturnType<T['preload']>>(
     cache[screen.path]
   );
-  console.log('usePreloadResult', { cache });
   React.useEffect(() => {
     subs[screen.path] = setResult;
     return () => {
