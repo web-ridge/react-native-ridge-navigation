@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "0.7.14",
+  "version": "0.7.15",
   "description": "Simple and performant cross platform navigation with simple api",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
