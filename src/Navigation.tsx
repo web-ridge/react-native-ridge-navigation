@@ -53,7 +53,17 @@ export function refreshBottomTabs() {
   bottomTabRenderIndex.set((prev) => prev + 1);
 }
 
-export async function staticPush() {
+export async function staticPush<T extends BaseScreen>(
+  //@ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  screen: T,
+  //@ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  params: ExtractRouteParams<T['path']>,
+  //@ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  preload
+) {
   console.debug('staticPush not implemented on the web');
 }
 

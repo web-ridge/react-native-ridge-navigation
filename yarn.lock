@@ -7699,6 +7699,18 @@ react-native-paper@^4.9.2:
     color "^3.1.2"
     react-native-iphone-x-helper "^1.3.1"
 
+react-native-ridge-navigation@^0.7.15:
+  version "0.7.15"
+  resolved "https://registry.npmjs.org/react-native-ridge-navigation/-/react-native-ridge-navigation-0.7.15.tgz#5c08eebdbc11a2c2d492a18ff713afb2b5091b4a"
+  integrity sha512-FvoDdjn7ebhErhrBGsWR1LqL/xRC+VUUIyvMRiV9enI5dk4VtxPdNOjVJWOvrv3liiIxJ6I1gr3B/5xkc9cFjw==
+  dependencies:
+    react-native-vector-icons "https://github.com/RichardLindhout/react-native-vector-icons"
+
+"react-native-vector-icons@git+https://github.com/RichardLindhout/react-native-vector-icons.git":
+  version "7.0.0"
+  uid "651a426f30a6629ac54a911b46ef0b702e5cb4c4"
+  resolved "git+https://github.com/RichardLindhout/react-native-vector-icons.git#651a426f30a6629ac54a911b46ef0b702e5cb4c4"
+
 "react-native-vector-icons@https://github.com/RichardLindhout/react-native-vector-icons":
   version "7.0.0"
   resolved "https://github.com/RichardLindhout/react-native-vector-icons#651a426f30a6629ac54a911b46ef0b702e5cb4c4"
