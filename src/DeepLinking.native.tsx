@@ -7,7 +7,6 @@ function DeepLinking({ routes }: { routes: { path: string }[] }) {
   const { push, preload, switchRoot, switchBottomTabIndex } = useNavigation();
   const handleOpenURL = React.useCallback(
     async (event) => {
-      console.log('deepLinking', event.url);
       const path = getPathFromUrl(event.url);
 
       // get root key and rest of url

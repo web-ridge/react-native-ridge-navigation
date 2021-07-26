@@ -5,7 +5,7 @@ let subscribed: Record<string, boolean> = {
 };
 export default function OnlyRenderOnce({
   children,
-  subscribeKey = 'default',
+  subscribeKey = 'react-native-ridge-navigation-default-subscribe-key',
 }: {
   children: any;
   subscribeKey?: string;

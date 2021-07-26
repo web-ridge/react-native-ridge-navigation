@@ -53,6 +53,10 @@ export function refreshBottomTabs() {
   bottomTabRenderIndex.set((prev) => prev + 1);
 }
 
+export async function staticPush() {
+  console.debug('staticPush not implemented on the web');
+}
+
 export function refreshTheme() {
   // web automatically subscribes since we don't have native components
 }

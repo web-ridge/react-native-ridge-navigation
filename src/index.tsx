@@ -15,6 +15,7 @@ export {
   refreshBottomTabs,
   updateBadge,
   useParams,
+  staticPush,
 } from './Navigation';
 
 export {
