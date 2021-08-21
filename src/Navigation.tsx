@@ -108,10 +108,12 @@ export function useNavigation() {
       switch (currentRoot?.type) {
         case 'normal':
           const s = currentRoot.child;
+          console.log({ rootKey, path: s.path });
           navigate(generatePath(rootKeyAndPath(rootKey, s.path), params));
           break;
         case 'bottomTabs':
           const child = currentRoot.children?.[0]?.child;
+          console.log({ rootKey, path: child.path });
           navigate(generatePath(rootKeyAndPath(rootKey, child.path), params));
           break;
         case 'sideMenu':

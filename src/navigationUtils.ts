@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { setPreloadResult } from './Preloader';
 import { newRidgeState, StateWithValue } from 'react-ridge-state';
 import { refreshTheme } from './Navigation';
+import type { GestureResponderEvent } from 'react-native';
 declare type Color = string | symbol;
 
 export function createSimpleTheme(
@@ -282,6 +283,23 @@ export function preloadRoot(root: Root, rootKey: string, params: any) {
       break;
   }
 }
+
+export type LinkRenderProps = {
+  onPressIn?: (e: GestureResponderEvent) => any | undefined;
+  onMouseDown?: (e: GestureResponderEvent) => any | undefined;
+  onMouseEnter?: (e: GestureResponderEvent) => any;
+  onPress: (e: GestureResponderEvent) => any;
+  accessibilityRole?: 'link';
+  href?: string;
+};
+
+export type LinkProps<T extends BaseScreen> = {
+  to: T;
+  params: ExtractRouteParams<T['path']>;
+  children: (p: LinkRenderProps) => any;
+  mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
+  onPress?: (event: GestureResponderEvent) => void;
+};
 
 export function createScreens(screenMap: Record<string, BaseScreen>) {
   return Object.keys(screenMap).map((key) => {

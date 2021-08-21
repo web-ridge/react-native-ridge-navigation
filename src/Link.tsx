@@ -1,30 +1,19 @@
 import * as React from 'react';
-import type { BaseScreen, ExtractRouteParams } from './navigationUtils';
-import { useNavigation } from './Navigation';
+import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
+import { useNavigation, useRootKey } from './Navigation';
 import { generatePath } from './react-router';
 import type { GestureResponderEvent } from 'react-native';
 import type { PreloadableComponent } from './LazyWithPreload';
 import { setPreloadResult } from './Preloader';
-
-interface RenderProps {
-  onMouseDown?: (e: GestureResponderEvent) => any | undefined;
-  onMouseEnter?: (e: GestureResponderEvent) => any;
-  onPress: (e: GestureResponderEvent) => any;
-  accessibilityRole: 'link';
-  href: string;
-}
 
 export default function Link<T extends BaseScreen>({
   to,
   params,
   children,
   mode = 'default',
-}: {
-  to: T;
-  params: ExtractRouteParams<T['path']>;
-  children: (p: RenderProps) => any;
-  mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
-}) {
+  onPress: onCustomPress,
+}: LinkProps<T>) {
+  const rootKey = useRootKey();
   const navigation = useNavigation();
 
   const preloadElement = React.useCallback(() => {
@@ -42,6 +31,14 @@ export default function Link<T extends BaseScreen>({
 
   const onPress = React.useCallback(
     (event: GestureResponderEvent) => {
+      // we don't want to go to another screen but we do want preloading
+      // behaviour of the Link component :)
+      // e.g. a modal with same data dependencies as the list screen
+      if (onCustomPress) {
+        onCustomPress(event);
+        return;
+      }
+
       const nativeEvent = event.nativeEvent as any as React.MouseEvent;
 
       if (
@@ -54,14 +51,14 @@ export default function Link<T extends BaseScreen>({
         navigation.push(to, params, false);
       }
     },
-    [navigation, to, params]
+    [navigation, onCustomPress, to, params]
   );
 
-  let childrenProps: RenderProps = {
+  let childrenProps: LinkRenderProps = {
     onMouseDown: mode === 'sensitive' ? undefined : preloadData,
     onMouseEnter: mode === 'sensitive' ? preloadDataAndElement : preloadElement,
     accessibilityRole: 'link',
-    href: generatePath(to.path, params),
+    href: generatePath('/' + rootKey + to.path, params),
     onPress: onPress,
   };
 

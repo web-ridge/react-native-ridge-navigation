@@ -1935,10 +1935,10 @@
   resolved "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
   integrity sha512-KfRL3PuHmqQLOG+2tGpRO26Ctg+Cq1E01D2DMriKEATHgWLfeNDmq9e29Q9WIky0dQ3NPkd1mzYH8Lm936Z9qw==
 
-"@types/react-dom@^17.0.8":
-  version "17.0.8"
-  resolved "https://registry.npmjs.org/@types/react-dom/-/react-dom-17.0.8.tgz#3180de6d79bf53762001ad854e3ce49f36dd71fc"
-  integrity sha512-0ohAiJAx1DAUEcY9UopnfwCE9sSMDGnY/oXjWMax6g3RpzmTt2GMyMVAXcbn0mo8XAff0SbQJl2/SBU+hjSZ1A==
+"@types/react-dom@^17.0.9":
+  version "17.0.9"
+  resolved "https://registry.npmjs.org/@types/react-dom/-/react-dom-17.0.9.tgz#441a981da9d7be117042e1a6fd3dac4b30f55add"
+  integrity sha512-wIvGxLfgpVDSAMH5utdL9Ngm5Owu0VsGmldro3ORLXV8CShrL8awVj06NuEXFQ5xyaYfdca7Sgbk/50Ri1GdPg==
   dependencies:
     "@types/react" "*"
 
@@ -7705,11 +7705,6 @@ react-native-ridge-navigation@^0.7.15:
   integrity sha512-FvoDdjn7ebhErhrBGsWR1LqL/xRC+VUUIyvMRiV9enI5dk4VtxPdNOjVJWOvrv3liiIxJ6I1gr3B/5xkc9cFjw==
   dependencies:
     react-native-vector-icons "https://github.com/RichardLindhout/react-native-vector-icons"
-
-"react-native-vector-icons@git+https://github.com/RichardLindhout/react-native-vector-icons.git":
-  version "7.0.0"
-  uid "651a426f30a6629ac54a911b46ef0b702e5cb4c4"
-  resolved "git+https://github.com/RichardLindhout/react-native-vector-icons.git#651a426f30a6629ac54a911b46ef0b702e5cb4c4"
 
 "react-native-vector-icons@https://github.com/RichardLindhout/react-native-vector-icons":
   version "7.0.0"

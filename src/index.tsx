@@ -39,4 +39,7 @@ export type {
   RootChildBottomTabs,
   RootChildSideMenu,
   RootChildNormal,
+  ExtractRouteParams,
+  LinkRenderProps,
+  LinkProps,
 } from './navigationUtils';
