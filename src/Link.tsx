@@ -54,13 +54,18 @@ export default function Link<T extends BaseScreen>({
     [navigation, onCustomPress, to, params]
   );
 
-  let childrenProps: LinkRenderProps = {
+  let baseProps: LinkRenderProps = {
     onMouseDown: mode === 'sensitive' ? undefined : preloadData,
     onMouseEnter: mode === 'sensitive' ? preloadDataAndElement : preloadElement,
-    accessibilityRole: 'link',
-    href: generatePath('/' + rootKey + to.path, params),
     onPress: onPress,
   };
+  let childrenProps: LinkRenderProps = onCustomPress
+    ? baseProps
+    : {
+        ...baseProps,
+        accessibilityRole: 'link',
+        href: generatePath('/' + rootKey + to.path, params),
+      };
 
   return children(childrenProps);
 }
