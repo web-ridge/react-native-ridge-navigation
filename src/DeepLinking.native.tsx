@@ -3,7 +3,7 @@ import { Linking } from 'react-native';
 import { useNavigation } from './Navigation';
 import { getConfiguredRoot, staticPush } from './Navigation.native';
 
-let handlingInitialURL = false;
+let handledInitialURL = false;
 
 function DeepLinking({ routes }: { routes: { path: string }[] }) {
   const { push, preload, switchRoot, switchBottomTabIndex } = useNavigation();
@@ -62,6 +62,8 @@ function DeepLinking({ routes }: { routes: { path: string }[] }) {
           await push(matchedRoute as any, params, true);
           break;
       }
+
+      handledInitialURL = true;
     },
     [preload, push, routes, switchBottomTabIndex, switchRoot]
   );
@@ -69,10 +71,9 @@ function DeepLinking({ routes }: { routes: { path: string }[] }) {
   React.useEffect(() => {
     Linking.getInitialURL().then((url) => {
       if (url) {
-        if (!handlingInitialURL) {
+        if (!handledInitialURL) {
           handleOpenURL({ url });
         }
-        handlingInitialURL = true;
       }
     });
     const subscription = Linking.addEventListener('url', handleOpenURL);
