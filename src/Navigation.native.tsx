@@ -103,10 +103,6 @@ function getCurrentRootKey(r: Root, rootKey?: string) {
   return rootKey || Object.keys(r)[0];
 }
 
-export function getCurrentRootKeyWithoutConfig() {
-  return currentRootKey;
-}
-
 export function getConfiguredRoot() {
   return root[currentRootKey || ''];
 }
