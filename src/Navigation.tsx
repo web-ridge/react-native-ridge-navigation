@@ -27,6 +27,7 @@ import { View, useWindowDimensions, StyleSheet } from 'react-native';
 import BottomTabs from './BottomTabs';
 import SwitchRoot from './SwitchRoot';
 import { newRidgeState } from 'react-ridge-state';
+import useLatest from './useLatest';
 
 let screenItems: BaseScreen[] = [];
 let root: Root = {};
@@ -70,8 +71,16 @@ export async function staticPush<T extends BaseScreen>(
 export function refreshTheme() {
   // web automatically subscribes since we don't have native components
 }
-export function useFocus(_: () => void) {
-  // TODO implement
+
+export function useFocus(callback: () => void) {
+  const latestCallback = useLatest(callback);
+  React.useEffect(() => {
+    const lc = latestCallback.current;
+    window.addEventListener('focus', lc);
+    return () => {
+      window.removeEventListener('focus', lc);
+    };
+  }, [latestCallback]);
 }
 
 export function useRootKey() {

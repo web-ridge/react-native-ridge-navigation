@@ -10,7 +10,6 @@ Simple and performant cross platform navigation on iOS, Android and the web with
 ⚠️ This is beta software, things can break.
 
 Things which are not finished yet:
-- useFocus (like useEffect but for when screen is focused)
 - documentation
 - create universal lazyWithPreload for screens (only on web, but [callstack/repack](https://github.com/callstack/repack) can fix it native too)
 - universal modal (web support too)
@@ -66,7 +65,7 @@ const PostScreen = registerScreen(
 
     // if you return something here it can be used in the screen itself or somewhere else with
     // usePreloadResult(routes.PostScreen)
-    // in this case react-query handles it based on queryKey so it's not needed but with Relay.dev it is. 
+    // in this case react-query handles it based on queryKey so it's not needed but with Relay.dev it is.
     // you can put the result of the usePreloadResult in your usePreloadedQuery if you use Relay.dev
 
   }
