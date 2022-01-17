@@ -80,6 +80,7 @@ function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
     badgeColor: bottomBar.badgeColor,
     //@ts-ignore
     badgeTextColor: bottomBar.badgeTextColor,
+    titleDisplayMode: 'alwaysShow',
   };
 }
 

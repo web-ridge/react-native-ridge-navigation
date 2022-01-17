@@ -27,6 +27,7 @@ export function createSimpleTheme(
         selectedTextColor: simpleTheme.light.accent,
         badgeColor: 'red',
         badgeTextColor: '#fff', // not supported yet in iOS/Android
+        elevation: 5,
       },
     },
     dark: {
@@ -47,6 +48,7 @@ export function createSimpleTheme(
         selectedTextColor: simpleTheme.dark.accent,
         badgeColor: 'red',
         badgeTextColor: '#fff', // not supported yet in iOS/Android
+        elevation: 5,
       },
     },
   };
@@ -173,6 +175,7 @@ export interface ThemeBottomBar {
   selectedTextColor: Color;
   badgeColor: Color;
   badgeTextColor: Color; // not supported yet in RNN
+  elevation: number;
 }
 
 export interface Theme {
