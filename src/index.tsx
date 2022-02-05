@@ -13,6 +13,7 @@ export {
   useNavigation,
   useFocus,
   refreshBottomTabs,
+  refreshTheme,
   updateBadge,
   useParams,
   staticPush,
