@@ -12217,6 +12217,11 @@ react-refresh@^0.8.3:
   resolved "https://registry.npmjs.org/react-refresh/-/react-refresh-0.8.3.tgz"
   integrity sha512-X8jZHc7nCMjaCqoU+V2I0cOhNW+QMBwSUkeXnTi8IPe6zaRWfn60ZzvFDZqWPfmSJfjub7dDW1SP0jaHWLu/hg==
 
+react-ridge-state@^4.2.8:
+  version "4.2.8"
+  resolved "https://registry.npmjs.org/react-ridge-state/-/react-ridge-state-4.2.8.tgz#c79abdfc3e39aa1e8008cb2d3b439c6e81e484de"
+  integrity sha512-27WFKyhYNPGeFyI2mWoY18Ms7kdB7frjcuQaGLpVU8YyBocUQrN95iH6IUCVHP5qWCK02CW4UJ+wDh96jOHNyw==
+
 react-scripts@4.0.3:
   version "4.0.3"
   resolved "https://registry.npmjs.org/react-scripts/-/react-scripts-4.0.3.tgz"

@@ -29,6 +29,7 @@
     "react-native-web": "^0.17.1",
     "react-native-web-image-loader": "^0.1.1",
     "react-query": "^3.18.1",
+    "react-ridge-state": "^4.2.8",
     "react-scripts": "4.0.3"
   },
   "devDependencies": {
