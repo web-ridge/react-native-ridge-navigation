@@ -30,6 +30,7 @@ import {
   ColorSchemeName,
   EmitterSubscription,
   useColorScheme,
+  Platform,
 } from 'react-native';
 import useLatest from './useLatest';
 import OnlyRenderOnce from './OnlyRenderOnce';
@@ -76,20 +77,26 @@ function getBottomTabLayout(colorScheme: ColorSchemeName): OptionsBottomTab {
     iconColor: bottomBar.iconColor,
     selectedIconColor: bottomBar.selectedIconColor,
     selectedTextColor: bottomBar.selectedTextColor,
-    //@ts-ignore
     badgeColor: bottomBar.badgeColor,
     //@ts-ignore
-    badgeTextColor: bottomBar.badgeTextColor,
-    titleDisplayMode: 'alwaysShow',
+    // badgeTextColor: bottomBar.badgeTextColor, // TODO: does not work yet on iOS/Android
+    // titleDisplayMode: 'alwaysShow',
   };
 }
 
 function getLayout(colorScheme: ColorSchemeName): OptionsLayout {
   const { layout } = getTheme()[colorScheme || 'light'];
-  return {
-    backgroundColor: layout.backgroundColor,
-    componentBackgroundColor: layout.backgroundColor,
-  };
+  // somehow Android bottom bar is hidden when you set bg color...
+  // https://github.com/wix/react-native-navigation/issues/7455
+  return Platform.select({
+    android: {
+      componentBackgroundColor: layout.backgroundColor,
+    },
+    default: {
+      backgroundColor: layout.backgroundColor,
+      componentBackgroundColor: layout.backgroundColor,
+    },
+  });
 }
 
 let bottomTabEventListener: undefined | EmitterSubscription;
