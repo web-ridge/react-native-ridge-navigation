@@ -1,131 +1,35 @@
-// https://github.com/ReactTraining/react-router/blob/dev/docs/api-reference.md
 import * as React from 'react';
-import {
+import { setPreloadResult } from './Preloader';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
+
+import BottomTabs from './web/BottomTabs';
+import SwitchRoot from './SwitchRoot';
+import type {
   BaseScreen,
-  BottomTabType,
   ExtractRouteParams,
   Orientation,
-  preloadRoot,
   Root,
   RootValue,
-  setTheme,
-  ThemeSettings,
 } from './navigationUtils';
-import { BrowserRouter } from './react-router-dom';
-import {
-  Routes,
-  Route,
-  useParams as useParamsImpl,
-  generatePath,
-  useNavigate,
-  useLocation,
-} from './react-router';
-
-import { setPreloadResult } from './Preloader';
-import { View, useWindowDimensions, StyleSheet } from 'react-native';
-
-import BottomTabs from './BottomTabs';
-import SwitchRoot from './SwitchRoot';
-import { newRidgeState } from 'react-ridge-state';
-import useLatest from './useLatest';
-
-let screenItems: BaseScreen[] = [];
-let root: Root = {};
-
-export function useParams<T extends BaseScreen>(
-  _: T,
-  __: any
-): ExtractRouteParams<T['path']> {
-  return useParamsImpl() as any;
-}
+import { StateNavigator } from 'navigation';
 
 function rootKeyAndPath(rootKey: string, path: string) {
   return '/' + rootKey + path;
 }
 
-export const badgesCount = newRidgeState<Record<string, string>>({});
-export const bottomTabRenderIndex = newRidgeState<number>(0);
-
-export function updateBadge<T extends BottomTabType>(tab: T, badge: string) {
-  badgesCount.set((prev) => ({ ...prev, [tab.path]: badge }));
-}
-
-export function refreshBottomTabs() {
-  bottomTabRenderIndex.set((prev) => prev + 1);
-}
-
-export async function staticPush<T extends BaseScreen>(
-  //@ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  screen: T,
-  //@ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  params: ExtractRouteParams<T['path']>,
-  //@ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  preload
-) {
-  console.debug('staticPush not implemented on the web');
-}
-
-export function refreshTheme() {
-  // web automatically subscribes since we don't have native components
-}
-
-export function useFocus(callback: () => void) {
-  const latestCallback = useLatest(callback);
-  React.useEffect(() => {
-    const lc = latestCallback.current;
-    window.addEventListener('focus', lc);
-    return () => {
-      window.removeEventListener('focus', lc);
-    };
-  }, [latestCallback]);
-}
-
-export function useRootKey() {
-  const { pathname } = useLocation();
-  return pathname.split('/')?.[1];
-}
-
 export function useNavigation() {
-  const navigate = useNavigate();
-  const oldRootKey = useRootKey();
-
   return {
-    refreshBottomTabs,
-    updateBadge,
-    pop: async () => {
-      // Pass the delta you want to go in the history stack.
-      // For example, navigate(-1) is equivalent to hitting the back button.
-      navigate(-1);
-    },
-    switchBottomTabIndex: async (index: number) => {
-      const currentRoot = root[oldRootKey];
-      if (currentRoot?.type === 'bottomTabs') {
-        const child = currentRoot.children?.[index]?.child;
-        navigate(generatePath(rootKeyAndPath(oldRootKey, child.path), {}));
-      }
-    },
+    switchBottomTabIndex: async (index: number) => {},
     switchRoot: async (rootKey: string, params: any, preload = true) => {
       if (preload) {
-        preloadRoot(root, rootKey, params);
+        // preloadRoot(root, rootKey, params);
       }
-
-      const currentRoot = root[rootKey];
 
       switch (currentRoot?.type) {
         case 'normal':
-          const s = currentRoot.child;
-          console.log({ rootKey, path: s.path });
-          navigate(generatePath(rootKeyAndPath(rootKey, s.path), params));
           break;
         case 'bottomTabs':
-          const child = currentRoot.children?.[0]?.child;
-          console.log({ rootKey, path: child.path });
-          navigate(generatePath(rootKeyAndPath(rootKey, child.path), params));
           break;
-        case 'sideMenu':
       }
     },
     preload: async <T extends BaseScreen>(
@@ -142,7 +46,7 @@ export function useNavigation() {
       if (preload) {
         setPreloadResult(screen, screen.preload(params));
       }
-      navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params));
+      // navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params));
     },
     replace: async <T extends BaseScreen>(
       screen: T,
@@ -152,9 +56,9 @@ export function useNavigation() {
       if (preload) {
         setPreloadResult(screen, screen.preload(params));
       }
-      navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params), {
-        replace: true,
-      });
+      // navigate(generatePath(rootKeyAndPath(oldRootKey, screen.path), params), {
+      //   replace: true,
+      // });
     },
   };
 }
@@ -213,9 +117,6 @@ function getBreakingPointFromRoot(v?: RootValue): number {
   if (v?.type === 'bottomTabs') {
     configuredBreakingPoint = v.breakingPointWidth;
   }
-  if (v?.type === 'sideMenu') {
-    // configuredBreakingPoints = v.breakingPointWidth;
-  }
 
   // user explicitly set the breaking point to null, so we never will make sure the breaking point will never happen
   if (configuredBreakingPoint === null) {
@@ -224,17 +125,69 @@ function getBreakingPointFromRoot(v?: RootValue): number {
   return configuredBreakingPoint || defaultBreakingPoint;
 }
 
-function NavigationInnerRoot({
-  SuspenseContainer,
-}: {
-  SuspenseContainer: any;
-}) {
-  const rootKey = useRootKey();
-  const currentRoot = root[rootKey];
+export function createNavigation<ScreenItems extends BaseScreen[]>(
+  screens: ScreenItems,
+  r: Root,
+  SuspenseContainer: any
+) {
+  // TODO: expo-linking??
+  // import {Linking} from 'react-native';
+  //
+  // const openLink = (url) => {
+  //   if (url) {
+  //     const id = +url.split('=')[1];
+  //     stateNavigator.navigate('mail', {id});
+  //   }
+  // };
+  // Linking.getInitialURL().then(openLink);
+  // Linking.addEventListener('url', ({url}) => openLink(url));
+
+  const navigators = Object.entries(r).map(([rootKey, root]) => {
+    switch (root.type) {
+      case 'bottomTabs':
+        const stackNavigators = root.children.map((tab) => {
+          const tabPath = rootKeyAndPath(rootKey, tab.path);
+          return new StateNavigator([
+            { key: tabPath, route: tabPath },
+            // add support for all other screens to go to
+            ...screens.map((screen) => ({
+              key: screen.path,
+              trackCrumbTrail: true,
+              route: tabPath + screen.path,
+              renderScene: () => <screen.element />,
+            })),
+          ]);
+        });
+
+        return { type: root.type, rootKey, stackNavigators };
+      case 'normal':
+        const path = rootKeyAndPath(rootKey, root.child.path);
+        const stackNavigator = new StateNavigator([
+          { key: path, route: path },
+          // add support for all other screens to go to
+          ...screens.map((screen) => ({
+            key: screen.path,
+            trackCrumbTrail: true,
+            route: path + screen.path,
+            renderScene: () => <screen.element />,
+          })),
+        ]);
+        return {
+          type: root.type,
+          rootKey,
+          stackNavigator,
+        };
+    }
+  });
+
+  // https://grahammendick.github.io/navigation/documentation/native/tab-bar.html
+
+  // TODO: render app here
   const aboveBreakingPoint = useAboveBreakingPoint(
     getBreakingPointFromRoot(currentRoot)
   );
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
+
   return (
     <NavContainer orientation={orientation}>
       <Nav
@@ -270,29 +223,4 @@ function NavigationInnerRoot({
       </View>
     </NavContainer>
   );
-}
-
-export function NavigationRoot({
-  SuspenseContainer,
-}: {
-  SuspenseContainer: any;
-}) {
-  return (
-    <BrowserRouter>
-      <NavigationInnerRoot SuspenseContainer={SuspenseContainer} />
-    </BrowserRouter>
-  );
-}
-
-export function createNavigation<ScreenItems extends BaseScreen[]>(
-  themeSettings: ThemeSettings,
-  screens: ScreenItems,
-  r: Root,
-  _: any
-): any {
-  setTheme(themeSettings);
-  root = r;
-  screenItems = screens;
-
-  return;
 }

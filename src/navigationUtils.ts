@@ -1,91 +1,7 @@
 import type { ComponentType } from 'react';
 import { setPreloadResult } from './Preloader';
-import { newRidgeState, StateWithValue } from 'react-ridge-state';
-import { refreshTheme } from './Navigation';
 import type { GestureResponderEvent } from 'react-native';
 declare type Color = string | symbol;
-
-export function createSimpleTheme(
-  simpleTheme: SimpleThemeSettings
-): ThemeSettings {
-  return {
-    light: {
-      statusBar: {
-        translucent: false,
-        drawBehind: true,
-        style: 'dark',
-        backgroundColor: 'transparent',
-      },
-      layout: {
-        backgroundColor: '#fff',
-      },
-      bottomBar: {
-        backgroundColor: '#fff',
-        textColor: simpleTheme.light.text,
-        iconColor: simpleTheme.light.text,
-        selectedIconColor: simpleTheme.light.accent,
-        selectedTextColor: simpleTheme.light.accent,
-        badgeColor: 'red',
-        badgeTextColor: '#fff', // not supported yet in iOS/Android
-        elevation: 5,
-      },
-    },
-    dark: {
-      statusBar: {
-        translucent: false,
-        drawBehind: true,
-        style: 'light',
-        backgroundColor: 'transparent',
-      },
-      layout: {
-        backgroundColor: '#000',
-      },
-      bottomBar: {
-        backgroundColor: '#121212',
-        textColor: simpleTheme.dark.text,
-        iconColor: simpleTheme.dark.text,
-        selectedIconColor: simpleTheme.dark.accent,
-        selectedTextColor: simpleTheme.dark.accent,
-        badgeColor: 'red',
-        badgeTextColor: '#fff', // not supported yet in iOS/Android
-        elevation: 5,
-      },
-    },
-  };
-}
-export const defaultTheme: ThemeSettings = createSimpleTheme({
-  light: {
-    primary: '#6200ee',
-    accent: '#6200ee',
-    text: '#000',
-  },
-  dark: {
-    primary: '#edabff',
-    accent: '#edabff',
-    text: '#fff',
-  },
-});
-
-let theme: StateWithValue<ThemeSettings> = newRidgeState<ThemeSettings>(
-  defaultTheme,
-  {
-    onSet: () => {
-      refreshTheme();
-    },
-  }
-);
-
-export function getTheme() {
-  return theme.get();
-}
-
-export function useTheme() {
-  return theme.useValue();
-}
-
-export function setTheme(v: ThemeSettings) {
-  return theme.set(v);
-}
 
 export type ExtractRouteParams<T extends string> = string extends T
   ? Record<string, string>
@@ -212,10 +128,10 @@ export interface RootChildBottomTabs {
   components?: BottomTabComponents;
   breakingPointWidth: undefined | null | number;
 }
-export interface RootChildSideMenu {
-  type: 'sideMenu';
-  children: SideMenuItem[];
-}
+// export interface RootChildSideMenu {
+//   type: 'sideMenu';
+//   children: SideMenuItem[];
+// }
 export interface RootChildNormal {
   type: 'normal';
   child: BaseScreen;
@@ -236,14 +152,14 @@ export function createBottomTabsRoot(
   };
 }
 
-export function createSideMenuRoot(
-  children: SideMenuItem[]
-): RootChildSideMenu {
-  return {
-    type: 'sideMenu',
-    children,
-  };
-}
+// export function createSideMenuRoot(
+//   children: SideMenuItem[]
+// ): RootChildSideMenu {
+//   return {
+//     type: 'sideMenu',
+//     children,
+//   };
+// }
 
 export function createNormalRoot(child: BaseScreen): RootChildNormal {
   return {
@@ -252,10 +168,7 @@ export function createNormalRoot(child: BaseScreen): RootChildNormal {
   };
 }
 
-export type RootValue =
-  | RootChildNormal
-  | RootChildBottomTabs
-  | RootChildSideMenu;
+export type RootValue = RootChildNormal | RootChildBottomTabs;
 export type Root = Record<string, RootValue>;
 
 export function registerScreen<
@@ -282,8 +195,8 @@ export function preloadRoot(root: Root, rootKey: string, params: any) {
         setPreloadResult(child, child.preload(params))
       );
       break;
-    case 'sideMenu':
-      break;
+    // case 'sideMenu':
+    //   break;
   }
 }
 

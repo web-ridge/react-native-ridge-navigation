@@ -1,6 +1,4 @@
-// export { default as DeepLinking } from './DeepLinking';
 export { default as BackLink } from './BackLink';
-export { default as OnlyRenderOnce } from './OnlyRenderOnce.native';
 export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
 export { usePreloadResult, setPreloadResult } from './Preloader';
@@ -22,7 +20,6 @@ export {
 export {
   createBottomTabsRoot,
   createNormalRoot,
-  createSideMenuRoot,
   registerScreen,
   createScreens,
   defaultTheme,

@@ -6853,6 +6853,11 @@ natural-compare@^1.4.0:
   resolved "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
+navigation@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.npmjs.org/navigation/-/navigation-6.1.0.tgz#6addd11b212064250f6c7168c05b4ddb1fbbd2aa"
+  integrity sha512-lzFTF9L49o5v5/Ja3VTACLqg2cthMu63YjAa8ripzMA6+ayAVUvNmfulZcbHhU8LFX/qoUlb8fSSKFb+lNpwQQ==
+
 negotiator@0.6.2:
   version "0.6.2"
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"

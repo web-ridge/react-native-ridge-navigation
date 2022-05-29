@@ -164,6 +164,7 @@
   },
   "dependencies": {
     "@types/react-dom": "^17.0.9",
+    "navigation": "^6.1.0",
     "react-native-ridge-navigation": "^0.7.15",
     "react-native-vector-icons": "https://github.com/RichardLindhout/react-native-vector-icons"
   }
