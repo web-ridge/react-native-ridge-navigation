@@ -1,60 +1,18 @@
 import type { ComponentType } from 'react';
-import { setPreloadResult } from './Preloader';
 import type { GestureResponderEvent } from 'react-native';
-declare type Color = string | symbol;
+import { useWindowDimensions } from 'react-native';
 
 export type ExtractRouteParams<T extends string> = string extends T
   ? Record<string, string>
   : // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T extends `${infer Start}:${infer Param}/${infer Rest}`
   ? { [k in Param | keyof ExtractRouteParams<Rest>]: string }
   : // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T extends `${infer Start}:${infer Param}`
   ? { [k in Param]: string }
   : {};
-
-export interface OptionsStatusBar {
-  /**
-   * Set the status bar visibility
-   * @default true
-   */
-  visible?: boolean;
-  /**
-   * Set the text color of the status bar
-   * @default 'light'
-   */
-  style?: 'light' | 'dark';
-  /**
-   * Set the background color of the status bar
-   * #### (Android specific)
-   */
-  backgroundColor?: Color;
-  /**
-   * Draw screen behind the status bar
-   * #### (Android specific)
-   */
-  drawBehind?: boolean;
-  /**
-   * Allows the StatusBar to be translucent (blurred)
-   * #### (Android specific)
-   */
-  translucent?: boolean;
-  /**
-   * Animate StatusBar style changes.
-   * #### (iOS specific)
-   */
-  animated?: boolean;
-  /**
-   * Automatically hide the StatusBar when the TopBar hides.
-   * #### (iOS specific)
-   */
-  hideWithTopBar?: boolean;
-  /**
-   * Blur content beneath the StatusBar.
-   * #### (iOS specific)
-   */
-  blur?: boolean;
-}
 
 export interface BaseScreen {
   path: string;
@@ -77,43 +35,6 @@ export interface BottomTabComponents {
   start?: BottomTabComponent;
   // you can specify a end component which will be included in the bottom tabs
   end?: BottomTabComponent;
-}
-
-export interface ThemeLayout {
-  backgroundColor: Color;
-}
-
-export interface ThemeBottomBar {
-  backgroundColor: Color;
-  textColor: Color;
-  iconColor: Color;
-  selectedIconColor: Color;
-  selectedTextColor: Color;
-  badgeColor: Color;
-  badgeTextColor: Color; // not supported yet in RNN
-  elevation: number;
-}
-
-export interface Theme {
-  bottomBar: ThemeBottomBar;
-  layout: ThemeLayout;
-  statusBar: OptionsStatusBar;
-}
-
-export interface SimpleTheme {
-  text: Color;
-  primary: Color;
-  accent: Color;
-}
-
-export interface ThemeSettings {
-  light: Theme;
-  dark: Theme;
-}
-
-export interface SimpleThemeSettings {
-  light: SimpleTheme;
-  dark: SimpleTheme;
 }
 
 export interface SideMenuItem {
@@ -152,15 +73,6 @@ export function createBottomTabsRoot(
   };
 }
 
-// export function createSideMenuRoot(
-//   children: SideMenuItem[]
-// ): RootChildSideMenu {
-//   return {
-//     type: 'sideMenu',
-//     children,
-//   };
-// }
-
 export function createNormalRoot(child: BaseScreen): RootChildNormal {
   return {
     type: 'normal',
@@ -181,23 +93,6 @@ export function registerScreen<
     element,
     preload,
   };
-}
-
-export function preloadRoot(root: Root, rootKey: string, params: any) {
-  const b = root[rootKey];
-
-  switch (b.type) {
-    case 'normal':
-      setPreloadResult(b.child, b.child.preload(params));
-      break;
-    case 'bottomTabs':
-      b.children.forEach(({ child }) =>
-        setPreloadResult(child, child.preload(params))
-      );
-      break;
-    // case 'sideMenu':
-    //   break;
-  }
 }
 
 export type LinkRenderProps = {
@@ -221,4 +116,96 @@ export function createScreens(screenMap: Record<string, BaseScreen>) {
   return Object.keys(screenMap).map((key) => {
     return screenMap[key as keyof typeof screenMap]!;
   });
+}
+export function rootKeyAndPath(rootKey: string, path: string) {
+  return '/' + rootKey + path;
+}
+
+export function makeVariablesNavigationFriendly(s: string) {
+  // replace :id with {id} and son on
+  return s.replace(/:([^/]+)/g, '{$1}');
+}
+
+export function generatePath(path: string, params: any): string {
+  return path
+    .replace(/:(\w+)/g, (_, key) => {
+      console.error(params[key] != null, `Missing ":${key}" param`);
+      return params[key];
+    })
+    .replace(/\/*\*$/, (_) =>
+      params['*'] == null ? '' : params['*'].replace(/^\/*/, '/')
+    );
+}
+
+export function getFirstPartAndOthers(pathSplit: string[]) {
+  const firstPart = pathSplit[0];
+  pathSplit.shift();
+  return {
+    firstPart,
+    pathSplit,
+  };
+}
+
+export function splitPath(path: string): string[] {
+  let splitMatchPath = path.split('/');
+  splitMatchPath.shift();
+  return splitMatchPath;
+}
+
+export function getPathFromUrl(url: string): string {
+  if (url.startsWith('/')) {
+    // web
+    return url;
+  }
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const u = new URL(url);
+    return u.pathname + u.search;
+  }
+  return '/' + url.split('://')[1];
+}
+export function partMatches(
+  urlPart: string | undefined,
+  routePart: string | undefined
+) {
+  // url part does not exist
+  if (urlPart === undefined || routePart === undefined) {
+    return false;
+  }
+
+  // is parameter in url match everything
+  if (routePart.startsWith(':')) {
+    return true;
+  }
+  return routePart === urlPart;
+}
+export function getParams(
+  urlPathSplit: string[],
+  routePathSplit: string[]
+): Record<string, string> {
+  let params: Record<string, string> = {};
+  routePathSplit.forEach((routePath, i) => {
+    if (routePath.startsWith(':')) {
+      const paramKey = routePath.substring(1);
+      params[paramKey] = urlPathSplit[i]!;
+    }
+  });
+  return params;
+}
+
+const defaultBreakingPoint = 1200;
+export function getBreakingPointFromRoot(v?: RootValue): number {
+  let configuredBreakingPoint: number | null | undefined;
+  if (v?.type === 'bottomTabs') {
+    configuredBreakingPoint = v.breakingPointWidth;
+  }
+
+  // user explicitly set the breaking point to null, so we never will make sure the breaking point will never happen
+  if (configuredBreakingPoint === null) {
+    configuredBreakingPoint = Infinity;
+  }
+  return configuredBreakingPoint || defaultBreakingPoint;
+}
+export function useAboveBreakingPoint(breakingPoint: number) {
+  const { width } = useWindowDimensions();
+  return width > breakingPoint;
 }

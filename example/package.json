@@ -1,78 +1,22 @@
 {
   "name": "example",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "start": "react-native start",
-    "test": "jest",
-    "lint": "eslint .",
-    "web:build": "react-app-rewired build",
-    "web:test": "react-app-rewired test",
-    "web:eject": "react-app-rewired eject",
-    "web": "react-app-rewired start"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.15.5",
-    "history": "^5.0.0",
-    "react": "^18.0.0-alpha-ed6c091fe-20210701",
-    "react-dom": "^18.0.0-alpha-ed6c091fe-20210701",
-    "react-native": "0.64.2",
-    "react-native-navigation": "^7.25.4",
-    "react-native-navigation-hooks": "^6.3.0",
-    "react-native-paper": "https://github.com/web-ridge/react-native-paper",
-    "react-native-ridge-list": "^0.3.0",
-    "react-native-safe-area-context": "^3.2.0",
-    "react-native-use-form": "^0.2.6",
-    "react-native-vector-icons": "https://github.com/RichardLindhout/react-native-vector-icons",
-    "react-native-web": "^0.17.1",
-    "react-native-web-image-loader": "^0.1.1",
-    "react-query": "^3.18.1",
-    "react-ridge-state": "^4.2.8",
-    "react-scripts": "4.0.3"
+    "expo": "~47.0.6",
+    "expo-status-bar": "~1.4.2",
+    "react": "18.1.0",
+    "react-native": "0.70.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
-    "@babel/runtime": "^7.12.5",
-    "@react-native-community/eslint-config": "^2.0.0",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/qs": "^6.9.7",
-    "@types/react": "^17.0.13",
-    "@types/react-native": "^0.64.10",
-    "babel-jest": "^26.6.3",
-    "babel-plugin-import": "^1.13.3",
-    "customize-cra": "^1.0.0",
-    "eslint": "7.14.0",
-    "jest": "^26.6.3",
-    "metro-config": "^0.64.0",
-    "metro-react-native-babel-preset": "^0.64.0",
-    "qs": "^6.10.1",
-    "react-app-rewired": "^2.1.8",
-    "react-test-renderer": "17.0.1",
-    "typescript": "^4.3.5"
+    "babel-plugin-module-resolver": "^4.1.0"
   },
-  "jest": {
-    "preset": "react-native"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "private": true
 }

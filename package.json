@@ -1,7 +1,7 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "0.7.26",
-  "description": "Simple and performant cross platform navigation with simple api",
+  "version": "0.1.0",
+  "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -13,13 +13,18 @@
     "android",
     "ios",
     "cpp",
-    "react-native-ridge-navigation.podspec",
+    "*.podspec",
     "!lib/typescript/example",
-    "!android/build",
     "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
     "!**/__tests__",
     "!**/__fixtures__",
-    "!**/__mocks__"
+    "!**/__mocks__",
+    "!**/.*"
   ],
   "scripts": {
     "test": "jest",
@@ -28,8 +33,7 @@
     "prepare": "bob build",
     "release": "release-it",
     "example": "yarn --cwd example",
-    "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods"
+    "bootstrap": "yarn example && yarn install"
   },
   "keywords": [
     "react-native",
@@ -37,7 +41,7 @@
     "android"
   ],
   "repository": "https://github.com/web-ridge/react-native-ridge-navigation",
-  "author": "Richard Lindhout <info@webridge.nl> (https://github.com/web-ridge)",
+  "author": "Richard Lindhout <richard.lindhout@webridge.nl> (https://www.webridge.nl)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/web-ridge/react-native-ridge-navigation/issues"
@@ -47,41 +51,41 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^11.0.0",
-    "@react-native-community/eslint-config": "^2.0.0",
-    "@release-it/conventional-changelog": "^2.0.0",
-    "@types/jest": "^26.0.0",
-    "@types/react": "^17.0.13",
-    "@types/react-native": "^0.65.5",
-    "commitlint": "^11.0.0",
-    "escape-string-regexp": "^5.0.0",
-    "eslint": "^7.2.0",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "history": "^5.0.0",
-    "husky": "^4.2.5",
-    "jest": "^26.0.1",
-    "metro-config": "^0.66.1",
-    "path": "^0.12.7",
+    "@arkweid/lefthook": "^0.7.7",
+    "@commitlint/config-conventional": "^17.0.2",
+    "@react-native-community/eslint-config": "^3.0.2",
+    "@release-it/conventional-changelog": "^5.0.0",
+    "@types/jest": "^28.1.2",
+    "@types/react": "~17.0.21",
+    "@types/react-native": "0.70.0",
+    "commitlint": "^17.0.2",
+    "del-cli": "^5.0.0",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^28.1.1",
+    "navigation": "^6.1.0",
+    "navigation-react": "^4.5.1",
+    "navigation-react-mobile": "^3.9.0",
+    "navigation-react-native": "^8.13.1",
     "pod-install": "^0.1.0",
-    "prettier": "^2.3.2",
-    "react": "^18.0.0-alpha-ed6c091fe-20210701",
-    "react-dom": "^18.0.0-alpha-ed6c091fe-20210701",
-    "react-native": "^0.66.4",
-    "react-native-builder-bob": "latest",
-    "react-native-navigation": "^7.25.4",
-    "react-native-navigation-hooks": "^6.3.0",
-    "react-native-paper": "^4.11.2",
-    "react-ridge-state": "^4.2.2",
-    "release-it": "^14.2.2",
-    "typescript": "^4.3.5"
+    "prettier": "^2.0.5",
+    "react": "18.1.0",
+    "react-native": "0.70.5",
+    "react-native-builder-bob": "^0.20.0",
+    "release-it": "^15.0.0",
+    "typescript": "^4.5.2"
+  },
+  "resolutions": {
+    "@types/react": "17.0.21"
   },
   "peerDependencies": {
+    "navigation": "*",
+    "navigation-react": "*",
+    "navigation-react-mobile": "*",
+    "navigation-react-native": "*",
     "react": "*",
-    "react-native": "*",
-    "react-native-navigation": "*",
-    "react-native-navigation-hooks": "*",
-    "react-ridge-state": "*"
+    "react-native": "*"
   },
   "jest": {
     "preset": "react-native",
@@ -89,12 +93,6 @@
       "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
-    }
   },
   "commitlint": {
     "extends": [
@@ -161,11 +159,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {
-    "@types/react-dom": "^17.0.9",
-    "navigation": "^6.1.0",
-    "react-native-ridge-navigation": "^0.7.15",
-    "react-native-vector-icons": "https://github.com/RichardLindhout/react-native-vector-icons"
   }
 }
