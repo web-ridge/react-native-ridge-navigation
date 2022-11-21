@@ -1,19 +1,23 @@
 import * as React from 'react';
 import type { BaseScreen, ExtractRouteParams } from './navigationUtils';
-import { useNavigation } from './Navigation';
+import useNavigation from './useNavigation';
 
 export default function Redirect<T extends BaseScreen>({
   to,
   params,
+  addToHistory,
 }: {
   to: T;
   params: ExtractRouteParams<T['path']>;
+  addToHistory: boolean;
 }) {
-  const navigation = useNavigation();
-
+  const { push, replace } = useNavigation();
   React.useEffect(() => {
-    navigation.replace(to, params, true);
-  }, [navigation, to, params]);
-
+    if (addToHistory) {
+      push(to, params, true);
+    } else {
+      replace(to, params, true);
+    }
+  }, [push, replace, to, params, addToHistory]);
   return null;
 }

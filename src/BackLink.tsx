@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useNavigation } from './Navigation';
 import type { GestureResponderEvent } from 'react-native';
+import useNavigation from './useNavigation';
 
 interface RenderProps {
   onPress: (e: GestureResponderEvent) => any;

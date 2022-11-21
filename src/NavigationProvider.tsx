@@ -1,0 +1,218 @@
+import * as React from 'react';
+import { StateNavigator } from 'navigation';
+import {
+  BaseScreen,
+  getFirstPartAndOthers,
+  getParams,
+  getPathFromUrl,
+  makeVariablesNavigationFriendly,
+  partMatches,
+  Root,
+  rootKeyAndPath,
+  splitPath,
+} from './navigationUtils';
+import { defaultTheme, ThemeSettings } from './theme';
+import { Linking, Platform, useColorScheme } from 'react-native';
+import { NavigationHandler } from 'navigation-react';
+import NavigationStack from './navigation/NavigationStack';
+import StatusBar from './navigation/StatusBar';
+import NavigationBar from './navigation/NavigationBar';
+import BottomTabsStack from './BottomTabsStack';
+import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import NavigationStackWrapper from './NavigationStackWrapper';
+import type { PreloadableComponent } from './LazyWithPreload.web';
+import { OptimizedContextProvider } from './contexts/OptimizedContext';
+import getHistoryManager from './navigation/historyManager';
+
+export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
+  screens,
+  navigationRoot,
+  SuspenseContainer,
+  themeSettings,
+}: {
+  screens: ScreenItems;
+  navigationRoot: Root;
+  SuspenseContainer: any;
+  themeSettings?: ThemeSettings;
+}) {
+  // dark/light mode
+  const colorScheme = useColorScheme();
+  const theme = React.useMemo(
+    () => (themeSettings || defaultTheme)[colorScheme || 'light'],
+    [colorScheme, themeSettings]
+  );
+
+  const preloadedCache = React.useRef<Record<string, any>>({});
+
+  const preloadScreen = React.useCallback((k: string, result: any) => {
+    preloadedCache.current[k] = result;
+  }, []);
+
+  const preloadElement = React.useCallback(
+    async <T extends BaseScreen>(screen: T) => {
+      (screen.element as PreloadableComponent<any>)?.preload?.();
+    },
+    []
+  );
+
+  const preloadRoot = React.useCallback(
+    (rootKey: string) => {
+      const root = navigationRoot[rootKey]!;
+      switch (root.type) {
+        case 'bottomTabs':
+          root.children.forEach((tab) => {
+            const path = rootKeyAndPath(rootKey, tab.path);
+            preloadElement(tab.child);
+            preloadScreen(path, tab.child.preload({}));
+          });
+          break;
+        case 'normal':
+          const path = rootKeyAndPath(rootKey, root.child.path);
+
+          if (root.child) {
+            preloadElement(root.child);
+            preloadScreen(path, root.child.preload({}));
+          }
+      }
+    },
+    [navigationRoot, preloadElement, preloadScreen]
+  );
+
+  const { rootNavigator, openLink } = React.useMemo(() => {
+    const navigators = Object.entries(navigationRoot)
+      .map(([rootKey, root]) => {
+        const defaultScreens = screens.map((screen) => ({
+          key: rootKeyAndPath(rootKey, screen.path),
+          trackCrumbTrail: true,
+          route: makeVariablesNavigationFriendly(
+            rootKeyAndPath(rootKey, screen.path)
+          ),
+          renderScene: () => <screen.element />,
+        }));
+
+        switch (root.type) {
+          case 'bottomTabs':
+            return [
+              {
+                key: rootKey,
+                route: rootKey,
+                defaults: {},
+                renderScene: () => (
+                  <BottomTabsStack rootKey={rootKey} root={root} />
+                ),
+                // trackCrumbTrail: false,
+              },
+              ...defaultScreens,
+            ];
+
+          case 'normal':
+            return [
+              {
+                key: rootKey,
+                route: rootKey,
+                // trackCrumbTrail: false,
+                renderScene: () => <root.child.element />,
+              },
+              ...defaultScreens,
+            ];
+        }
+      })
+      .flat();
+    const stateNavigator = new StateNavigator(navigators, getHistoryManager());
+    const openLinkInner = (url: string | null) => {
+      const defaultKey = navigators?.[0]!.key;
+      if (url) {
+        const path = getPathFromUrl(url);
+        const { firstPart, pathSplit } = getFirstPartAndOthers(splitPath(path));
+
+        const initialRootKey = firstPart || defaultKey;
+
+        preloadRoot(initialRootKey);
+        stateNavigator.start(initialRootKey);
+
+        if (pathSplit.length > 0) {
+          const matchedRoute = screens.find((matchRoute) => {
+            const matchPathSplit = splitPath(matchRoute.path);
+            return (
+              pathSplit.every((u, i) => partMatches(u, matchPathSplit[i])) &&
+              matchPathSplit.every((m, i) => partMatches(pathSplit[i], m))
+            );
+          });
+          if (!matchedRoute) {
+            console.log('no matched route found for url: ', path);
+            return;
+          }
+          const params = getParams(pathSplit, splitPath(matchedRoute.path));
+          stateNavigator.navigate(
+            rootKeyAndPath(initialRootKey, matchedRoute.path),
+            params
+          );
+        }
+      } else {
+        console.log('no url found');
+        preloadRoot(defaultKey);
+        stateNavigator.start(defaultKey);
+      }
+    };
+    if (Platform.OS === 'web') {
+      openLink(location.pathname);
+    } else {
+      Linking.getInitialURL().then(openLink);
+    }
+    return { rootNavigator: stateNavigator, openLink: openLinkInner };
+  }, [navigationRoot, screens, preloadRoot]);
+
+  React.useEffect(() => {
+    if (Platform.OS !== 'web') {
+      const handler = Linking.addEventListener('url', ({ url }) =>
+        openLink(url)
+      );
+      return () => {
+        return handler.remove();
+      };
+    }
+    return undefined;
+  }, [openLink]);
+
+  return (
+    <RidgeNavigationContext.Provider
+      value={{
+        rootNavigator,
+        navigationRoot,
+        preloadedCache: preloadedCache.current,
+        preloadRoot,
+        preloadScreen,
+        theme,
+        preloadElement,
+        SuspenseContainer,
+      }}
+    >
+      <StatusBar
+        tintStyle={theme.statusBar.style}
+        barTintColor={theme.statusBar.backgroundColor}
+      />
+      <NavigationHandler stateNavigator={rootNavigator}>
+        <NavigationStackWrapper>
+          <NavigationStack
+            underlayColor={theme.layout.backgroundColor}
+            backgroundColor={() => theme.layout.backgroundColor}
+            // crumbStyle={(from, state, data, crumbs, nextState, nextData) => {
+            //   const is
+            // }}
+            unmountStyle={() => ''}
+            renderScene={(state, data) => {
+              return (
+                <>
+                  <NavigationBar hidden={true} />
+                  <OptimizedContextProvider screenKey={state.key} data={data}>
+                    {state.renderScene()}
+                  </OptimizedContextProvider>
+                </>
+              );
+            }}
+          />
+        </NavigationStackWrapper>
+      </NavigationHandler>
+    </RidgeNavigationContext.Provider>
+  );
+}

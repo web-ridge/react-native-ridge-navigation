@@ -1,19 +1,11 @@
 import * as React from 'react';
-import { useNavigation } from './Navigation';
+import useNavigation from './useNavigation';
 
-export default function SwitchRoot({
-  rootKey,
-  params,
-}: {
-  rootKey: string;
-  params: any;
-}) {
+export default function SwitchRoot({ rootKey }: { rootKey: string }) {
   const { switchRoot } = useNavigation();
 
   React.useEffect(() => {
-    switchRoot(rootKey, params, true);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    switchRoot(rootKey, true);
   }, [switchRoot, rootKey]);
 
   return null;
