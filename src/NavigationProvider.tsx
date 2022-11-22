@@ -155,9 +155,9 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       }
     };
     if (Platform.OS === 'web') {
-      openLink(location.pathname);
+      openLinkInner(location.pathname);
     } else {
-      Linking.getInitialURL().then(openLink);
+      Linking.getInitialURL().then(openLinkInner);
     }
     return { rootNavigator: stateNavigator, openLink: openLinkInner };
   }, [navigationRoot, screens, preloadRoot]);
