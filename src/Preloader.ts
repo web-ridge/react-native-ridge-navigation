@@ -6,5 +6,5 @@ export function usePreloadResult<T extends BaseScreen>(): ReturnType<
   T['preload']
 > {
   const preloadResult = useContext(OptimizedContext);
-  return preloadResult as any;
+  return preloadResult.preloaded as any;
 }
