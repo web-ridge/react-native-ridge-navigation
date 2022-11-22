@@ -71,6 +71,8 @@ export interface SimpleTheme {
   text: ColorValue;
   primary: ColorValue;
   accent: ColorValue;
+  backgroundColor?: ColorValue;
+  backgroundColorBottomTabs?: ColorValue;
 }
 
 export interface ThemeSettings {
@@ -95,10 +97,10 @@ export function createSimpleTheme(
         backgroundColor: 'transparent',
       },
       layout: {
-        backgroundColor: '#fff',
+        backgroundColor: simpleTheme.light.backgroundColor || '#fff',
       },
       bottomBar: {
-        backgroundColor: '#fff',
+        backgroundColor: simpleTheme.light.backgroundColorBottomTabs || '#fff',
         textColor: simpleTheme.light.text,
         iconColor: simpleTheme.light.text,
         selectedIconColor: simpleTheme.light.accent,
@@ -119,10 +121,11 @@ export function createSimpleTheme(
         backgroundColor: 'transparent',
       },
       layout: {
-        backgroundColor: '#000',
+        backgroundColor: simpleTheme.dark.backgroundColor || '#000',
       },
       bottomBar: {
-        backgroundColor: '#121212',
+        backgroundColor:
+          simpleTheme.dark.backgroundColorBottomTabs || '#121212',
         textColor: simpleTheme.dark.text,
         iconColor: simpleTheme.dark.text,
         selectedIconColor: simpleTheme.dark.accent,
