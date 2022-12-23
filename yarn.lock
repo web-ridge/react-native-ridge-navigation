@@ -2190,10 +2190,10 @@
   resolved "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.5.tgz#5f19d2b85a98e9558036f6a3cacc8819420f05cf"
   integrity sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==
 
-"@types/react-native@0.70.0":
-  version "0.70.0"
-  resolved "https://registry.npmjs.org/@types/react-native/-/react-native-0.70.0.tgz#f8cdcdd542d36467d7591585b93d27e0563676e0"
-  integrity sha512-yBN7qJDfs0Vwr34NyfW1SWzalHQoYtpUWf0t4UJY9C5ft58BRr46+r92I0v+l3QX4VNsSRMHVAAWqLLCbIkM+g==
+"@types/react-native@^0.70.8":
+  version "0.70.8"
+  resolved "https://registry.npmjs.org/@types/react-native/-/react-native-0.70.8.tgz#3302a0f7eddcd3350448ca17a9e415d02b1efde6"
+  integrity sha512-jvs5QMOrlyi0ScfT5Brha2roDoOWtbIOadNkp0jsueVen5+pH4SQAYtzL6xu0+dIcx3J/5LtZ/JYby2C1/zUug==
   dependencies:
     "@types/react" "*"
 
@@ -2206,10 +2206,10 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
-"@types/react@~17.0.21":
-  version "17.0.52"
-  resolved "https://registry.npmjs.org/@types/react/-/react-17.0.52.tgz#10d8b907b5c563ac014a541f289ae8eaa9bf2e9b"
-  integrity sha512-vwk8QqVODi0VaZZpDXQCmEmiOuyjEFPY7Ttaw5vjM112LOq37yz1CDJGrRJwA1fYEq4Iitd5rnjd1yWAc/bT+A==
+"@types/react@^18.0.26":
+  version "18.0.26"
+  resolved "https://registry.npmjs.org/@types/react/-/react-18.0.26.tgz#8ad59fc01fef8eaf5c74f4ea392621749f0b7917"
+  integrity sha512-hCR3PJQsAIXyxhTNSiDFY//LhnMZWpNNr5etoCqx/iUfGc5gXWtQR2Phl908jVR6uPXacojQWTg4qRpkxTuGug==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -7067,10 +7067,17 @@ natural-compare@^1.4.0:
   resolved "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-navigation-react-mobile@^3.9.0:
+navigation-react-mobile@*, navigation-react-mobile@^3.9.0:
   version "3.9.0"
   resolved "https://registry.npmjs.org/navigation-react-mobile/-/navigation-react-mobile-3.9.0.tgz#4b38bd2412f3a503346c1912c48b24639a3ba5fd"
   integrity sha512-ZWwRs3TAByIXgne2ZNvTLSgXa0tKK4puorEC05SUnmeJobXOMFPJpJiYDQrb/pZg0GBr69waFAqPiveGyr0CGw==
+
+navigation-react-native-web@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/navigation-react-native-web/-/navigation-react-native-web-1.3.0.tgz#dc192205d3d9fc117adac51d7b86c83748ac92b8"
+  integrity sha512-FULKMnqpc7EZ3uI6UVVpg1cxUyR/19pyfZahP4Fh4q5kitwrAzwqkTxT9fB7rspnhX1sDFq2E7UL46GFdx6uNQ==
+  dependencies:
+    navigation-react-mobile "*"
 
 navigation-react-native@^8.13.1:
   version "8.13.1"

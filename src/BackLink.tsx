@@ -3,7 +3,7 @@ import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
 
 interface RenderProps {
-  onPress: (e: GestureResponderEvent) => any;
+  onPress: (e: GestureResponderEvent) => void;
 }
 
 function BackLink({ children }: { children: (p: RenderProps) => any }) {

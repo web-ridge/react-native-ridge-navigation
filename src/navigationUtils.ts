@@ -127,14 +127,9 @@ export function makeVariablesNavigationFriendly(s: string) {
 }
 
 export function generatePath(path: string, params: any): string {
-  return path
-    .replace(/:(\w+)/g, (_, key) => {
-      console.error(params[key] != null, `Missing ":${key}" param`);
-      return params[key];
-    })
-    .replace(/\/*\*$/, (_) =>
-      params['*'] == null ? '' : params['*'].replace(/^\/*/, '/')
-    );
+  return path.replace(/\/*\*$/, (_) =>
+    params['*'] == null ? '' : params['*'].replace(/^\/*/, '/')
+  );
 }
 
 export function getFirstPartAndOthers(pathSplit: string[]) {

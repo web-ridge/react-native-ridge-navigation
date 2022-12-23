@@ -1,5 +1,5 @@
-import { HTML5HistoryManager } from 'navigation';
+import { MobileHistoryManager } from 'navigation-react-mobile';
 
 export default function getHistoryManager() {
-  return new HTML5HistoryManager();
+  return new MobileHistoryManager(null, '');
 }

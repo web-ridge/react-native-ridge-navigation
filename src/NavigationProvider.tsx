@@ -83,11 +83,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       .map(([rootKey, root]) => {
         const defaultScreens = screens.map((screen) => ({
           key: rootKeyAndPath(rootKey, screen.path),
-          trackCrumbTrail: true,
           route: makeVariablesNavigationFriendly(
             rootKeyAndPath(rootKey, screen.path)
           ),
           renderScene: () => <screen.element />,
+          trackCrumbTrail: !(
+            root.type === 'bottomTabs' &&
+            root.children.some((c) => c.path === screen.path)
+          ),
         }));
 
         switch (root.type) {
@@ -96,11 +99,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               {
                 key: rootKey,
                 route: rootKey,
-                defaults: {},
+                trackCrumbTrail: false,
                 renderScene: () => (
                   <BottomTabsStack rootKey={rootKey} root={root} />
                 ),
-                // trackCrumbTrail: false,
               },
               ...defaultScreens,
             ];
@@ -110,7 +112,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               {
                 key: rootKey,
                 route: rootKey,
-                // trackCrumbTrail: false,
+                trackCrumbTrail: false,
                 renderScene: () => <root.child.element />,
               },
               ...defaultScreens,
@@ -205,7 +207,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 <>
                   <NavigationBar hidden={true} />
                   <OptimizedContextProvider screenKey={state.key} data={data}>
-                    {state.renderScene()}
+                    <OptimizedRenderScene renderScene={state.renderScene} />
                   </OptimizedContextProvider>
                 </>
               );
@@ -216,3 +218,9 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     </RidgeNavigationContext.Provider>
   );
 }
+
+const OptimizedRenderScene = React.memo(
+  ({ renderScene }: { renderScene: () => any }) => {
+    return renderScene();
+  }
+);

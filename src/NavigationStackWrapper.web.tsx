@@ -8,9 +8,7 @@ export default function NavigationStackWrapper({
 }: {
   children: any;
 }) {
-  console.log('NavigationStackWrapper');
   const { currentRootKey, currentRoot } = useCurrentRoot();
-  console.log('NavigationStackWrapper', currentRootKey, { currentRoot });
   let inner = children;
 
   if (currentRoot?.type === 'bottomTabs') {

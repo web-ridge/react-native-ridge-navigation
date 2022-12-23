@@ -36,12 +36,15 @@ function BottomTabsWrapperWeb({
       (stateNavigator.stateContext.state.key === currentRootKey && index === 0)
   );
 
-  const setBottomTabIndex = (index: number) => {
-    const screen = currentRoot.children?.[index]?.child;
-    if (screen) {
-      push(screen, {}, true);
-    }
-  };
+  const setBottomTabIndex = React.useCallback(
+    (index: number) => {
+      const screen = currentRoot.children?.[index]?.child;
+      if (screen) {
+        push(screen, {}, true);
+      }
+    },
+    [currentRoot.children, push]
+  );
   const [badges, setBadges] = React.useState<Record<string, string | number>>(
     {}
   );
@@ -53,16 +56,15 @@ function BottomTabsWrapperWeb({
     getBreakingPointFromRoot(currentRoot)
   );
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
-
+  const value = React.useMemo(
+    () => ({
+      setBottomTabIndex,
+      setBadge,
+    }),
+    [setBottomTabIndex, setBadge]
+  );
   return (
-    <BottomTabContext.Provider
-      value={{
-        bottomTabIndex,
-        setBottomTabIndex,
-        badges,
-        setBadge,
-      }}
-    >
+    <BottomTabContext.Provider value={value}>
       <View style={[styles.root, styles[orientation]]}>
         <View style={styles.screens}>{children}</View>
         <View
@@ -70,15 +72,6 @@ function BottomTabsWrapperWeb({
             bottomStyles.root,
             {
               backgroundColor: theme.bottomBar.backgroundColor,
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 5,
-              },
-              shadowOpacity: 0.34,
-              shadowRadius: 6.27,
-              elevation: 10,
-              paddingBottom: 'env(safe-area-inset-bottom)',
             },
             bottomStyles[orientation],
           ]}
@@ -124,6 +117,15 @@ const bottomStyles = StyleSheet.create({
   root: {
     position: 'relative',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 10,
+    paddingBottom: 'env(safe-area-inset-bottom)',
   },
   horizontal: {
     flexDirection: 'column',

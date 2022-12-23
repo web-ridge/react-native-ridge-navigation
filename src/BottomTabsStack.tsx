@@ -40,17 +40,19 @@ export default function BottomTabsStack({
   const setBadge = React.useCallback((key: string, badge: string | number) => {
     setBadges((prev) => ({ ...prev, [key]: badge }));
   }, []);
+
+  const value = React.useMemo(
+    () => ({
+      setBottomTabIndex,
+      setBadge,
+    }),
+    [setBottomTabIndex, setBadge]
+  );
+
   return (
     <>
       <NavigationBar hidden />
-      <BottomTabContext.Provider
-        value={{
-          bottomTabIndex,
-          setBottomTabIndex,
-          badges,
-          setBadge,
-        }}
-      >
+      <BottomTabContext.Provider value={value}>
         <TabBar
           primary={true}
           bottomTabs={true}
