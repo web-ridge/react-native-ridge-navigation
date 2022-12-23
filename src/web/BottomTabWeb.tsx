@@ -28,7 +28,7 @@ function BottomTabWeb({
   const { theme } = React.useContext(RidgeNavigationContext);
 
   return (
-    <Link key={path} to={child} params={{}}>
+    <Link key={path} to={child} params={{}} mode="sensitive">
       {(linkProps) => (
         <Pressable
           {...linkProps}

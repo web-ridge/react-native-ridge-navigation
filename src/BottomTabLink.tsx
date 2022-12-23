@@ -13,7 +13,7 @@ export default function BottomTabLink<T extends BottomTabType>({
   const isSelected = currentTab === to;
 
   return (
-    <Link to={to.child} params={params} onPress={onPress}>
+    <Link to={to.child} params={params} onPress={onPress} mode="sensitive">
       {(linkProps) =>
         children({
           ...linkProps,
