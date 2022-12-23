@@ -23,10 +23,12 @@ export function OptimizedContextProvider({
   data,
   screenKey,
   children,
+  withSuspenseContainer = true,
 }: {
   data: any;
   screenKey: string;
   children: any;
+  withSuspenseContainer?: boolean;
 }) {
   const {
     preloadedCache,
@@ -63,7 +65,11 @@ export function OptimizedContextProvider({
   );
   return (
     <OptimizedContext.Provider value={value}>
-      <SuspenseContainer>{children}</SuspenseContainer>
+      {withSuspenseContainer ? (
+        <SuspenseContainer>{children}</SuspenseContainer>
+      ) : (
+        <React.Suspense fallback={null}>{children}</React.Suspense>
+      )}
     </OptimizedContext.Provider>
   );
 }

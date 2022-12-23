@@ -37,7 +37,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   navigationRoot: Root;
   SuspenseContainer: any;
   themeSettings?: ThemeSettings;
-  children: any;
+  children?: any;
 }) {
   // dark/light mode
   const colorScheme = useColorScheme();
@@ -206,9 +206,15 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       <BottomTabBadgeProvider>
         <NavigationHandler stateNavigator={rootNavigator}>
           <NavigationStackWrapper>
-            <OptimizedContextProvider screenKey="" data={undefined}>
-              {children}
-            </OptimizedContextProvider>
+            {children && (
+              <OptimizedContextProvider
+                screenKey=""
+                data={undefined}
+                withSuspenseContainer={false}
+              >
+                {children}
+              </OptimizedContextProvider>
+            )}
             <NavigationStack
               underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}
