@@ -276,15 +276,20 @@ Switch root can be used to switch from e.g. the auth screen to a different entry
 All available properties
 ```tsx
 const {
-  refreshBottomTabs, // e.g. after language change and you want to update labels
-  updateBadge, // updateBadge(BottomRoots.Projects, '10');
   pop, // go back
-  switchBottomTabIndex, // switch bottom tab
   switchRoot,
   preload, // call preload (done automatic on link mouseDown
   push, // calls preload + pushes screen
   replace, // calls preload + pushes screen
 } = useNavigation()
+```
+
+## Control bottom tabs
+```tsx
+  const { switchToTab, currentTab } = useBottomTabIndex();
+  const { updateBadge, badges } = useBottomTabBadges();
+  // updateBadge(BottomRoots.Projects, '10');
+  // switchToTab(BottomRoot.Posts);
 ```
 
 ## Deep linking
@@ -295,8 +300,6 @@ You have to enable url schemes etc in your app and it'll work!
 
 ```ts
 // global
-  DeepLinking // see deep linking documentation
-  OnlyRenderOnce // see deep linking documentation
   SwitchRoot
   Link
   BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
@@ -321,10 +324,20 @@ You have to enable url schemes etc in your app and it'll work!
   useTheme,
   useParams,
   useNavigation,
-  useFocus
+  useFocus,// same as useNavigating
+  useNavigating,
+  useNavigated,
+  useUnloaded,
   usePreloadResult // e.g. usePreloadResult(routes.PostScreen)
 ```
 
+## Do global stuff like updating badge
+If you want to use a component globally with the navigation context pass them as children of the NavigationProvider
+```tsx
+<NavigationProvider {...}>
+ <UpdateBottomTabBadgeSubscriber />
+</NavigationProvider>
+```
 
 ## Contributing
 
