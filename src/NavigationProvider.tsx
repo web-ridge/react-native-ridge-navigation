@@ -154,10 +154,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
             return;
           }
           const params = getParams(pathSplit, splitPath(matchedRoute.path));
-          stateNavigator.navigate(
-            rootKeyAndPath(initialRootKey, matchedRoute.path),
-            params
-          );
+          const navigateKey = rootKeyAndPath(initialRootKey, matchedRoute.path);
+          preloadElement(matchedRoute);
+          preloadScreen(navigateKey, params);
+          stateNavigator.navigate(navigateKey, params);
         }
       } else {
         console.log('no url found');
@@ -171,7 +171,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       Linking.getInitialURL().then(openLinkInner);
     }
     return { rootNavigator: stateNavigator, openLink: openLinkInner };
-  }, [navigationRoot, screens, preloadRoot]);
+  }, [navigationRoot, screens, preloadRoot, preloadElement, preloadScreen]);
 
   React.useEffect(() => {
     if (Platform.OS !== 'web') {
