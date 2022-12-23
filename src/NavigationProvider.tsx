@@ -204,11 +204,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       />
 
       <BottomTabBadgeProvider>
-        <OptimizedContextProvider screenKey="" data={{}}>
-          {children}
-        </OptimizedContextProvider>
         <NavigationHandler stateNavigator={rootNavigator}>
           <NavigationStackWrapper>
+            <OptimizedContextProvider screenKey="" data={undefined}>
+              {children}
+            </OptimizedContextProvider>
             <NavigationStack
               underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}

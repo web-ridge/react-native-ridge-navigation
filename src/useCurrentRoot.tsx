@@ -5,7 +5,7 @@ import type { Root } from './navigationUtils';
 import type { StateNavigator } from 'navigation';
 
 function getRootKey(rootNavigator: StateNavigator, navigationRoot: Root) {
-  const stateKey = rootNavigator.stateContext.state.key;
+  const stateKey = rootNavigator?.stateContext?.state?.key;
   if (stateKey) {
     const splitUrl = stateKey.split('/');
     return splitUrl.filter(Boolean)?.[0];
