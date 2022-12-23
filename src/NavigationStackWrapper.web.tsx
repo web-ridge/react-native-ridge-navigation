@@ -2,6 +2,7 @@ import * as React from 'react';
 import BottomTabsWrapperWeb from './web/BottomTabsWrapperWeb';
 import useCurrentRoot from './useCurrentRoot';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';
+import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 
 export default function NavigationStackWrapper({
   children,
@@ -13,12 +14,9 @@ export default function NavigationStackWrapper({
 
   if (currentRoot?.type === 'bottomTabs') {
     inner = (
-      <BottomTabsWrapperWeb
-        currentRoot={currentRoot}
-        currentRootKey={currentRootKey}
-      >
-        {children}
-      </BottomTabsWrapperWeb>
+      <BottomTabIndexProvider>
+        <BottomTabsWrapperWeb>{children}</BottomTabsWrapperWeb>
+      </BottomTabIndexProvider>
     );
   }
   return (

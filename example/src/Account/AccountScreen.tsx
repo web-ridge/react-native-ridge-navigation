@@ -2,7 +2,10 @@ import * as React from 'react';
 import { Button, Paragraph, Text } from 'react-native-paper';
 import authState, { reset } from '../Auth/AuthState';
 
-import { useNavigation } from 'react-native-ridge-navigation';
+import {
+  useBottomTabIndex,
+  useBottomTabBadges,
+} from 'react-native-ridge-navigation';
 import { View, ScrollView } from 'react-native';
 import { BottomRoot } from '../Navigator';
 import Header from '../Header';
@@ -10,7 +13,8 @@ import { useRenderLog } from '../helpers/utils';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');
-  const { switchToTab, updateBadge } = useNavigation();
+  const { switchToTab } = useBottomTabIndex();
+  const { updateBadge } = useBottomTabBadges();
   const [{ user }] = authState.use();
 
   if (!user) {

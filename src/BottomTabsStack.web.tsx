@@ -1,13 +1,11 @@
-import type { RootChildBottomTabs } from './navigationUtils';
 import * as React from 'react';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import useCurrentRoot from './useCurrentRoot';
+import type { RootChildBottomTabs } from './navigationUtils';
 
-export default function BottomTabs({
-  root,
-}: {
-  root: RootChildBottomTabs;
-  rootKey: string;
-}) {
+export default function BottomTabsStack() {
+  const { currentRoot } = useCurrentRoot();
+  const root = currentRoot as RootChildBottomTabs;
   const { SuspenseContainer } = React.useContext(RidgeNavigationContext);
   const first = root.children[0];
 

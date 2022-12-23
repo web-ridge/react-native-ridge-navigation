@@ -17,11 +17,10 @@ function BottomTabBadgeWeb({
   ...rest
 }: Props) {
   const { theme } = React.useContext(RidgeNavigationContext);
-  const backgroundColor = theme.bottomBar.badgeColor;
+  const backgroundColor = theme.bottomBar.badgeColor || 'red';
   const textColor = theme.bottomBar.badgeTextColor;
 
   const borderRadius = size / 2;
-
   if (!visible) {
     return null;
   }

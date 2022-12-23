@@ -1,99 +1,56 @@
 import * as React from 'react';
-import type { RootChildBottomTabs } from '../navigationUtils';
 import { StyleSheet, View } from 'react-native';
 import BottomTab from './BottomTabWeb';
 
-import BottomTabContext from '../contexts/BottomTabContext';
 import OptimizedContext from '../contexts/OptimizedContext';
-import useNavigation from '../useNavigation';
 import {
   getBreakingPointFromRoot,
+  RootChildBottomTabs,
   useAboveBreakingPoint,
 } from '../navigationUtils';
+import useCurrentRoot from '../useCurrentRoot';
+import BottomTabIndexContext from '../contexts/BottomTabIndexContext';
+import BottomTabBadgesContext from '../contexts/BottomTabBadgesContext';
 
-function BottomTabsWrapperWeb({
-  children,
-  currentRootKey,
-  currentRoot,
-}: {
-  children: any;
-  currentRootKey: string;
-  currentRoot: RootChildBottomTabs;
-}) {
-  // TODO: render app here
-  // const aboveBreakingPoint = useAboveBreakingPoint(
-  //   getBreakingPointFromRoot(currentRoot)
-  // );
-  // const orientation = aboveBreakingPoint ? "horizontal" : "vertical";
-
-  const { push } = useNavigation();
-  const { theme, stateNavigator } = React.useContext(OptimizedContext);
-  const bottomTabIndex = currentRoot.children.findIndex(
-    (child, index) =>
-      stateNavigator.stateContext.state.key.startsWith(
-        `/${currentRootKey}${child.path}`
-      ) ||
-      (stateNavigator.stateContext.state.key === currentRootKey && index === 0)
-  );
-
-  const setBottomTabIndex = React.useCallback(
-    (index: number) => {
-      const screen = currentRoot.children?.[index]?.child;
-      if (screen) {
-        push(screen, {}, true);
-      }
-    },
-    [currentRoot.children, push]
-  );
-  const [badges, setBadges] = React.useState<Record<string, string | number>>(
-    {}
-  );
-  const setBadge = React.useCallback((key: string, badge: string | number) => {
-    setBadges((prev) => ({ ...prev, [key]: badge }));
-  }, []);
-
+function BottomTabsWrapperWeb({ children }: { children: any }) {
+  const { theme } = React.useContext(OptimizedContext);
+  const { currentRoot: cr } = useCurrentRoot();
+  const currentRoot = cr as RootChildBottomTabs;
   const aboveBreakingPoint = useAboveBreakingPoint(
     getBreakingPointFromRoot(currentRoot)
   );
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
-  const value = React.useMemo(
-    () => ({
-      setBottomTabIndex,
-      setBadge,
-    }),
-    [setBottomTabIndex, setBadge]
-  );
+  const { badges } = React.useContext(BottomTabBadgesContext);
+  const { bottomTabIndex } = React.useContext(BottomTabIndexContext);
   return (
-    <BottomTabContext.Provider value={value}>
-      <View style={[styles.root, styles[orientation]]}>
-        <View style={styles.screens}>{children}</View>
-        <View
-          style={[
-            bottomStyles.root,
-            {
-              backgroundColor: theme.bottomBar.backgroundColor,
-            },
-            bottomStyles[orientation],
-          ]}
-        >
-          {currentRoot?.components?.start ? (
-            <currentRoot.components.start orientation={orientation} />
-          ) : null}
-          {currentRoot.children.map((child, index) => (
-            <BottomTab
-              orientation={orientation}
-              key={child.path}
-              bottomTab={child}
-              isSelected={bottomTabIndex === index}
-              count={badges[child.path]}
-            />
-          ))}
-          {currentRoot?.components?.end ? (
-            <currentRoot.components.end orientation={orientation} />
-          ) : null}
-        </View>
+    <View style={[styles.root, styles[orientation]]}>
+      <View style={styles.screens}>{children}</View>
+      <View
+        style={[
+          bottomStyles.root,
+          {
+            backgroundColor: theme.bottomBar.backgroundColor,
+          },
+          bottomStyles[orientation],
+        ]}
+      >
+        {currentRoot?.components?.start ? (
+          <currentRoot.components.start orientation={orientation} />
+        ) : null}
+        {currentRoot.children.map((child, index) => (
+          <BottomTab
+            orientation={orientation}
+            key={child.path}
+            bottomTab={child}
+            isSelected={bottomTabIndex === index}
+            count={badges[child.path]}
+          />
+        ))}
+        {currentRoot?.components?.end ? (
+          <currentRoot.components.end orientation={orientation} />
+        ) : null}
       </View>
-    </BottomTabContext.Provider>
+    </View>
   );
 }
 

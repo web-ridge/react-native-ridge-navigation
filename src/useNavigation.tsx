@@ -1,19 +1,15 @@
 import * as React from 'react';
 import {
   BaseScreen,
-  BottomTabType,
   ExtractRouteParams,
-  RootChildBottomTabs,
   rootKeyAndPath,
 } from './navigationUtils';
-import BottomTabContext from './contexts/BottomTabContext';
 import useCurrentRoot from './useCurrentRoot';
 import { useContext } from 'react';
 import OptimizedContext from './contexts/OptimizedContext';
 
 export default function useNavigation() {
   const {
-    // data,
     rootNavigator,
     preloadRoot,
     preloadScreen,
@@ -21,7 +17,7 @@ export default function useNavigation() {
     theme,
     stateNavigator,
   } = useContext(OptimizedContext);
-  const { setBadge, setBottomTabIndex } = React.useContext(BottomTabContext);
+
   const { currentRootKey, currentRoot } = useCurrentRoot();
 
   const preload = React.useCallback(
@@ -57,13 +53,6 @@ export default function useNavigation() {
       }
     },
     [stateNavigator]
-  );
-
-  const updateBadge = React.useCallback(
-    <T extends BottomTabType>(tab: T, badge: string | number) => {
-      setBadge(tab.path, badge);
-    },
-    [setBadge]
   );
 
   const switchRoot = React.useCallback(
@@ -114,16 +103,6 @@ export default function useNavigation() {
     [innerNavigate]
   );
 
-  const switchToTab = React.useCallback(
-    async <T extends BottomTabType>(tab: T) => {
-      setBottomTabIndex(
-        (currentRoot as RootChildBottomTabs).children.findIndex(
-          (child) => child.path === tab.path
-        )
-      );
-    },
-    [currentRoot, setBottomTabIndex]
-  );
   return {
     currentRootKey,
     currentRoot,
@@ -132,8 +111,6 @@ export default function useNavigation() {
     preload,
     pop,
     popToTop,
-    updateBadge,
-    switchToTab,
     switchRoot,
     push,
     replace,

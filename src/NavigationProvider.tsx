@@ -23,17 +23,21 @@ import NavigationStackWrapper from './NavigationStackWrapper';
 import type { PreloadableComponent } from './LazyWithPreload.web';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
+import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
+import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
   navigationRoot,
   SuspenseContainer,
   themeSettings,
+  children,
 }: {
   screens: ScreenItems;
   navigationRoot: Root;
   SuspenseContainer: any;
   themeSettings?: ThemeSettings;
+  children: any;
 }) {
   // dark/light mode
   const colorScheme = useColorScheme();
@@ -100,9 +104,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 key: rootKey,
                 route: rootKey,
                 trackCrumbTrail: false,
-                renderScene: () => (
-                  <BottomTabsStack rootKey={rootKey} root={root} />
-                ),
+                renderScene: () =>
+                  Platform.OS === 'web' ? (
+                    <BottomTabsStack />
+                  ) : (
+                    <BottomTabIndexProvider>
+                      <BottomTabsStack />
+                    </BottomTabIndexProvider>
+                  ),
               },
               ...defaultScreens,
             ];
@@ -193,28 +202,34 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         tintStyle={theme.statusBar.style}
         barTintColor={theme.statusBar.backgroundColor}
       />
-      <NavigationHandler stateNavigator={rootNavigator}>
-        <NavigationStackWrapper>
-          <NavigationStack
-            underlayColor={theme.layout.backgroundColor}
-            backgroundColor={() => theme.layout.backgroundColor}
-            // crumbStyle={(from, state, data, crumbs, nextState, nextData) => {
-            //   const is
-            // }}
-            unmountStyle={() => ''}
-            renderScene={(state, data) => {
-              return (
-                <>
-                  <NavigationBar hidden={true} />
-                  <OptimizedContextProvider screenKey={state.key} data={data}>
-                    <OptimizedRenderScene renderScene={state.renderScene} />
-                  </OptimizedContextProvider>
-                </>
-              );
-            }}
-          />
-        </NavigationStackWrapper>
-      </NavigationHandler>
+
+      <BottomTabBadgeProvider>
+        <OptimizedContextProvider screenKey="" data={{}}>
+          {children}
+        </OptimizedContextProvider>
+        <NavigationHandler stateNavigator={rootNavigator}>
+          <NavigationStackWrapper>
+            <NavigationStack
+              underlayColor={theme.layout.backgroundColor}
+              backgroundColor={() => theme.layout.backgroundColor}
+              // crumbStyle={(from, state, data, crumbs, nextState, nextData) => {
+              //   const is
+              // }}
+              unmountStyle={() => ''}
+              renderScene={(state, data) => {
+                return (
+                  <>
+                    <NavigationBar hidden={true} />
+                    <OptimizedContextProvider screenKey={state.key} data={data}>
+                      <OptimizedRenderScene renderScene={state.renderScene} />
+                    </OptimizedContextProvider>
+                  </>
+                );
+              }}
+            />
+          </NavigationStackWrapper>
+        </NavigationHandler>
+      </BottomTabBadgeProvider>
     </RidgeNavigationContext.Provider>
   );
 }

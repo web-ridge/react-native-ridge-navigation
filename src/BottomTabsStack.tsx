@@ -1,12 +1,9 @@
 import {
   BottomTabType,
-  getFirstPartAndOthers,
-  getPathFromUrl,
   RootChildBottomTabs,
   rootKeyAndPath,
-  splitPath,
 } from './navigationUtils';
-import { useContext } from 'react';
+
 import * as React from 'react';
 import NavigationBar from './navigation/NavigationBar';
 import TabBar from './navigation/TabBar';
@@ -15,70 +12,51 @@ import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
 import { useCopiedStateNavigator } from './navigation/utils';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
-import BottomTabContext from './contexts/BottomTabContext';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
-import { Linking } from 'react-native';
+import BottomTabIndexContext from './contexts/BottomTabIndexContext';
+import BottomTabBadgesContext from './contexts/BottomTabBadgesContext';
 import useCurrentRoot from './useCurrentRoot';
 
-export default function BottomTabsStack({
-  root,
-  rootKey,
-}: {
-  root: RootChildBottomTabs;
-  rootKey: string;
-}) {
+export default function BottomTabsStack() {
+  const { currentRoot, currentRootKey } = useCurrentRoot();
+  const root = currentRoot as RootChildBottomTabs;
   const {
     theme: { bottomBar: bottomTheme },
-  } = useContext(OptimizedContext);
-  const { bottomTabIndex, setBottomTabIndex } = useDeepLinkingBottomTabsIndex();
-
-  const [badges, setBadges] = React.useState<Record<string, string | number>>(
-    {}
+  } = React.useContext(OptimizedContext);
+  const { badges } = React.useContext(BottomTabBadgesContext);
+  const { setBottomTabIndex, bottomTabIndex } = React.useContext(
+    BottomTabIndexContext
   );
-  const setBadge = React.useCallback((key: string, badge: string | number) => {
-    setBadges((prev) => ({ ...prev, [key]: badge }));
-  }, []);
-
-  const value = React.useMemo(
-    () => ({
-      setBottomTabIndex,
-      setBadge,
-    }),
-    [setBottomTabIndex, setBadge]
-  );
-
   return (
     <>
       <NavigationBar hidden />
-      <BottomTabContext.Provider value={value}>
-        <TabBar
-          primary={true}
-          bottomTabs={true}
-          labelVisibilityMode="labeled"
-          tab={bottomTabIndex}
-          onChangeTab={setBottomTabIndex}
-          barTintColor={bottomTheme.backgroundColor}
-          selectedTintColor={bottomTheme.selectedTextColor}
-          activeIndicatorColor={bottomTheme.activeIndicatorColor}
-          scrollsToTop={bottomTheme.scrollsToTop}
-        >
-          {root.children.map((tab, index) => {
-            return (
-              <TabBarItem
-                key={tab.path}
-                title={tab.title()}
-                image={bottomTabIndex === index ? tab.selectedIcon : tab.icon}
-                badge={badges[tab.path]}
-                badgeColor={bottomTheme.badgeColor}
-              >
-                <TabBarItemStack tab={tab} rootKey={rootKey} />
-              </TabBarItem>
-            );
-          })}
-        </TabBar>
-      </BottomTabContext.Provider>
+      <TabBar
+        primary={true}
+        bottomTabs={true}
+        labelVisibilityMode="labeled"
+        tab={bottomTabIndex}
+        onChangeTab={setBottomTabIndex}
+        barTintColor={bottomTheme.backgroundColor}
+        selectedTintColor={bottomTheme.selectedTextColor}
+        activeIndicatorColor={bottomTheme.activeIndicatorColor}
+        scrollsToTop={bottomTheme.scrollsToTop}
+      >
+        {root.children.map((tab, index) => {
+          return (
+            <TabBarItem
+              key={tab.path}
+              title={tab.title()}
+              image={bottomTabIndex === index ? tab.selectedIcon : tab.icon}
+              badge={badges[tab.path]}
+              badgeColor={bottomTheme.badgeColor}
+            >
+              <TabBarItemStack tab={tab} rootKey={currentRootKey} />
+            </TabBarItem>
+          );
+        })}
+      </TabBar>
     </>
   );
 }
@@ -114,35 +92,4 @@ function TabBarItemStack({
       />
     </NavigationHandler>
   );
-}
-
-export function useDeepLinkingBottomTabsIndex() {
-  const [bottomTabIndex, setBottomTabIndex] = React.useState(0);
-  const { currentRoot } = useCurrentRoot();
-
-  const setIndexFromUrl = React.useCallback(
-    (url: string | null) => {
-      if (url) {
-        const path = getPathFromUrl(url);
-        const { pathSplit } = getFirstPartAndOthers(splitPath(path));
-        const newIndex = (
-          currentRoot as RootChildBottomTabs
-        ).children.findIndex((tab) => tab.path === '/' + pathSplit[0]);
-        if (newIndex >= 0) {
-          setBottomTabIndex(newIndex);
-        }
-      }
-    },
-    [currentRoot]
-  );
-  React.useEffect(() => {
-    Linking.getInitialURL().then(setIndexFromUrl);
-    const handler = Linking.addEventListener('url', ({ url }) =>
-      setIndexFromUrl(url)
-    );
-    return () => {
-      return handler.remove();
-    };
-  }, [setIndexFromUrl]);
-  return { bottomTabIndex, setBottomTabIndex };
 }
