@@ -21,6 +21,7 @@ import {
 import { BottomRoot, NavigationRoots, screens } from './Navigator';
 import routes from './Routes';
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
+import HeaderWeb from './HeaderWeb';
 
 function getTheme(colorScheme: ColorSchemeName): typeof MD3LightTheme {
   const isDark = colorScheme === 'dark';
@@ -45,7 +46,7 @@ export default function App() {
         {
           breakingPointWidth: 500,
           components: {
-            // start:
+            override: HeaderWeb,
           },
         }
       ),

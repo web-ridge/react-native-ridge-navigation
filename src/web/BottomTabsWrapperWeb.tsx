@@ -13,13 +13,41 @@ import BottomTabIndexContext from '../contexts/BottomTabIndexContext';
 import BottomTabBadgesContext from '../contexts/BottomTabBadgesContext';
 
 function BottomTabsWrapperWeb({ children }: { children: any }) {
-  const { theme } = React.useContext(OptimizedContext);
   const { currentRoot: cr } = useCurrentRoot();
   const currentRoot = cr as RootChildBottomTabs;
   const aboveBreakingPoint = useAboveBreakingPoint(
     getBreakingPointFromRoot(currentRoot)
   );
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
+
+  const inner = (
+    <OriginalBottomTabs orientation={orientation}>
+      {children}
+    </OriginalBottomTabs>
+  );
+  if (currentRoot.components?.override) {
+    return (
+      <currentRoot.components.override
+        orientation={orientation}
+        originalBottomTabs={inner}
+      >
+        {children}
+      </currentRoot.components.override>
+    );
+  }
+  return inner;
+}
+
+export function OriginalBottomTabs({
+  children,
+  orientation,
+}: {
+  children: any;
+  orientation: 'horizontal' | 'vertical';
+}) {
+  const { currentRoot: cr } = useCurrentRoot();
+  const currentRoot = cr as RootChildBottomTabs;
+  const { theme } = React.useContext(OptimizedContext);
   const { badges } = React.useContext(BottomTabBadgesContext);
   const { bottomTabIndex } = React.useContext(BottomTabIndexContext);
   return (

@@ -1,6 +1,7 @@
 export { default as BackLink } from './BackLink';
 export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
+export { default as BottomTabLink } from './BottomTabLink';
 export { usePreloadResult } from './Preloader';
 export { default as lazyWithPreload } from './LazyWithPreload.web';
 export {
@@ -27,10 +28,14 @@ export type {
   Root,
   BaseScreen,
   BottomTabType,
+  BottomTabComponent,
+  BottomTabOverrideComponent,
+  BottomTabOverrideProps,
   SideMenuItem,
   RootChildBottomTabs,
   RootChildNormal,
   ExtractRouteParams,
   LinkRenderProps,
   LinkProps,
+  Orientation,
 } from './navigationUtils';

@@ -19,9 +19,14 @@ export default function useBottomTabIndex() {
     },
     [currentRoot, setBottomTabIndex]
   );
+
+  const currentTab = (currentRoot as RootChildBottomTabs).children[
+    bottomTabIndex
+  ];
   return {
     switchToTab,
+    currentTab,
     // setBottomTabIndex,
-    bottomTabIndex,
+    // bottomTabIndex,
   };
 }

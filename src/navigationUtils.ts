@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, FC, ReactNode } from 'react';
 import type { GestureResponderEvent } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 
@@ -28,13 +28,22 @@ export interface BottomTabType {
   selectedIcon?: any;
 }
 
-export type BottomTabComponent = ComponentType<{ orientation: Orientation }>;
+export type BottomTabComponent = FC<{ orientation: Orientation }>;
+export type BottomTabOverrideComponent = FC<BottomTabOverrideProps>;
+export type BottomTabOverrideProps = {
+  originalBottomTabs: ReactNode;
+  orientation: Orientation;
+  children: any;
+};
 
 export interface BottomTabComponents {
   // you can specify a end component which will be included in the bottom tabs
   start?: BottomTabComponent;
   // you can specify a end component which will be included in the bottom tabs
   end?: BottomTabComponent;
+
+  // you can specify an override component to replace the default bottom tab (only on web)
+  override?: BottomTabOverrideComponent;
 }
 
 export interface SideMenuItem {
@@ -108,6 +117,18 @@ export type LinkProps<T extends BaseScreen> = {
   to: T;
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
+  mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
+  onPress?: (event: GestureResponderEvent) => void;
+};
+
+export type BottomTabLinkRenderProps = LinkRenderProps & {
+  isSelected: boolean;
+};
+
+export type BottomTabLinkProps<T extends BottomTabType> = {
+  to: BottomTabType;
+  params: ExtractRouteParams<T['child']['path']>;
+  children: (p: BottomTabLinkRenderProps) => any;
   mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
   onPress?: (event: GestureResponderEvent) => void;
 };

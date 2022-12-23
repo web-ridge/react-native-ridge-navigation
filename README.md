@@ -300,7 +300,8 @@ You have to enable url schemes etc in your app and it'll work!
 
 ```ts
 // global
-  SwitchRoot
+  SwitchRoot,
+  BottomTabLink,
   Link
   BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
   lazyWithPreload // only available on the web: see example app
