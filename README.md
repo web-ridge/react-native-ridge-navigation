@@ -307,11 +307,9 @@ You have to enable url schemes etc in your app and it'll work!
   Redirect
   NavigationRoot,
   createNavigation,
-  refreshBottomTabs,
-  updateBadge,
+  // refreshBottomTabs, TODO: implement this
   createBottomTabsRoot,
   createNormalRoot,
-  createSideMenuRoot,
   registerScreen,
   createScreens,
   defaultTheme,
