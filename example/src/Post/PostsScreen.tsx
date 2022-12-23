@@ -21,7 +21,8 @@ function PostsScreen() {
   const { top, left, right } = useSafeAreaInsets();
   const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);
 
-  if (!queryReference) {
+  if (queryReference !== 'testQueryReference') {
+    console.log({ queryReference });
     return (
       <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
     );

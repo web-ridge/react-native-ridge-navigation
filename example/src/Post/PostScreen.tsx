@@ -18,11 +18,13 @@ function PostScreen() {
     queryKeyPostScreen({ id }),
     queryKeyPostScreenPromise({ id })
   );
-  if (!queryReference) {
+  if (queryReference !== 'testQueryReference') {
+    console.log({ queryReference });
     return (
       <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
     );
   }
+
   return (
     <>
       <Header title={data!.title} withBack />

@@ -156,7 +156,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           const params = getParams(pathSplit, splitPath(matchedRoute.path));
           const navigateKey = rootKeyAndPath(initialRootKey, matchedRoute.path);
           preloadElement(matchedRoute);
-          preloadScreen(navigateKey, params);
+          preloadScreen(navigateKey, matchedRoute.preload(params));
           stateNavigator.navigate(navigateKey, params);
         }
       } else {
