@@ -31,9 +31,10 @@
     "typescript": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepare": "bob build",
-    "release": "release-it",
+    "release": "dotenv release-it --ci --",
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn install"
+
   },
   "keywords": [
     "react-native",
