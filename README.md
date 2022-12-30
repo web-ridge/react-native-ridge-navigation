@@ -28,6 +28,7 @@ Things which are not finished yet:
 - Preload component on hover (on web)
 - Automatic deep-linking
 - Real-time light/dark mode
+- Out of the box scroll restoration (on web), because screens in tab are pushed on top of each other!
 
 ## Example
 [![Demo of react-native-ridge-navigation](https://drive.google.com/uc?id=1nE0DzlaVza_h3K1KCkPnK5NfIXfYM5c-)](https://www.youtube.com/watch?v=EvNxrRIF7C0)
