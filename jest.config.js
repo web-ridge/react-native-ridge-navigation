@@ -1,4 +1,4 @@
-process.env.TZ = 'GMT'
+process.env.TZ = 'GMT';
 
 module.exports = {
   preset: 'react-native',
@@ -18,4 +18,4 @@ module.exports = {
     '!**/example/**',
     '!**/translations/**',
   ],
-}
+};
