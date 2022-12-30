@@ -20,14 +20,13 @@ Things which are not finished yet:
 ## Features
 - Superior performance (we use [grahammendick/navigation](https://github.com/grahammendick/navigation))
 - Simple api
-- Type safety
-- Type safe routes
-- Type safe params (based on url)
-- Android, iOS & web!
+- Type safety (routes, params, bottom tabs)
+- Bundle splitting on web
+- Render as you fetch on iOS, Android & web
+- Works on Android, iOS & web!
 - Preload data on mouseDown (or more sensitive on hover, see `<Link />` example)
 - Preload component on hover (on web)
 - Automatic deep-linking
-- Lazy load components
 - Real-time light/dark mode
 
 ## Example
