@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { BottomTabLinkProps, BottomTabType } from './navigationUtils';
-import { useBottomTabIndex } from './index';
+import useBottomTabIndex from './useBottomTabIndex';
 import Link from './Link';
 
 export default function BottomTabLink<T extends BottomTabType>({

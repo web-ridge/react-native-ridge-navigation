@@ -1,20 +1,25 @@
 import * as React from 'react';
-import { Button, Paragraph, Text } from 'react-native-paper';
+import { Button, Paragraph, Text, useTheme } from 'react-native-paper';
 import authState, { reset } from '../Auth/AuthState';
 
 import {
   useBottomTabIndex,
   useBottomTabBadges,
+  NavigationModalProvider,
+  Link,
 } from 'react-native-ridge-navigation';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Modal } from 'react-native';
 import { BottomRoot } from '../Navigator';
 import Header from '../Header';
 import { useRenderLog } from '../helpers/utils';
+import routes from '../Routes';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');
+  const theme = useTheme();
   const { switchToTab } = useBottomTabIndex();
   const { updateBadge } = useBottomTabBadges();
+  const [modalVisible, setModalVisible] = React.useState(false);
   const [{ user }] = authState.use();
 
   if (!user) {
@@ -55,8 +60,37 @@ function AccountScreen() {
           >
             Logout
           </Button>
+          <Button
+            style={{ marginTop: 12 }}
+            mode="outlined"
+            onPress={() => {
+              setModalVisible(true);
+            }}
+          >
+            Open modal stack
+          </Button>
         </View>
       </ScrollView>
+      <Modal
+        visible={modalVisible}
+        style={{ backgroundColor: theme.colors.background }}
+        statusBarTranslucent={true}
+        presentationStyle="overFullScreen"
+        animationType="slide"
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <NavigationModalProvider>
+          <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+            <Header title="Modal stack" />
+            <Button onPress={() => setModalVisible(false)}>Close modal</Button>
+            <Link to={routes.PostScreen} params={{ id: '2' }}>
+              {(linkProps) => <Button {...linkProps}>Account</Button>}
+            </Link>
+          </View>
+        </NavigationModalProvider>
+      </Modal>
     </>
   );
 }

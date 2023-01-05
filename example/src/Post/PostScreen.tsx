@@ -1,6 +1,10 @@
 import * as React from 'react';
-import { Paragraph, Text } from 'react-native-paper';
-import { useParams, usePreloadResult } from 'react-native-ridge-navigation';
+import { Button, Paragraph, Text } from 'react-native-paper';
+import {
+  Link,
+  useParams,
+  usePreloadResult,
+} from 'react-native-ridge-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ScrollView } from 'react-native';
 import Header from '../Header';
@@ -27,8 +31,11 @@ function PostScreen() {
 
   return (
     <>
-      <Header title={data!.title} withBack />
+      <Header title={data!.title} />
       <ScrollView style={{ padding: 12 }}>
+        <Link to={routes.PostScreen} params={{ id: '2' }}>
+          {(linkProps) => <Button {...linkProps}>Go further</Button>}
+        </Link>
         <Paragraph>{data!.body}</Paragraph>
       </ScrollView>
     </>

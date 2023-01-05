@@ -26,9 +26,11 @@ export default function BottomTabsStack() {
     theme: { bottomBar: bottomTheme },
   } = React.useContext(OptimizedContext);
   const { badges } = React.useContext(BottomTabBadgesContext);
+
   const { setBottomTabIndex, bottomTabIndex } = React.useContext(
     BottomTabIndexContext
   );
+
   return (
     <>
       <NavigationBar hidden />

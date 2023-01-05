@@ -10,6 +10,7 @@ export function copyStateNavigator(
   navigator.start(key);
   return navigator;
 }
+
 export function useCopiedStateNavigator(key: string) {
   const { stateNavigator } = React.useContext(NavigationContext);
   return React.useRef(copyStateNavigator(stateNavigator, key)).current;

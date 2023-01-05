@@ -39,7 +39,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   themeSettings?: ThemeSettings;
   children?: any;
 }) {
-  // dark/light mode
   const colorScheme = useColorScheme();
   const theme = React.useMemo(
     () => (themeSettings || defaultTheme)[colorScheme || 'light'],
@@ -172,7 +171,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     }
     return { rootNavigator: stateNavigator, openLink: openLinkInner };
   }, [navigationRoot, screens, preloadRoot, preloadElement, preloadScreen]);
-
   React.useEffect(() => {
     if (Platform.OS !== 'web') {
       const handler = Linking.addEventListener('url', ({ url }) =>
@@ -188,6 +186,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   return (
     <RidgeNavigationContext.Provider
       value={{
+        screens,
         rootNavigator,
         navigationRoot,
         preloadedCache: preloadedCache.current,
@@ -218,9 +217,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
             <NavigationStack
               underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}
-              // crumbStyle={(from, state, data, crumbs, nextState, nextData) => {
-              //   const is
-              // }}
               unmountStyle={() => ''}
               renderScene={(state, data) => {
                 return (

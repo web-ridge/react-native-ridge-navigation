@@ -4,6 +4,8 @@
 coverage
 # XDE
 .expo/
+example/ios
+example/android
 
 # VSCode
 .vscode/

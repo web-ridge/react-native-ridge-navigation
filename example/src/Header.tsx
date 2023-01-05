@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { Appbar } from 'react-native-paper';
-import { BackLink } from 'react-native-ridge-navigation';
+import { BackLink, useNavigation } from 'react-native-ridge-navigation';
 
-function Header({ title, withBack }: { title: string; withBack?: boolean }) {
+function Header({ title }: { title: string }) {
+  const { canNavigateBack } = useNavigation();
   return (
     <Appbar.Header mode="small" elevated>
-      {withBack ? (
+      {canNavigateBack(1) ? (
         <BackLink>
           {(linkProps) => (
             // @ts-ignore

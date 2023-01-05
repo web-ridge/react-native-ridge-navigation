@@ -4,6 +4,7 @@ import type { BaseScreen, Root } from '../navigationUtils';
 import type { Theme } from '../theme';
 
 const RidgeNavigationContext = React.createContext<{
+  screens: BaseScreen[];
   rootNavigator: StateNavigator;
   navigationRoot: Root;
   preloadedCache: Record<string, any>;

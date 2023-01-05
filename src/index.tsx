@@ -16,6 +16,7 @@ export { default as useBottomTabBadges } from './useBottomTabBadges';
 export { default as useBottomTabIndex } from './useBottomTabIndex';
 export { default as useNavigation } from './useNavigation';
 export { default as NavigationProvider } from './NavigationProvider';
+export { default as NavigationModalProvider } from './NavigationModalProvider';
 
 export {
   createBottomTabsRoot,
