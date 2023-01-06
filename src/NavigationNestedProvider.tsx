@@ -12,11 +12,11 @@ import {
   rootKeyAndPath,
 } from './navigationUtils';
 import { StateNavigator } from 'navigation';
+import { Text } from 'react-native';
 
-function NavigationModalProvider({ children }: { children: any }) {
+function NavigationNestedProvider({ children }: { children: any }) {
   const id = React.useId();
-  const rootKey = 'navigationModalProvider_' + id.replace(':', '-)');
-  console.log({ rootKey });
+  const rootKey = 'navigationModalProvider_' + id.replace(':', '--');
   const { theme } = React.useContext(OptimizedContext);
   const { screens, navigationRoot, ...rest } = React.useContext(
     RidgeNavigationContext
@@ -28,6 +28,7 @@ function NavigationModalProvider({ children }: { children: any }) {
         key: rootKey,
         route: rootKey,
         trackCrumbTrail: false,
+        renderScene: () => <EmptyElement />,
       },
       ...screens.map((screen) => ({
         key: rootKeyAndPath(rootKey, screen.path),
@@ -40,7 +41,8 @@ function NavigationModalProvider({ children }: { children: any }) {
     ];
     // TODO: verify memory history
     const navigator = new StateNavigator(stateInfos);
-    navigator.start(rootKey);
+    navigator.navigate(rootKey);
+
     return navigator;
   }, [rootKey, screens]);
 
@@ -77,12 +79,17 @@ function NavigationModalProvider({ children }: { children: any }) {
         <NavigationStack
           underlayColor={theme.layout.backgroundColor}
           backgroundColor={() => theme.layout.backgroundColor}
-          unmountStyle={() => ''}
+          //@ts-ignore
+          renderWeb={(key) => (key === rootKey ? children : undefined)}
           renderScene={(state, data) => {
             return (
               <>
                 <NavigationBar hidden={true} />
-                <OptimizedContextProvider screenKey={state.key} data={data}>
+                <OptimizedContextProvider
+                  withSuspenseContainer={false}
+                  screenKey={state.key}
+                  data={data}
+                >
                   {state.key === rootKey ? children : state.renderScene()}
                 </OptimizedContextProvider>
               </>
@@ -95,6 +102,6 @@ function NavigationModalProvider({ children }: { children: any }) {
 }
 
 function EmptyElement() {
-  return null;
+  return <Text>Empty</Text>;
 }
-export default NavigationModalProvider;
+export default NavigationNestedProvider;

@@ -20,9 +20,9 @@ export default function useBottomTabIndex() {
     [currentRoot, setBottomTabIndex]
   );
 
-  const currentTab = (currentRoot as RootChildBottomTabs).children[
-    bottomTabIndex
-  ];
+  const currentTab =
+    currentRoot?.type === 'bottomTabs' &&
+    currentRoot?.children?.[bottomTabIndex];
   return {
     switchToTab,
     currentTab,

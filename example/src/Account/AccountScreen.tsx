@@ -5,8 +5,9 @@ import authState, { reset } from '../Auth/AuthState';
 import {
   useBottomTabIndex,
   useBottomTabBadges,
-  NavigationModalProvider,
+  NavigationNestedProvider,
   Link,
+  ModalBackHandler,
 } from 'react-native-ridge-navigation';
 import { View, ScrollView, Modal } from 'react-native';
 import { BottomRoot } from '../Navigator';
@@ -22,6 +23,9 @@ function AccountScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [{ user }] = authState.use();
 
+  const onClose = React.useCallback(() => {
+    setModalVisible(false);
+  }, [setModalVisible]);
   if (!user) {
     return <Text>No user logged in</Text>;
   }
@@ -64,6 +68,7 @@ function AccountScreen() {
             style={{ marginTop: 12 }}
             mode="outlined"
             onPress={() => {
+              console.log(new Date().getTime(), 'setModalVisible(true)');
               setModalVisible(true);
             }}
           >
@@ -71,27 +76,38 @@ function AccountScreen() {
           </Button>
         </View>
       </ScrollView>
-      <Modal
-        visible={modalVisible}
-        style={{ backgroundColor: theme.colors.background }}
-        statusBarTranslucent={true}
-        presentationStyle="overFullScreen"
-        animationType="slide"
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
-        <NavigationModalProvider>
-          <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-            <Header title="Modal stack" />
-            <Button onPress={() => setModalVisible(false)}>Close modal</Button>
-            <Link to={routes.PostScreen} params={{ id: '2' }}>
-              {(linkProps) => <Button {...linkProps}>Account</Button>}
-            </Link>
-          </View>
-        </NavigationModalProvider>
-      </Modal>
+      <ModalBackHandler>
+        {(handleBack) => (
+          <Modal
+            visible={modalVisible}
+            style={{ backgroundColor: theme.colors.background }}
+            statusBarTranslucent={true}
+            presentationStyle="pageSheet"
+            animationType="slide"
+            onRequestClose={() => {
+              if (!handleBack()) setModalVisible(false);
+            }}
+          >
+            <NavigationNestedProvider>
+              <SimpleComponent onClose={onClose} />
+            </NavigationNestedProvider>
+          </Modal>
+        )}
+      </ModalBackHandler>
     </>
   );
 }
+
+const SimpleComponent = React.memo(({ onClose }: { onClose: () => void }) => {
+  console.log(new Date().getTime(), 'SimpleComponent');
+  return (
+    <View style={{ height: 250, backgroundColor: 'pink' }}>
+      <Header title="Modal stack" />
+      <Button onPress={onClose}>Close modal</Button>
+      <Link to={routes.PostScreen} params={{ id: '2' }}>
+        {(linkProps) => <Button {...linkProps}>Account</Button>}
+      </Link>
+    </View>
+  );
+});
 export default React.memo(AccountScreen);

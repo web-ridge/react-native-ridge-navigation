@@ -5,7 +5,6 @@ import {
   rootKeyAndPath,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
-import { useContext } from 'react';
 import OptimizedContext from './contexts/OptimizedContext';
 
 export default function useNavigation() {
@@ -16,7 +15,7 @@ export default function useNavigation() {
     preloadElement,
     theme,
     stateNavigator,
-  } = useContext(OptimizedContext);
+  } = React.useContext(OptimizedContext);
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
 

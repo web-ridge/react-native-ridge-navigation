@@ -292,6 +292,39 @@ const {
   // switchToTab(BottomRoot.Posts);
 ```
 
+## Modal stack
+If you want a nested stack e.g. in a modal, check out the [example code](https://github.com/web-ridge/react-native-ridge-navigation/blob/main/example/src/Account/AccountScreen.tsx).
+```tsx
+import {
+  NavigationNestedProvider,
+  ModalBackHandler,
+} from 'react-native-ridge-navigation';
+ <ModalBackHandler>
+        {(handleBack) => (
+          <Modal
+            visible={modalVisible}
+            style={{ backgroundColor: theme.colors.background }}
+            statusBarTranslucent={true}
+            presentationStyle="pageSheet"
+            animationType="slide"
+            onRequestClose={() => {
+              if (!handleBack()) setModalVisible(false);
+            }}
+          >
+            <NavigationNestedProvider>
+              {/* you can render your children here and push to all registered screens*/}
+              <View style={{ height: 250, backgroundColor: 'pink' }}>
+                <Header title="Modal stack" />
+                <Button onPress={onClose}>Close modal</Button>
+                <Link to={routes.PostScreen} params={{ id: '2' }}>
+                  {(linkProps) => <Button {...linkProps}>Account</Button>}
+                </Link>
+              </View>
+            </NavigationNestedProvider>
+          </Modal>
+        )}
+      </ModalBackHandler>
+```
 ## Deep linking
 You have to enable url schemes etc in your app and it'll work!
 

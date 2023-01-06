@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import * as React from 'react';
 import { NavigationMotion } from 'navigation-react-mobile';
 import { View, StyleSheet } from 'react-native';
 
@@ -6,8 +6,8 @@ import OptimizedContext, {
   OptimizedContextProvider,
 } from '../contexts/OptimizedContext';
 
-function NavigationStack() {
-  const { theme } = useContext(OptimizedContext);
+function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
+  const { theme } = React.useContext(OptimizedContext);
   return (
     <NavigationMotion
       duration={0}
@@ -21,7 +21,7 @@ function NavigationStack() {
           ]}
         >
           <OptimizedContextProvider screenKey={state.key} data={data}>
-            {scene}
+            {renderWeb?.(state.key) || scene}
           </OptimizedContextProvider>
         </View>
       )}

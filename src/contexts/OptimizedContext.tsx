@@ -1,6 +1,5 @@
 import * as React from 'react';
 import RidgeNavigationContext from './RidgeNavigationContext';
-import { useContext } from 'react';
 import { NavigationContext } from 'navigation-react';
 import type { Theme } from '../theme';
 import type { BaseScreen } from '../navigationUtils';
@@ -39,7 +38,7 @@ export function OptimizedContextProvider({
     theme,
     SuspenseContainer,
   } = React.useContext(RidgeNavigationContext);
-  const { stateNavigator } = useContext(NavigationContext);
+  const { stateNavigator } = React.useContext(NavigationContext);
   const value = React.useMemo(
     () => ({
       data,
