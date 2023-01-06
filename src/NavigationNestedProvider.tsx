@@ -41,6 +41,8 @@ function NavigationNestedProvider({ children }: { children: any }) {
     ];
     // TODO: verify memory history
     const navigator = new StateNavigator(stateInfos);
+    navigator.historyManager.disabled = true;
+    navigator.historyManager.stop();
     navigator.navigate(rootKey);
 
     return navigator;
