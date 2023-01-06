@@ -39,7 +39,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
         trackCrumbTrail: true,
       })),
     ];
-    // TODO: verify memory history
+
     const navigator = new StateNavigator(stateInfos);
     navigator.historyManager.disabled = true;
     navigator.historyManager.stop();
