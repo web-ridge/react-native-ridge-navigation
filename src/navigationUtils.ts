@@ -123,6 +123,7 @@ export type LinkProps<T extends BaseScreen> = {
 
 export type BottomTabLinkRenderProps = LinkRenderProps & {
   isSelected: boolean;
+  testID?: string;
 };
 
 export type BottomTabLinkProps<T extends BottomTabType> = {

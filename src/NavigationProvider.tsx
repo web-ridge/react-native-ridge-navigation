@@ -60,7 +60,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
 
   const preloadRoot = React.useCallback(
     (rootKey: string) => {
-      const root = navigationRoot[rootKey]!;
+      const root = navigationRoot[rootKey];
+      if (!root) {
+        console.log(
+          '[react-native-ridge-navigation] No root found for key',
+          rootKey
+        );
+        return;
+      }
       switch (root.type) {
         case 'bottomTabs':
           root.children.forEach((tab) => {
