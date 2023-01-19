@@ -12,6 +12,7 @@ export default function BottomTabLink<T extends BottomTabType>({
   const { currentTab } = useBottomTabIndex();
   const isSelected = currentTab === to;
 
+  // TODO: testId =  testID={`bottomTab-${child.path}`}
   return (
     <Link to={to.child} params={params} onPress={onPress} mode="sensitive">
       {(linkProps) =>
