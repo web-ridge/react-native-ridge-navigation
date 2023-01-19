@@ -40,6 +40,7 @@ export default function BottomTabsStack() {
         labelVisibilityMode="labeled"
         tab={bottomTabIndex}
         onChangeTab={setBottomTabIndex}
+        unselectedTintColor={bottomTheme.textColor}
         barTintColor={bottomTheme.backgroundColor}
         selectedTintColor={bottomTheme.selectedTextColor}
         activeIndicatorColor={bottomTheme.activeIndicatorColor}
@@ -53,6 +54,10 @@ export default function BottomTabsStack() {
               image={bottomTabIndex === index ? tab.selectedIcon : tab.icon}
               badge={badges[tab.path]}
               badgeColor={bottomTheme.badgeColor}
+              fontFamily={bottomTheme.fontFamily}
+              fontSize={bottomTheme.fontSize}
+              fontWeight={bottomTheme.fontWeight}
+              fontStyle={bottomTheme.fontStyle}
             >
               <TabBarItemStack tab={tab} rootKey={currentRootKey} />
             </TabBarItem>

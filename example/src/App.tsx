@@ -14,6 +14,7 @@ import queryClient from './queryClient';
 import {
   createBottomTabsRoot,
   createNormalRoot,
+  createSimpleTheme,
   NavigationProvider,
 } from 'react-native-ridge-navigation';
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -35,6 +36,42 @@ function getTheme(colorScheme: ColorSchemeName): typeof MD3LightTheme {
     roundness: 10,
   };
 }
+
+let theme = createSimpleTheme({
+  light: {
+    text: MD3LightTheme.colors.onBackground,
+    primary: MD3LightTheme.colors.primary,
+    accent: MD3LightTheme.colors.primary,
+    backgroundColor: MD3LightTheme.colors.background,
+    // bottomTabs: {
+    //   backgroundColor: MD3LightTheme.colors.background,
+    //   textColor: MD3LightTheme.colors.onBackground,
+    //   selectedTextColor: MD3LightTheme.colors.primary,
+    //   activeIndicatorColor: MD3LightTheme.colors.secondary,
+    // fontSize: 10,
+    // fontStyle: 'italic',
+    // fontWeight: '900',
+    // fontFamily: 'Arial',
+    // },
+  },
+  dark: {
+    text: MD3DarkTheme.colors.onBackground,
+    primary: MD3DarkTheme.colors.primary,
+    accent: MD3DarkTheme.colors.primary,
+    backgroundColor: MD3DarkTheme.colors.background,
+    bottomTabs: {
+      //   backgroundColor: MD3DarkTheme.colors.background,
+      //   textColor: MD3DarkTheme.colors.onBackground,
+      //   selectedTextColor: MD3DarkTheme.colors.primary,
+      //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
+      //   fontSize: 10,
+      //   fontStyle: 'italic',
+      //   fontWeight: '900',
+      fontFamily: 'sans-serif',
+    },
+  },
+});
+
 export default function App() {
   const colorScheme = useColorScheme(); // Can be dark | light | no-preference
   const paperTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
@@ -65,6 +102,7 @@ export default function App() {
               screens={screens}
               SuspenseContainer={AsyncBoundaryScreen}
               navigationRoot={navigationRoot}
+              themeSettings={theme}
             />
           </AsyncBoundary>
         </PaperProvider>

@@ -50,8 +50,8 @@ export interface ThemeLayout {
 export interface ThemeBottomBar {
   backgroundColor: ColorValue;
   textColor: ColorValue;
-  iconColor: ColorValue;
-  selectedIconColor: ColorValue;
+  // iconColor: ColorValue;
+  // selectedIconColor: ColorValue;
   selectedTextColor: ColorValue;
   activeIndicatorColor?: ColorValue;
   badgeColor?: ColorValue;
@@ -59,6 +59,11 @@ export interface ThemeBottomBar {
   elevation: number;
   labelVisibilityMode: 'auto' | 'labeled' | 'unlabeled' | 'selected';
   scrollsToTop: boolean;
+
+  fontFamily?: string;
+  fontWeight?: FontWeight;
+  fontStyle?: 'normal' | 'italic';
+  fontSize?: number;
 }
 
 export interface Theme {
@@ -67,12 +72,34 @@ export interface Theme {
   statusBar: OptionsStatusBar;
 }
 
+type FontWeight =
+  | 'normal'
+  | 'bold'
+  | '100'
+  | '200'
+  | '300'
+  | '400'
+  | '500'
+  | '600'
+  | '700'
+  | '800'
+  | '900';
+
 export interface SimpleTheme {
   text: ColorValue;
   primary: ColorValue;
   accent: ColorValue;
   backgroundColor?: ColorValue;
-  backgroundColorBottomTabs?: ColorValue;
+  bottomTabs?: {
+    backgroundColor?: ColorValue;
+    textColor?: ColorValue;
+    selectedTextColor?: ColorValue;
+    activeIndicatorColor?: ColorValue;
+    fontFamily?: string;
+    fontWeight?: FontWeight;
+    fontStyle?: 'normal' | 'italic';
+    fontSize?: number;
+  };
 }
 
 export interface ThemeSettings {
@@ -100,17 +127,25 @@ export function createSimpleTheme(
         backgroundColor: simpleTheme.light.backgroundColor || '#fff',
       },
       bottomBar: {
-        backgroundColor: simpleTheme.light.backgroundColorBottomTabs || '#fff',
-        textColor: simpleTheme.light.text,
-        iconColor: simpleTheme.light.text,
-        selectedIconColor: simpleTheme.light.accent,
-        selectedTextColor: simpleTheme.light.accent,
-        activeIndicatorColor: simpleTheme.dark.accent,
+        backgroundColor:
+          simpleTheme.light?.bottomTabs?.backgroundColor || '#fff',
+        textColor:
+          simpleTheme.light.bottomTabs?.textColor || simpleTheme.light.text,
+        selectedTextColor:
+          simpleTheme.light.bottomTabs?.selectedTextColor ||
+          simpleTheme.light.accent,
+        activeIndicatorColor:
+          simpleTheme.light.bottomTabs?.activeIndicatorColor ||
+          simpleTheme.light.accent,
         // badgeColor: "red",
         badgeTextColor: '#fff', // not supported yet in iOS/Android
         elevation: 5,
         labelVisibilityMode: 'labeled',
         scrollsToTop: true,
+        fontFamily: simpleTheme.light.bottomTabs?.fontFamily,
+        fontWeight: simpleTheme.light.bottomTabs?.fontWeight,
+        fontStyle: simpleTheme.light.bottomTabs?.fontStyle,
+        fontSize: simpleTheme.light.bottomTabs?.fontSize,
       },
     },
     dark: {
@@ -125,17 +160,24 @@ export function createSimpleTheme(
       },
       bottomBar: {
         backgroundColor:
-          simpleTheme.dark.backgroundColorBottomTabs || '#121212',
-        textColor: simpleTheme.dark.text,
-        iconColor: simpleTheme.dark.text,
-        selectedIconColor: simpleTheme.dark.accent,
-        selectedTextColor: simpleTheme.dark.accent,
-        activeIndicatorColor: simpleTheme.dark.accent,
+          simpleTheme.dark.bottomTabs?.backgroundColor || '#121212',
+        textColor:
+          simpleTheme.dark.bottomTabs?.textColor || simpleTheme.dark.text,
+        selectedTextColor:
+          simpleTheme.dark.bottomTabs?.selectedTextColor ||
+          simpleTheme.dark.accent,
+        activeIndicatorColor:
+          simpleTheme.dark.bottomTabs?.activeIndicatorColor ||
+          simpleTheme.dark.accent,
         // badgeColor: "red",
         badgeTextColor: '#fff', // not supported yet in iOS/Android
         elevation: 5,
         labelVisibilityMode: 'labeled',
         scrollsToTop: true,
+        fontFamily: simpleTheme.dark.bottomTabs?.fontFamily,
+        fontWeight: simpleTheme.dark.bottomTabs?.fontWeight,
+        fontStyle: simpleTheme.dark.bottomTabs?.fontStyle,
+        fontSize: simpleTheme.dark.bottomTabs?.fontSize,
       },
     },
   };
@@ -145,6 +187,7 @@ export const defaultTheme: ThemeSettings = createSimpleTheme({
     primary: '#6200ee',
     accent: '#6200ee',
     text: '#000',
+    bottomTabs: {},
   },
   dark: {
     primary: '#edabff',

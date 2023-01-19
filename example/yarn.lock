@@ -1406,6 +1406,15 @@
     json5 "^1.0.1"
     write-file-atomic "^2.3.0"
 
+"@expo/json-file@8.2.37":
+  version "8.2.37"
+  resolved "https://registry.npmjs.org/@expo/json-file/-/json-file-8.2.37.tgz#9c02d3b42134907c69cc0a027b18671b69344049"
+  integrity sha512-YaH6rVg11JoTS2P6LsW7ybS2CULjf40AbnAHw2F1eDPuheprNjARZMnyHFPkKv7GuxCy+B9GPcbOKgc4cgA80Q==
+  dependencies:
+    "@babel/code-frame" "~7.10.4"
+    json5 "^2.2.2"
+    write-file-atomic "^2.3.0"
+
 "@expo/metro-config@0.3.18":
   version "0.3.18"
   resolved "https://registry.npmjs.org/@expo/metro-config/-/metro-config-0.3.18.tgz#72705b3a0a3fb863b1a068f2b5f4cb43828cb26b"
@@ -1483,12 +1492,12 @@
     base64-js "^1.2.3"
     xmlbuilder "^14.0.0"
 
-"@expo/plist@0.0.19":
-  version "0.0.19"
-  resolved "https://registry.npmjs.org/@expo/plist/-/plist-0.0.19.tgz#820812cc9f52eb0543fac2bc57547310c205f819"
-  integrity sha512-9+GdsnLOZ475bITOSwU6MxIXukYHS3yTVCK2+cSDMyb9h2NuBwpnHFJGFUqcg9HcA6fbmyhGnNpPD3vk7zqWFQ==
+"@expo/plist@0.0.20":
+  version "0.0.20"
+  resolved "https://registry.npmjs.org/@expo/plist/-/plist-0.0.20.tgz#a6b3124438031c02b762bad5a47b70584d3c0072"
+  integrity sha512-UXQ4LXCfTZ580LDHGJ5q62jSTwJFFJ1GqBu8duQMThiHKWbMJ+gajJh6rsB6EJ3aLUr9wcauxneL5LVRFxwBEA==
   dependencies:
-    "@xmldom/xmldom" "~0.7.6"
+    "@xmldom/xmldom" "~0.7.7"
     base64-js "^1.2.3"
     xmlbuilder "^14.0.0"
 
@@ -1574,7 +1583,42 @@
   resolved "https://registry.npmjs.org/@expo/vector-icons/-/vector-icons-13.0.0.tgz#e2989b85e95a82bce216f88cf8fb583ab050ec95"
   integrity sha512-TI+l71+5aSKnShYclFa14Kum+hQMZ86b95SH6tQUG3qZEmLTarvWpKwqtTwQKqvlJSJrpFiSFu3eCuZokY6zWA==
 
-"@expo/webpack-config@0.17.3", "@expo/webpack-config@^0.17.2":
+"@expo/webpack-config@0.17.4":
+  version "0.17.4"
+  resolved "https://registry.npmjs.org/@expo/webpack-config/-/webpack-config-0.17.4.tgz#c2cb670a8f431dc76a645d183a38465ed235e3a7"
+  integrity sha512-vn37RDhYowfLc2oRaXhmbI/9FStjQFXPONG3yRLfwUnA4dRtfXapJUSKHJKRwOy4fBBmTrb2tthtsdb4zeWmsw==
+  dependencies:
+    "@babel/core" "7.9.0"
+    babel-loader "8.1.0"
+    chalk "^4.0.0"
+    clean-webpack-plugin "^3.0.0"
+    copy-webpack-plugin "~6.0.3"
+    css-loader "~3.6.0"
+    expo-pwa "0.0.124"
+    file-loader "~6.0.0"
+    find-yarn-workspace-root "~2.0.0"
+    getenv "^1.0.0"
+    html-loader "~1.1.0"
+    html-webpack-plugin "~4.3.0"
+    image-size "^1.0.0"
+    is-wsl "^2.0.0"
+    loader-utils "^2.0.0"
+    mini-css-extract-plugin "^0.5.0"
+    node-html-parser "^1.2.12"
+    optimize-css-assets-webpack-plugin "^5.0.3"
+    pnp-webpack-plugin "^1.5.0"
+    postcss-safe-parser "^4.0.2"
+    react-dev-utils "~11.0.1"
+    schema-utils "^3.1.1"
+    semver "~7.3.2"
+    style-loader "~1.2.1"
+    terser-webpack-plugin "^3.0.6"
+    url-loader "~4.1.0"
+    webpack "4.43.0"
+    webpack-dev-server "3.11.0"
+    webpack-manifest-plugin "~2.2.0"
+
+"@expo/webpack-config@^0.17.2":
   version "0.17.3"
   resolved "https://registry.npmjs.org/@expo/webpack-config/-/webpack-config-0.17.3.tgz#a0935b8d77c75b5d64eb79a350fb7fb905791411"
   integrity sha512-EcnHHmMscC7mL7qGQpXoSSpOrXbyfnMErUfqaBVjMYz7I4xVvoPQqiM13v4JXnz9TnZHDxD9t7+VSa9hPJVssA==
@@ -2390,7 +2434,7 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
-"@xmldom/xmldom@~0.7.0", "@xmldom/xmldom@~0.7.6":
+"@xmldom/xmldom@~0.7.0", "@xmldom/xmldom@~0.7.7":
   version "0.7.9"
   resolved "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.7.9.tgz#7f9278a50e737920e21b297b8a35286e9942c056"
   integrity sha512-yceMpm/xd4W2a85iqZyO09gTnHvXF6pyiWjD2jcOJs7hRoZtNNOO1eJlhHj1ixA+xip2hOyGn+LgcvLCMo5zXA==
@@ -4876,10 +4920,10 @@ expo-asset@~8.7.0:
     path-browserify "^1.0.0"
     url-parse "^1.5.9"
 
-expo-cli@^6.0.5:
-  version "6.0.8"
-  resolved "https://registry.npmjs.org/expo-cli/-/expo-cli-6.0.8.tgz#f5027cb1bcbed637ab5c61e99bf0dac892b45092"
-  integrity sha512-ZVQ47l/wFsPgF9S68MT3mQCCq0HEH4wggnDdd3keZBHV8uhC1TvkdufOeWgbr7/uP5oKdfXEOQCXaYbJPdd69A==
+expo-cli@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.npmjs.org/expo-cli/-/expo-cli-6.1.0.tgz#e24ef3cd39c8d5123127fecad6f7145e5fd72f53"
+  integrity sha512-yhbevPdwof7oyjQup/dEYbxYZCiK/vYYQVnZA3CbYxtz0TG6LcEumz1Pn5WhAwU6vGCSmKpsJ02r4O0/bwIB/Q==
   dependencies:
     "@babel/runtime" "7.9.0"
     "@expo/apple-utils" "0.0.0-alpha.31"
@@ -4887,10 +4931,10 @@ expo-cli@^6.0.5:
     "@expo/config" "6.0.24"
     "@expo/config-plugins" "4.1.5"
     "@expo/dev-server" "0.1.115"
-    "@expo/json-file" "8.2.36"
+    "@expo/json-file" "8.2.37"
     "@expo/osascript" "2.0.33"
     "@expo/package-manager" "0.0.56"
-    "@expo/plist" "0.0.19"
+    "@expo/plist" "0.0.20"
     "@expo/prebuild-config" "4.0.3"
     "@expo/spawn-async" "1.5.0"
     "@expo/xcpretty" "^4.1.0"
@@ -4936,7 +4980,7 @@ expo-cli@^6.0.5:
     url-join "4.0.0"
     uuid "^8.0.0"
     wrap-ansi "^7.0.0"
-    xdl "59.2.55"
+    xdl "59.3.0"
 
 expo-constants@~14.0.0, expo-constants@~14.0.2:
   version "14.0.2"
@@ -6902,6 +6946,11 @@ json5@^2.1.2, json5@^2.2.1:
   version "2.2.2"
   resolved "https://registry.npmjs.org/json5/-/json5-2.2.2.tgz#64471c5bdcc564c18f7c1d4df2e2297f2457c5ab"
   integrity sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==
+
+json5@^2.2.2:
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
+  integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
 jsonfile@^2.1.0:
   version "2.4.0"
@@ -11640,25 +11689,25 @@ xcode@^3.0.0, xcode@^3.0.1:
     simple-plist "^1.1.0"
     uuid "^7.0.3"
 
-xdl@59.2.55:
-  version "59.2.55"
-  resolved "https://registry.npmjs.org/xdl/-/xdl-59.2.55.tgz#855b0751745846643113a721410c86cf048c10c7"
-  integrity sha512-6XLpWpPFUsjH2gwpvCMRx4vJjszRonX1UxF8LpLYdZi0jZB1fvppweUYJjdQ8RaS62pEm3TBRq+JwB0RIFlFwA==
+xdl@59.3.0:
+  version "59.3.0"
+  resolved "https://registry.npmjs.org/xdl/-/xdl-59.3.0.tgz#d60bd59e2118c033dd669a1ae869726bb075c7c9"
+  integrity sha512-+7HeQDo13SWNCktnmggutegmWBIgF5TzKLPpaZe3qhlTXRETdNvQUbuYfaETLlcwk372jzvO7navUgxUvFrpNA==
   dependencies:
     "@expo/bunyan" "4.0.0"
     "@expo/config" "6.0.24"
     "@expo/config-plugins" "4.1.5"
     "@expo/dev-server" "0.1.115"
     "@expo/devcert" "^1.0.0"
-    "@expo/json-file" "8.2.36"
+    "@expo/json-file" "8.2.37"
     "@expo/osascript" "2.0.33"
     "@expo/package-manager" "0.0.56"
-    "@expo/plist" "0.0.19"
+    "@expo/plist" "0.0.20"
     "@expo/rudder-sdk-node" "1.1.1"
     "@expo/schemer" "1.4.4"
     "@expo/sdk-runtime-versions" "^1.0.0"
     "@expo/spawn-async" "1.5.0"
-    "@expo/webpack-config" "0.17.3"
+    "@expo/webpack-config" "0.17.4"
     axios "0.21.1"
     better-opn "^3.0.1"
     boxen "^5.0.1"
