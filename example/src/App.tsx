@@ -43,6 +43,7 @@ let theme = createSimpleTheme({
     primary: MD3LightTheme.colors.primary,
     accent: MD3LightTheme.colors.primary,
     backgroundColor: MD3LightTheme.colors.background,
+    // Optional styling of bottom tabs
     // bottomTabs: {
     //   backgroundColor: MD3LightTheme.colors.background,
     //   textColor: MD3LightTheme.colors.onBackground,
@@ -59,16 +60,17 @@ let theme = createSimpleTheme({
     primary: MD3DarkTheme.colors.primary,
     accent: MD3DarkTheme.colors.primary,
     backgroundColor: MD3DarkTheme.colors.background,
-    bottomTabs: {
-      //   backgroundColor: MD3DarkTheme.colors.background,
-      //   textColor: MD3DarkTheme.colors.onBackground,
-      //   selectedTextColor: MD3DarkTheme.colors.primary,
-      //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
-      //   fontSize: 10,
-      //   fontStyle: 'italic',
-      //   fontWeight: '900',
-      fontFamily: 'sans-serif',
-    },
+    // Optional styling of bottom tabs
+    // bottomTabs: {
+    //   backgroundColor: MD3DarkTheme.colors.background,
+    //   textColor: MD3DarkTheme.colors.onBackground,
+    //   selectedTextColor: MD3DarkTheme.colors.primary,
+    //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
+    //   fontSize: 10,
+    //   fontStyle: 'italic',
+    //   fontWeight: '900',
+    // fontFamily: 'sans-serif',
+    // },
   },
 });
 
