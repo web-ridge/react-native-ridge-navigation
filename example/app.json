@@ -19,6 +19,7 @@
     ],
     "jsEngine": "hermes",
     "ios": {
+      "jsEngine": "jsc",
       "supportsTablet": true,
       "bundleIdentifier": "com.webridge.navigation"
     },
