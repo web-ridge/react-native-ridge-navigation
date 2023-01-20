@@ -6,7 +6,6 @@ import {
   useBottomTabIndex,
   useBottomTabBadges,
   NavigationNestedProvider,
-  Link,
   ModalBackHandler,
 } from 'react-native-ridge-navigation';
 import { View, ScrollView, Modal } from 'react-native';
@@ -14,6 +13,7 @@ import { BottomRoot } from '../Navigator';
 import Header from '../Header';
 import { useRenderLog } from '../helpers/utils';
 import routes from '../Routes';
+import ButtonLink from '../ButtonLink';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');
@@ -104,9 +104,9 @@ const SimpleComponent = React.memo(({ onClose }: { onClose: () => void }) => {
     <View style={{ height: 250, backgroundColor: 'pink' }}>
       <Header title="Modal stack" />
       <Button onPress={onClose}>Close modal</Button>
-      <Link to={routes.PostScreen} params={{ id: '2' }}>
-        {(linkProps) => <Button {...linkProps}>Account</Button>}
-      </Link>
+      <ButtonLink to={routes.PostScreen} params={{ id: '2' }}>
+        Account
+      </ButtonLink>
     </View>
   );
 });

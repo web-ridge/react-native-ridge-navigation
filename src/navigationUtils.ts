@@ -117,8 +117,9 @@ export type LinkProps<T extends BaseScreen> = {
   to: T;
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
-  mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
+  linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
   onPress?: (event: GestureResponderEvent) => void;
+  skipLinkBehaviourIfPressIsDefined?: boolean;
 };
 
 export type BottomTabLinkRenderProps = LinkRenderProps & {
@@ -148,10 +149,14 @@ export function makeVariablesNavigationFriendly(s: string) {
   return s.replace(/:([^/]+)/g, '{$1}');
 }
 
-export function generatePath(path: string, params: any): string {
-  return path.replace(/\/*\*$/, (_) =>
-    params['*'] == null ? '' : params['*'].replace(/^\/*/, '/')
-  );
+export function generatePath(
+  path: string,
+  params: Record<string, string>
+): string {
+  // replace :id with params[key]
+  return path.replace(/:([^/]+)/g, (_match, key) => {
+    return params[key] || 'undefined-param';
+  });
 }
 
 export function getFirstPartAndOthers(pathSplit: string[]) {

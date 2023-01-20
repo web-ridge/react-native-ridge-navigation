@@ -13,8 +13,9 @@ export default function Link<T extends BaseScreen>({
   to,
   params,
   children,
-  mode = 'default',
+  linkMode = 'default',
   onPress: onCustomPress,
+  skipLinkBehaviourIfPressIsDefined,
 }: LinkProps<T>) {
   const { push, preload, preloadElement, currentRootKey } = useNavigation();
 
@@ -57,9 +58,9 @@ export default function Link<T extends BaseScreen>({
   }, [preloadElement, to]);
 
   let baseProps: LinkRenderProps = {
-    onMouseDown: mode === 'sensitive' ? undefined : preloadData,
+    onMouseDown: linkMode === 'sensitive' ? undefined : preloadData,
     onMouseEnter:
-      mode === 'sensitive' ? preloadDataAndElement : preloadElementInner,
+      linkMode === 'sensitive' ? preloadDataAndElement : preloadElementInner,
     onPress: onPress,
   };
   let childrenProps: LinkRenderProps = onCustomPress
@@ -69,6 +70,10 @@ export default function Link<T extends BaseScreen>({
         accessibilityRole: 'link',
         href: generatePath('/' + currentRootKey + to.path, params),
       };
+
+  if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
+    children({ onPress: onCustomPress });
+  }
 
   return children(childrenProps);
 }

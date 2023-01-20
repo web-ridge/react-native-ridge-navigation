@@ -18,6 +18,7 @@ export { default as useNavigation } from './useNavigation';
 export { default as NavigationProvider } from './NavigationProvider';
 export { default as NavigationNestedProvider } from './NavigationNestedProvider';
 export { default as ModalBackHandler } from './ModalBackHandler';
+export { default as createLinkComponent } from './createLinkComponent';
 
 export {
   createBottomTabsRoot,

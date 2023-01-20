@@ -10,6 +10,7 @@ export default function Link<T extends BaseScreen>({
   params,
   children,
   onPress: onCustomPress,
+  skipLinkBehaviourIfPressIsDefined,
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
   const { push, preload } = useNavigation();
@@ -38,6 +39,9 @@ export default function Link<T extends BaseScreen>({
     preload(to, params);
   }, [to, preload, params]);
 
+  if (skipLinkBehaviourIfPressIsDefined) {
+    return children({ onPress });
+  }
   return children({
     onPress: onPress,
     onPressIn: onPressIn,

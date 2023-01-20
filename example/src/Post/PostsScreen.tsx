@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { List, Text, Searchbar } from 'react-native-paper';
-import { Link, usePreloadResult } from 'react-native-ridge-navigation';
+import { Text, Searchbar } from 'react-native-paper';
+import { usePreloadResult } from 'react-native-ridge-navigation';
 import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 
@@ -10,6 +10,7 @@ import routes from '../Routes';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useRenderLog } from '../helpers/utils';
+import ListItemLink from '../ListItemLink';
 
 const ITEM_HEIGHT = 80;
 
@@ -51,11 +52,12 @@ function PostsScreen() {
 
 const Item = React.memo(({ item }: { item: any }) => {
   return (
-    <Link to={routes.PostScreen} params={{ id: `${item.id}` }}>
-      {(linkProps) => (
-        <List.Item {...linkProps} title={item.title} description={item.body} />
-      )}
-    </Link>
+    <ListItemLink
+      to={routes.PostScreen}
+      params={{ id: `${item.id}` }}
+      title={item.title}
+      description={item.body}
+    />
   );
 });
 export default React.memo(PostsScreen);

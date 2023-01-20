@@ -240,7 +240,7 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
 <Link
   to={routes.PostScreen}
   params={{ id: `${item.id}` }}
-  // mode="default" // optional if sensitive the preload will be called on hover instead of mouseDown
+  // linkMode="default" // optional if sensitive the preload will be called on hover instead of mouseDown
 >
   {(linkProps) => (
     <Pressable  {...linkProps}> // or other touchables/buttons
@@ -248,7 +248,35 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
     </Pressable>
   )}
 </Link>
+
+
+
 ```
+## createLinkComponent
+Use the `createLinkComponent` component to create re-usable links without render props.
+E.g to create a linkable button for react-native-paper
+```tsx
+//ButtonLink.tsx
+import { Button } from 'react-native-paper';
+import { createLinkComponent } from 'react-native-ridge-navigation';
+
+const ButtonLink = createLinkComponent(Button);
+export default ButtonLink;
+```
+
+```tsx
+<ButtonLink
+  to={routes.PostScreen}
+  params={{ id: '2' }}
+  mode="contained"
+  // all optional RNP props
+  // all optional Link props
+>
+  Go further
+</ButtonLink>
+```
+
+
 Alternative push (or replace)
 ```tsx
 const { push, replace } = useNavigation();
@@ -333,6 +361,7 @@ You have to enable url schemes etc in your app and it'll work!
 
 ```ts
 // global
+  createLinkComponent,
   SwitchRoot,
   BottomTabLink,
   Link
