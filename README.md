@@ -201,23 +201,20 @@ import { BottomRoot, NavigationRoots, screens } from './Navigator';
 import routes from './Routes';
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
 
+const navigationRoot = {
+  [NavigationRoots.RootHome]: createBottomTabsRoot(
+    [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
+    {
+      breakingPointWidth: 500,
+      components: {
+        override: HeaderWeb,
+      },
+    }
+  ),
+  [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
+};
 
 export default function App() {
-
-  const navigationRoot = React.useMemo(() => {
-    return {
-      [NavigationRoots.RootHome]: createBottomTabsRoot(
-        [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
-        {
-          breakingPointWidth: 500,
-          components: {
-            // start:
-          },
-        }
-      ),
-      [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
-    };
-  }, []);
   LogBox.ignoreLogs(['Require cycle: src/Navigator']);
 
   return (

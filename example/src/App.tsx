@@ -74,24 +74,22 @@ let theme = createSimpleTheme({
   },
 });
 
+const navigationRoot = {
+  [NavigationRoots.RootHome]: createBottomTabsRoot(
+    [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
+    {
+      breakingPointWidth: 500,
+      components: {
+        override: HeaderWeb,
+      },
+    }
+  ),
+  [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
+};
 export default function App() {
   const colorScheme = useColorScheme(); // Can be dark | light | no-preference
   const paperTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
 
-  const navigationRoot = React.useMemo(() => {
-    return {
-      [NavigationRoots.RootHome]: createBottomTabsRoot(
-        [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
-        {
-          breakingPointWidth: 500,
-          components: {
-            override: HeaderWeb,
-          },
-        }
-      ),
-      [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
-    };
-  }, []);
   LogBox.ignoreLogs(['Require cycle: src/Navigator']);
 
   return (
