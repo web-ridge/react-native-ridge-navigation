@@ -28,7 +28,7 @@ function BottomTabWeb({
   const { theme } = React.useContext(RidgeNavigationContext);
 
   return (
-    <Link key={path} to={child} params={{}} mode="sensitive">
+    <Link key={path} to={child} params={{}} linkMode="sensitive">
       {(linkProps) => (
         <Pressable
           {...linkProps}
@@ -65,8 +65,8 @@ function BottomTabWeb({
                 orientation === 'vertical' && styles.verticalIcon,
                 {
                   tintColor: isSelected
-                    ? theme.bottomBar.selectedIconColor
-                    : theme.bottomBar.iconColor,
+                    ? theme.bottomBar.selectedTextColor
+                    : theme.bottomBar.textColor,
                 },
               ]}
             />
