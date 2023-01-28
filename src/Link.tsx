@@ -39,8 +39,8 @@ export default function Link<T extends BaseScreen>({
     preload(to, params);
   }, [to, preload, params]);
 
-  if (skipLinkBehaviourIfPressIsDefined) {
-    return children({ onPress });
+  if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
+    return children({ onPress: onCustomPress });
   }
   return children({
     onPress: onPress,

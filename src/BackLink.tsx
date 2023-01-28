@@ -7,12 +7,12 @@ interface RenderProps {
 }
 
 function BackLink({ children }: { children: (p: RenderProps) => any }) {
-  const navigation = useNavigation();
+  const { pop } = useNavigation();
 
   const onPress = React.useCallback(() => {
     // TODO: handle to on android like behaviour when pressing the back button
-    navigation.pop();
-  }, [navigation]);
+    pop();
+  }, [pop]);
 
   return children({
     onPress: onPress,

@@ -7911,10 +7911,10 @@ navigation-react-mobile@^3.9.0:
   resolved "https://registry.npmjs.org/navigation-react-mobile/-/navigation-react-mobile-3.9.0.tgz#4b38bd2412f3a503346c1912c48b24639a3ba5fd"
   integrity sha512-ZWwRs3TAByIXgne2ZNvTLSgXa0tKK4puorEC05SUnmeJobXOMFPJpJiYDQrb/pZg0GBr69waFAqPiveGyr0CGw==
 
-navigation-react-native@^8.13.1:
-  version "8.14.0"
-  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-8.14.0.tgz#be21ad2697757fb08010c73f77cb43cf9ff1eede"
-  integrity sha512-LeGGALb6ZCv1GgJOLrE1nqjrV5mfvT29TWunL26j1jcBqIDeCUQvAkiq0240i972GTQW/xHXcXRkR3ZZ4yNXyg==
+navigation-react-native@^8.14.1:
+  version "8.14.1"
+  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-8.14.1.tgz#e691ea8cc21cf3029f18b5b296a2b424317ea153"
+  integrity sha512-vDNvlGyn+aR49ZvTu2ty6ct6B2J91J+paOmojAxYhcU89/rF0Dx2nCyoxFa+AXxIJ11SZI1kMAlkNEhwyuT0jA==
 
 navigation-react@^4.5.1:
   version "4.5.1"
