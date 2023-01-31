@@ -5,7 +5,6 @@ import BottomTab from './BottomTabWeb';
 import OptimizedContext from '../contexts/OptimizedContext';
 import {
   getBreakingPointFromRoot,
-  RootChildBottomTabs,
   useAboveBreakingPoint,
 } from '../navigationUtils';
 import useCurrentRoot from '../useCurrentRoot';
@@ -13,13 +12,15 @@ import BottomTabIndexContext from '../contexts/BottomTabIndexContext';
 import BottomTabBadgesContext from '../contexts/BottomTabBadgesContext';
 
 function BottomTabsWrapperWeb({ children }: { children: any }) {
-  const { currentRoot: cr } = useCurrentRoot();
-  const currentRoot = cr as RootChildBottomTabs;
+  const { currentRoot } = useCurrentRoot();
   const aboveBreakingPoint = useAboveBreakingPoint(
     getBreakingPointFromRoot(currentRoot)
   );
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
 
+  if (currentRoot?.type !== 'bottomTabs') {
+    return children;
+  }
   const inner = (
     <OriginalBottomTabs orientation={orientation}>
       {children}
@@ -45,11 +46,14 @@ export function OriginalBottomTabs({
   children: any;
   orientation: 'horizontal' | 'vertical';
 }) {
-  const { currentRoot: cr } = useCurrentRoot();
-  const currentRoot = cr as RootChildBottomTabs;
+  const { currentRoot } = useCurrentRoot();
   const { theme } = React.useContext(OptimizedContext);
   const { badges } = React.useContext(BottomTabBadgesContext);
   const { bottomTabIndex } = React.useContext(BottomTabIndexContext);
+
+  if (currentRoot?.type !== 'bottomTabs') {
+    return children;
+  }
   return (
     <View style={[styles.root, styles[orientation]]}>
       <View style={styles.screens}>{children}</View>
