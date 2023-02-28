@@ -276,7 +276,7 @@ export default ButtonLink;
 
 Alternative push (or replace)
 ```tsx
-const { push, replace } = useNavigation();
+const { push, replace, refresh } = useNavigation();
 
 // call this where if you can't use <Link />
 push(routes.PostScreen, {
@@ -286,6 +286,11 @@ push(routes.PostScreen, {
 // call this if e.g. after a create you want to go to edit screen
 // but without pushing history to the url-stack or app-stack :)
 replace(routes.PostScreen, {
+  id: `${item.id}`
+});
+
+// call this if you want to refresh the screen with new params
+refresh(routes.PostScreen, {
   id: `${item.id}`
 });
 ```
@@ -305,7 +310,8 @@ const {
   switchRoot,
   preload, // call preload (done automatic on link mouseDown
   push, // calls preload + pushes screen
-  replace, // calls preload + pushes screen
+  replace, // calls preload + replaces screen
+  refresh, // calls preload + replaces params of screen
 } = useNavigation()
 ```
 
