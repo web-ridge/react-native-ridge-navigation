@@ -45,7 +45,7 @@ export default function useNavigation() {
   const pop = React.useCallback(
     (dist?: number) => {
       let distance = 1;
-      if (typeof dist == 'number') {
+      if (typeof dist === 'number') {
         distance = dist;
       }
 
@@ -59,8 +59,8 @@ export default function useNavigation() {
   );
 
   const switchRoot = React.useCallback(
-    (rootKey: string, preload = true) => {
-      if (preload) {
+    (rootKey: string, preloadSetting = true) => {
+      if (preloadSetting) {
         preloadRoot(rootKey);
       }
       rootNavigator.start(rootKey);

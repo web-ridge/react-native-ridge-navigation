@@ -118,7 +118,7 @@ export type LinkProps<T extends BaseScreen> = {
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
   linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
-  onPress?: (event: GestureResponderEvent) => void;
+  onPress?: (event: GestureResponderEvent) => any;
   skipLinkBehaviourIfPressIsDefined?: boolean;
   replace?: boolean;
   refresh?: boolean;
@@ -134,7 +134,7 @@ export type BottomTabLinkProps<T extends BottomTabType> = {
   params: ExtractRouteParams<T['child']['path']>;
   children: (p: BottomTabLinkRenderProps) => any;
   mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
-  onPress?: (event: GestureResponderEvent) => void;
+  onPress?: (event: GestureResponderEvent) => any;
 };
 
 export function createScreens(screenMap: Record<string, BaseScreen>) {
