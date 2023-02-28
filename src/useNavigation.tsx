@@ -44,7 +44,11 @@ export default function useNavigation() {
 
   const pop = React.useCallback(
     (dist?: number) => {
-      const distance = dist || 1;
+      let distance = 1;
+      if (typeof dist == 'number') {
+        distance = dist;
+      }
+
       if (stateNavigator.canNavigateBack(distance)) {
         stateNavigator.navigateBack(distance);
       } else {
@@ -62,6 +66,20 @@ export default function useNavigation() {
       rootNavigator.start(rootKey);
     },
     [preloadRoot, rootNavigator]
+  );
+
+  const refresh = React.useCallback(
+    <T extends BaseScreen>(
+      screen: T,
+      params: ExtractRouteParams<T['path']>,
+      doPreload = true
+    ) => {
+      if (doPreload) {
+        preload(screen, params);
+      }
+      stateNavigator.refresh(params, 'replace');
+    },
+    [stateNavigator, preload]
   );
 
   const innerNavigate = React.useCallback(
@@ -97,7 +115,7 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       doPreload = true
     ) => {
-      return innerNavigate(screen, params, doPreload, 'replace');
+      innerNavigate(screen, params, doPreload, 'replace');
     },
     [innerNavigate]
   );
@@ -113,6 +131,7 @@ export default function useNavigation() {
     switchRoot,
     push,
     replace,
+    refresh,
     theme,
     canNavigateBack,
   };

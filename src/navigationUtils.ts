@@ -120,6 +120,8 @@ export type LinkProps<T extends BaseScreen> = {
   linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
   onPress?: (event: GestureResponderEvent) => void;
   skipLinkBehaviourIfPressIsDefined?: boolean;
+  replace?: boolean;
+  refresh?: boolean;
 };
 
 export type BottomTabLinkRenderProps = LinkRenderProps & {

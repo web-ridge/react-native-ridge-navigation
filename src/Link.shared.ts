@@ -9,6 +9,8 @@ export function extractLinkProps<T extends BaseScreen>(
     linkMode,
     onPress,
     skipLinkBehaviourIfPressIsDefined,
+    replace,
+    refresh,
     ...otherProps
   } = props;
   return {
@@ -17,6 +19,8 @@ export function extractLinkProps<T extends BaseScreen>(
     linkMode,
     onPress,
     skipLinkBehaviourIfPressIsDefined,
+    replace,
+    refresh,
     otherProps,
   };
 }

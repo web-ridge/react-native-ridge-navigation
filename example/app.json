@@ -3,7 +3,7 @@
     "name": "example",
     "slug": "example",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -17,9 +17,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "jsEngine": "hermes",
     "ios": {
-      "jsEngine": "jsc",
       "supportsTablet": true,
       "bundleIdentifier": "com.webridge.navigation"
     },

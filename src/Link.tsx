@@ -11,9 +11,11 @@ export default function Link<T extends BaseScreen>({
   children,
   onPress: onCustomPress,
   skipLinkBehaviourIfPressIsDefined,
+  replace: isReplaceInsteadOfPush,
+  refresh: isRefreshInsteadOfPush,
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
-  const { push, preload } = useNavigation();
+  const { push, replace, refresh, preload } = useNavigation();
 
   const onPress = React.useCallback(
     async (event: GestureResponderEvent) => {
@@ -29,10 +31,25 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
-      push(to, params, false);
+      if (isRefreshInsteadOfPush) {
+        refresh(to, params, false);
+      } else if (isReplaceInsteadOfPush) {
+        replace(to, params, false);
+      } else {
+        push(to, params, false);
+      }
       isPushing.current = false;
     },
-    [isPushing, push, to, params, onCustomPress]
+    [
+      onCustomPress,
+      isRefreshInsteadOfPush,
+      isReplaceInsteadOfPush,
+      refresh,
+      to,
+      params,
+      replace,
+      push,
+    ]
   );
 
   const onPressIn = React.useCallback(() => {

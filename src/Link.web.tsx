@@ -16,8 +16,11 @@ export default function Link<T extends BaseScreen>({
   linkMode = 'default',
   onPress: onCustomPress,
   skipLinkBehaviourIfPressIsDefined,
+  replace: isReplaceInsteadOfPush,
+  refresh: isRefreshInsteadOfPush,
 }: LinkProps<T>) {
-  const { push, preload, preloadElement, currentRootKey } = useNavigation();
+  const { push, replace, refresh, preload, preloadElement, currentRootKey } =
+    useNavigation();
 
   const preloadData = React.useCallback(() => {
     preload(to, params);
@@ -47,10 +50,25 @@ export default function Link<T extends BaseScreen>({
         !isModifiedEvent(nativeEvent) // Ignore clicks with modifier keys
       ) {
         event.preventDefault();
-        push(to, params, false);
+        if (isRefreshInsteadOfPush) {
+          refresh(to, params, false);
+        } else if (isReplaceInsteadOfPush) {
+          replace(to, params, false);
+        } else {
+          push(to, params, false);
+        }
       }
     },
-    [push, onCustomPress, to, params]
+    [
+      onCustomPress,
+      isRefreshInsteadOfPush,
+      isReplaceInsteadOfPush,
+      refresh,
+      to,
+      params,
+      replace,
+      push,
+    ]
   );
 
   const preloadElementInner = React.useCallback(() => {

@@ -61,16 +61,16 @@ let theme = createSimpleTheme({
     accent: MD3DarkTheme.colors.primary,
     backgroundColor: MD3DarkTheme.colors.background,
     // Optional styling of bottom tabs
-    // bottomTabs: {
-    //   backgroundColor: MD3DarkTheme.colors.background,
-    //   textColor: MD3DarkTheme.colors.onBackground,
-    //   selectedTextColor: MD3DarkTheme.colors.primary,
-    //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
-    //   fontSize: 10,
-    //   fontStyle: 'italic',
-    //   fontWeight: '900',
-    // fontFamily: 'sans-serif',
-    // },
+    bottomTabs: {
+      backgroundColor: MD3DarkTheme.colors.background,
+      textColor: MD3DarkTheme.colors.onBackground,
+      selectedTextColor: MD3DarkTheme.colors.primary,
+      activeIndicatorColor: MD3DarkTheme.colors.secondary,
+      //   fontSize: 10,
+      //   fontStyle: 'italic',
+      //   fontWeight: '900',
+      // fontFamily: 'sans-serif',
+    },
   },
 });
 

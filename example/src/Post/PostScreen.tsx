@@ -7,6 +7,7 @@ import Header from '../Header';
 import { queryKeyPostScreen, queryKeyPostScreenPromise } from '../queryKeys';
 import routes from '../Routes';
 import ButtonLink from '../ButtonLink';
+import Spacer from '../helpers/Spacer';
 
 function PostScreen() {
   // optional with react-query  but could be used i.c.w. Relay.dev etc.
@@ -36,6 +37,15 @@ function PostScreen() {
           mode="contained"
         >
           Go further
+        </ButtonLink>
+        <Spacer />
+        <ButtonLink
+          to={routes.PostScreen}
+          params={{ id: '3' }}
+          mode="contained-tonal"
+          refresh
+        >
+          Refresh current screen with new data
         </ButtonLink>
         <Paragraph>{data!.body}</Paragraph>
       </ScrollView>
