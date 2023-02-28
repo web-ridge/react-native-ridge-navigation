@@ -1,4 +1,5 @@
 import type { ColorValue } from 'react-native';
+import Color from 'color';
 
 export interface OptionsStatusBar {
   /**
@@ -55,6 +56,7 @@ export interface ThemeBottomBar {
   selectedTextColor: ColorValue;
   activeIndicatorColor?: ColorValue;
   badgeColor?: ColorValue;
+  rippleColor?: ColorValue;
   badgeTextColor: ColorValue; // not supported yet in RNN
   elevation: number;
   labelVisibilityMode: 'auto' | 'labeled' | 'unlabeled' | 'selected';
@@ -95,6 +97,7 @@ export interface SimpleTheme {
     textColor?: ColorValue;
     selectedTextColor?: ColorValue;
     activeIndicatorColor?: ColorValue;
+    rippleColor?: ColorValue;
     fontFamily?: string;
     fontWeight?: FontWeight;
     fontStyle?: 'normal' | 'italic';
@@ -136,8 +139,10 @@ export function createSimpleTheme(
           simpleTheme.light.accent,
         activeIndicatorColor:
           simpleTheme.light.bottomTabs?.activeIndicatorColor ||
-          simpleTheme.light.accent,
-        // badgeColor: "red",
+          Color(simpleTheme.light.accent).lighten(0.9).hex(),
+        rippleColor:
+          simpleTheme.light.bottomTabs?.rippleColor ||
+          Color(simpleTheme.light.accent).lighten(0.9).hex(),
         badgeTextColor: '#fff', // not supported yet in iOS/Android
         elevation: 5,
         labelVisibilityMode: 'labeled',
@@ -167,9 +172,11 @@ export function createSimpleTheme(
           simpleTheme.dark.bottomTabs?.selectedTextColor ||
           simpleTheme.dark.accent,
         activeIndicatorColor:
-          simpleTheme.dark.bottomTabs?.activeIndicatorColor ||
-          simpleTheme.dark.accent,
-        // badgeColor: "red",
+          simpleTheme.light.bottomTabs?.activeIndicatorColor ||
+          Color(simpleTheme.dark.accent).lighten(0.7).hex(),
+        rippleColor:
+          simpleTheme.light.bottomTabs?.rippleColor ||
+          Color(simpleTheme.dark.accent).lighten(0.9).hex(),
         badgeTextColor: '#fff', // not supported yet in iOS/Android
         elevation: 5,
         labelVisibilityMode: 'labeled',

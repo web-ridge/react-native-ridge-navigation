@@ -40,6 +40,7 @@ export default function BottomTabsStack() {
         labelVisibilityMode="labeled"
         tab={bottomTabIndex}
         onChangeTab={setBottomTabIndex}
+        rippleColor={bottomTheme.rippleColor}
         unselectedTintColor={bottomTheme.textColor}
         barTintColor={bottomTheme.backgroundColor}
         selectedTintColor={bottomTheme.selectedTextColor}
