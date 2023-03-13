@@ -8,10 +8,10 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/webpack-config": "^18.0.1",
+    "@expo/webpack-config": "^0.17.2",
     "@shopify/flash-list": "1.4.0",
     "@tanstack/react-query": "^4.19.1",
-    "@types/react": "^18.0.28",
+    "@types/react": "~18.0.27",
     "@types/react-native": "^0.71.3",
     "expo": "^48.0.0",
     "expo-splash-screen": "~0.18.1",
