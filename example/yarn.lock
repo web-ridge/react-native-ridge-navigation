@@ -8435,14 +8435,13 @@ react-native-mmkv@^2.5.1:
   resolved "https://registry.npmjs.org/react-native-mmkv/-/react-native-mmkv-2.5.1.tgz#29fc462077fab16a5e1b79570fbf8acaac9d87b4"
   integrity sha512-5eQu25z3H6zf6w0NkJoTuFEFrbOu6luZxZ6+rK1W+XwY/rjPSFZFQPVtMaz3im90RbILFXXM/KrFGZrpaJJRoQ==
 
-react-native-paper@^5.0.1:
-  version "5.1.0"
-  resolved "https://registry.npmjs.org/react-native-paper/-/react-native-paper-5.1.0.tgz#7a533a107bf1356241e94789976808ed93ce173d"
-  integrity sha512-cNW/k1i/bd08eSmCpWyMt5aZMrAAl/c56bG2VnPrJtVyQtBgdCvMXnpXhDOWEBJPR6ZEiAJl6VWutYvi9XcDcg==
+"react-native-paper@https://github.com/web-ridge/react-native-paper":
+  version "5.4.1"
+  resolved "https://github.com/web-ridge/react-native-paper#75c6368fa34ac6c261391339888dfb434b0e0e54"
   dependencies:
     "@callstack/react-theme-provider" "^3.0.8"
     color "^3.1.2"
-    use-event-callback "^0.1.0"
+    use-latest-callback "^0.1.5"
 
 react-native-safe-area-context@4.5.0:
   version "4.5.0"
@@ -10008,10 +10007,10 @@ url-parse@^1.4.7, url-parse@^1.5.9:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
 
-use-event-callback@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/use-event-callback/-/use-event-callback-0.1.0.tgz#29d7ce996802935c5387e7d3b606cf316da3457f"
-  integrity sha512-5fTzY5UEXHMK5UR0NRkUz6TPfWmmX9fO8Tx3SnHrfMPdrQ7Rna0gDBy0r56SP68TwsP9DgwSBzeysCu3A/Z2NA==
+use-latest-callback@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.npmjs.org/use-latest-callback/-/use-latest-callback-0.1.5.tgz#a4a836c08fa72f6608730b5b8f4bbd9c57c04f51"
+  integrity sha512-HtHatS2U4/h32NlkhupDsPlrbiD27gSH5swBdtXbCAlc6pfOFzaj0FehW/FO12rx8j2Vy4/lJScCiJyM01E+bQ==
 
 use-sync-external-store@^1.0.0, use-sync-external-store@^1.2.0:
   version "1.2.0"

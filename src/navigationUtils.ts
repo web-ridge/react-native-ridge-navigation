@@ -106,8 +106,7 @@ export function registerScreen<
 
 export type LinkRenderProps = {
   onPressIn?: (e: GestureResponderEvent) => any | undefined;
-  onMouseDown?: (e: GestureResponderEvent) => any | undefined;
-  onMouseEnter?: (e: GestureResponderEvent) => any;
+  onHoverIn?: (e: GestureResponderEvent) => any | undefined;
   onPress: (e: GestureResponderEvent) => any;
   accessibilityRole?: 'link';
   href?: string;

@@ -76,8 +76,8 @@ export default function Link<T extends BaseScreen>({
   }, [preloadElement, to]);
 
   let baseProps: LinkRenderProps = {
-    onMouseDown: linkMode === 'sensitive' ? undefined : preloadData,
-    onMouseEnter:
+    onPressIn: linkMode === 'sensitive' ? undefined : preloadData,
+    onHoverIn:
       linkMode === 'sensitive' ? preloadDataAndElement : preloadElementInner,
     onPress: onPress,
   };
