@@ -1,5 +1,5 @@
 import type { ComponentType, FC, ReactNode } from 'react';
-import type { GestureResponderEvent, MouseEvent } from 'react-native';
+import type { PressableProps } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 
 export type ExtractRouteParams<T extends string> = string extends T
@@ -105,9 +105,9 @@ export function registerScreen<
 }
 
 export type LinkRenderProps = {
-  onPressIn?: (e: GestureResponderEvent) => any | undefined;
-  onHoverIn?: (event: MouseEvent) => void;
-  onPress: (e: GestureResponderEvent) => any;
+  onPressIn?: PressableProps['onPressIn'];
+  onHoverIn?: PressableProps['onHoverIn'];
+  onPress: PressableProps['onPress'];
   accessibilityRole?: 'link';
   href?: string;
 };
@@ -117,7 +117,7 @@ export type LinkProps<T extends BaseScreen> = {
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
   linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
-  onPress?: (event: GestureResponderEvent) => void;
+  onPress?: PressableProps['onPress'];
   skipLinkBehaviourIfPressIsDefined?: boolean;
   replace?: boolean;
   refresh?: boolean;
@@ -133,7 +133,7 @@ export type BottomTabLinkProps<T extends BottomTabType> = {
   params: ExtractRouteParams<T['child']['path']>;
   children: (p: BottomTabLinkRenderProps) => any;
   mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
-  onPress?: (event: GestureResponderEvent) => void;
+  onPress?: PressableProps['onPress'];
 };
 
 export function createScreens(screenMap: Record<string, BaseScreen>) {
