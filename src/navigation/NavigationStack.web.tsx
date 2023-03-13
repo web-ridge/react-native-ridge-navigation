@@ -15,7 +15,6 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
         <View
           style={[
             StyleSheet.absoluteFill,
-            styles.fixIosScroll,
             {
               backgroundColor: theme.layout.backgroundColor,
             },
@@ -29,12 +28,5 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  fixIosScroll: {
-    position: 'fixed' as any,
-    overflow: 'hidden',
-  },
-});
 
 export default NavigationStack;
