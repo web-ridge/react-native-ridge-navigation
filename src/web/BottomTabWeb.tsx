@@ -13,6 +13,8 @@ import type { BottomTabType, Orientation } from '../navigationUtils';
 import BottomTabBadge from './BottomTabBadgeWeb';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
 
+const PressableAny = Pressable as any;
+
 function BottomTabWeb({
   isSelected,
   bottomTab: { path, child, selectedIcon, icon, title },
@@ -30,7 +32,7 @@ function BottomTabWeb({
   return (
     <Link key={path} to={child} params={{}} linkMode="sensitive">
       {(linkProps) => (
-        <Pressable
+        <PressableAny
           {...linkProps}
           testID={`bottomTab-${child.path}`}
           style={({ pressed, hovered }: any) => [
@@ -83,7 +85,7 @@ function BottomTabWeb({
               {title()}
             </Text>
           </View>
-        </Pressable>
+        </PressableAny>
       )}
     </Link>
   );
