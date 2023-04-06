@@ -277,7 +277,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               renderScene={(state, data) => {
                 return (
                   <>
-                    <NavigationBar hidden={true} />
+                    <NavigationBar hidden backTitle="fix-swipe-back" />
                     <OptimizedContextProvider screenKey={state.key} data={data}>
                       <OptimizedRenderScene renderScene={state.renderScene} />
                     </OptimizedContextProvider>

@@ -36,7 +36,7 @@ export default function BottomTabsStack() {
 
   return (
     <>
-      <NavigationBar hidden />
+      <NavigationBar hidden backTitle="fix-swipe-back" />
       <TabBar
         primary={true}
         bottomTabs={true}
@@ -93,7 +93,7 @@ function TabBarItemStack({
         renderScene={(state, data) => {
           return (
             <>
-              <NavigationBar hidden={true} />
+              <NavigationBar hidden backTitle="fix-swipe-back" />
               <OptimizedContextProvider screenKey={state.key} data={data}>
                 {state.renderScene()}
               </OptimizedContextProvider>

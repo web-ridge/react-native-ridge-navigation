@@ -86,7 +86,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
           renderScene={(state, data) => {
             return (
               <>
-                <NavigationBar hidden={true} />
+                <NavigationBar hidden backTitle="fix-swipe-back" />
                 <OptimizedContextProvider
                   withSuspenseContainer={false}
                   screenKey={state.key}
