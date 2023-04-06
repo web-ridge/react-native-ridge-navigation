@@ -1,11 +1,18 @@
 import * as React from 'react';
 import { Appbar } from 'react-native-paper';
-import { BackLink, useNavigation } from 'react-native-ridge-navigation';
+import {
+  BackLink,
+  useModal,
+  useNavigation,
+} from 'react-native-ridge-navigation';
+import { Platform } from 'react-native';
 
 function Header({ title }: { title: string }) {
   const { canNavigateBack } = useNavigation();
+  const { inModal } = useModal();
+  const statusBarHeight = inModal && Platform.OS === 'ios' ? 0 : undefined;
   return (
-    <Appbar.Header mode="small" elevated>
+    <Appbar.Header mode="small" elevated statusBarHeight={statusBarHeight}>
       {canNavigateBack(1) ? (
         <BackLink>
           {(linkProps) => (

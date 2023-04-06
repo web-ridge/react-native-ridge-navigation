@@ -9,7 +9,7 @@ import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import {
   createNormalRoot,
   makeVariablesNavigationFriendly,
-  rootKeyAndPath,
+  rootKeyAndPaths,
 } from './navigationUtils';
 import { StateNavigator } from 'navigation';
 import { Text } from 'react-native';
@@ -31,9 +31,9 @@ function NavigationNestedProvider({ children }: { children: any }) {
         renderScene: () => <EmptyElement />,
       },
       ...screens.map((screen) => ({
-        key: rootKeyAndPath(rootKey, screen.path),
+        key: rootKeyAndPaths(rootKey, screen.path),
         route: makeVariablesNavigationFriendly(
-          rootKeyAndPath(rootKey, screen.path)
+          rootKeyAndPaths(rootKey, screen.path)
         ),
         renderScene: () => <screen.element />,
         trackCrumbTrail: true,

@@ -2,10 +2,11 @@ import * as React from 'react';
 import {
   BaseScreen,
   ExtractRouteParams,
-  rootKeyAndPath,
+  rootKeyAndPaths,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
+import useBottomTabIndex from './useBottomTabIndex';
 
 export default function useNavigation() {
   const {
@@ -18,16 +19,19 @@ export default function useNavigation() {
   } = React.useContext(OptimizedContext);
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
+  const { currentTab } = useBottomTabIndex();
+  const tabPath = currentTab ? currentTab.path : undefined;
+  console.log({ tabPath });
 
   const preload = React.useCallback(
     async <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      const screenKey = rootKeyAndPath(currentRootKey, screen.path);
+      const screenKey = rootKeyAndPaths(currentRootKey, tabPath, screen.path);
       preloadScreen(screenKey, screen.preload(params));
     },
-    [preloadScreen, currentRootKey]
+    [preloadScreen, tabPath, currentRootKey]
   );
 
   const canNavigateBack = React.useCallback(
@@ -64,8 +68,11 @@ export default function useNavigation() {
         preloadRoot(rootKey);
       }
       rootNavigator.start(rootKey);
+      if (rootKey === currentRootKey) {
+        stateNavigator.refresh({}, 'replace');
+      }
     },
-    [preloadRoot, rootNavigator]
+    [preloadRoot, rootNavigator, currentRootKey, stateNavigator]
   );
 
   const refresh = React.useCallback(
@@ -92,10 +99,10 @@ export default function useNavigation() {
       if (doPreload) {
         preload(screen, params);
       }
-      const screenKey = rootKeyAndPath(currentRootKey!, screen.path);
+      const screenKey = rootKeyAndPaths(currentRootKey!, tabPath, screen.path);
       stateNavigator.navigate(screenKey, params, historyAction);
     },
-    [currentRootKey, stateNavigator, preload]
+    [currentRootKey, tabPath, stateNavigator, preload]
   );
 
   const push = React.useCallback(
@@ -115,9 +122,17 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       doPreload = true
     ) => {
-      innerNavigate(screen, params, doPreload, 'replace');
+      if (doPreload) {
+        preload(screen, params);
+      }
+      const screenKey = rootKeyAndPaths(currentRootKey!, tabPath, screen.path);
+      const url = stateNavigator
+        .fluent(true)
+        .navigateBack(1)
+        .navigate(screenKey, params).url;
+      stateNavigator.navigateLink(url);
     },
-    [innerNavigate]
+    [currentRootKey, tabPath, preload, stateNavigator]
   );
 
   return {

@@ -1,7 +1,7 @@
 import {
   BottomTabType,
   RootChildBottomTabs,
-  rootKeyAndPath,
+  rootKeyAndPaths,
 } from './navigationUtils';
 
 import * as React from 'react';
@@ -10,7 +10,7 @@ import TabBar from './navigation/TabBar';
 import TabBarItem from './navigation/TabBarItem';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
-import { useCopiedStateNavigator } from './navigation/utils';
+import { useBottomTabsStateNavigator } from './navigation/useBottomTabsStateNavigator';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import OptimizedContext, {
   OptimizedContextProvider,
@@ -30,6 +30,9 @@ export default function BottomTabsStack() {
   const { setBottomTabIndex, bottomTabIndex } = React.useContext(
     BottomTabIndexContext
   );
+  if (root.type !== 'bottomTabs') {
+    return null;
+  }
 
   return (
     <>
@@ -76,8 +79,8 @@ function TabBarItemStack({
   tab: BottomTabType;
   rootKey: string;
 }) {
-  const start = rootKeyAndPath(rootKey, tab.path);
-  const navigator = useCopiedStateNavigator(start);
+  const start = rootKeyAndPaths(rootKey, tab.path);
+  const navigator = useBottomTabsStateNavigator(start);
   const {
     theme: { layout },
   } = React.useContext(RidgeNavigationContext);

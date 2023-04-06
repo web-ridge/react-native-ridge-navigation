@@ -85,7 +85,8 @@ export default routes
 ## Supported stacks
 - normal
 - bottomTabs
-- sideMenu (in progress)
+
+every screen can be used within every stack. You don't have to configure screens for a stack.
 
 ## Installation
 
@@ -119,7 +120,7 @@ Add react-native-web-image-loader (see example), this will make sure the images 
 // ...
 ```
 
-Support for Material You bottom bar in Android
+Support for Material You bottom bar in Android. (This is probably not needed anymore)
 
 #### 1. add file `android-material-you-bottom-bar.plugin.js` to your root folder
 
@@ -359,6 +360,13 @@ import {
 ## Deep linking
 You have to enable url schemes etc in your app and it'll work!
 
+E.g. our example app can open the following urls:
+
+### Bottom tabs
+navigation://home/post/post-1
+
+## normal stack
+
 
 ## More
 
@@ -401,6 +409,15 @@ If you want to use a component globally with the navigation context pass them as
 <NavigationProvider {...}>
  <UpdateBottomTabBadgeSubscriber />
 </NavigationProvider>
+```
+
+# Scroll fix on web version
+On the web version we need to disable window scroll since else it will sometimes use windows scroll instead of the scrollview
+Add this to your css
+```css
+body {
+  overflow: hidden;
+}
 ```
 
 ## Contributing

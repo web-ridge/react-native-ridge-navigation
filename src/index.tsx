@@ -14,6 +14,8 @@ export {
 export { default as useParams } from './useParams';
 export { default as useBottomTabBadges } from './useBottomTabBadges';
 export { default as useBottomTabIndex } from './useBottomTabIndex';
+export { default as useModal } from './useModal';
+
 export { default as useNavigation } from './useNavigation';
 export { default as NavigationProvider } from './NavigationProvider';
 export { default as NavigationNestedProvider } from './NavigationNestedProvider';

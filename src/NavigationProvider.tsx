@@ -2,17 +2,17 @@ import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
   BaseScreen,
-  getFirstPartAndOthers,
-  getParams,
+  getBottomTabKeyFromPath,
   getPathFromUrl,
+  getPaths,
+  getRootKeyFromPath,
   makeVariablesNavigationFriendly,
-  partMatches,
   Root,
-  rootKeyAndPath,
-  splitPath,
+  rootKeyAndPaths,
 } from './navigationUtils';
 import { defaultTheme, ThemeSettings } from './theme';
-import { Linking, Platform, useColorScheme } from 'react-native';
+
+import { Platform, useColorScheme } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
 import StatusBar from './navigation/StatusBar';
@@ -25,6 +25,8 @@ import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
+import { findMatchedRoute } from './parseUrl';
+import useUrl from './useUrl';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -71,13 +73,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       switch (root.type) {
         case 'bottomTabs':
           root.children.forEach((tab) => {
-            const path = rootKeyAndPath(rootKey, tab.path);
+            const path = rootKeyAndPaths(rootKey, tab.path);
             preloadElement(tab.child);
             preloadScreen(path, tab.child.preload({}));
           });
           break;
         case 'normal':
-          const path = rootKeyAndPath(rootKey, root.child.path);
+          const path = rootKeyAndPaths(rootKey, root.child.path);
 
           if (root.child) {
             preloadElement(root.child);
@@ -88,23 +90,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     [navigationRoot, preloadElement, preloadScreen]
   );
 
-  const { rootNavigator, openLink } = React.useMemo(() => {
+  const rootNavigator = React.useMemo(() => {
     const navigators = Object.entries(navigationRoot)
       .map(([rootKey, root]) => {
-        const defaultScreens = screens.map((screen) => ({
-          key: rootKeyAndPath(rootKey, screen.path),
-          route: makeVariablesNavigationFriendly(
-            rootKeyAndPath(rootKey, screen.path)
-          ),
-          renderScene: () => <screen.element />,
-          trackCrumbTrail: !(
-            root.type === 'bottomTabs' &&
-            root.children.some((c) => c.path === screen.path)
-          ),
-        }));
-
         switch (root.type) {
           case 'bottomTabs':
+            // on the web we don't have a nested stack because we want to preserve the history
+            // on native, we need to nest the stack for bottom tabs
             return [
               {
                 key: rootKey,
@@ -119,7 +111,18 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                     </BottomTabIndexProvider>
                   ),
               },
-              ...defaultScreens,
+              ...root.children
+                .map((tab) =>
+                  screens.map((screen) => ({
+                    key: rootKeyAndPaths(rootKey, tab.path, screen.path),
+                    route: makeVariablesNavigationFriendly(
+                      rootKeyAndPaths(rootKey, tab.path, screen.path)
+                    ),
+                    renderScene: () => <screen.element />,
+                    trackCrumbTrail: true,
+                  }))
+                )
+                .flat(2),
             ];
 
           case 'normal':
@@ -130,65 +133,82 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 trackCrumbTrail: false,
                 renderScene: () => <root.child.element />,
               },
-              ...defaultScreens,
+              ...screens.map((screen) => ({
+                key: rootKeyAndPaths(rootKey, screen.path),
+                route: makeVariablesNavigationFriendly(
+                  rootKeyAndPaths(rootKey, screen.path)
+                ),
+                renderScene: () => <screen.element />,
+                trackCrumbTrail: true,
+              })),
             ];
         }
       })
       .flat();
-    const stateNavigator = new StateNavigator(navigators, getHistoryManager());
-    const openLinkInner = (url: string | null) => {
-      const defaultKey = navigators?.[0]!.key;
-      if (url) {
-        const path = getPathFromUrl(url);
-        const { firstPart, pathSplit } = getFirstPartAndOthers(splitPath(path));
+    return new StateNavigator(navigators, getHistoryManager());
+  }, [navigationRoot, screens]);
 
-        const initialRootKey = firstPart || defaultKey;
+  const initialUrl = useUrl();
+  const done = React.useRef<boolean>(false);
+  React.useMemo(() => {
+    if (done.current) return;
+    done.current = true;
 
-        preloadRoot(initialRootKey);
-        stateNavigator.start(initialRootKey);
-
-        if (pathSplit.length > 0) {
-          const matchedRoute = screens.find((matchRoute) => {
-            const matchPathSplit = splitPath(matchRoute.path);
-            return (
-              pathSplit.every((u, i) => partMatches(u, matchPathSplit[i])) &&
-              matchPathSplit.every((m, i) => partMatches(pathSplit[i], m))
-            );
-          });
-          if (!matchedRoute) {
-            console.log('no matched route found for url: ', path);
-            return;
-          }
-          const params = getParams(pathSplit, splitPath(matchedRoute.path));
-          const navigateKey = rootKeyAndPath(initialRootKey, matchedRoute.path);
-          preloadElement(matchedRoute);
-          preloadScreen(navigateKey, matchedRoute.preload(params));
-          stateNavigator.navigate(navigateKey, params);
-        }
-      } else {
-        console.log('no url found');
-        preloadRoot(defaultKey);
-        stateNavigator.start(defaultKey);
-      }
+    const defaultKey = Object.keys(navigationRoot)[0]!;
+    const startDefault = () => {
+      preloadRoot(defaultKey);
+      rootNavigator.start(defaultKey);
     };
-    if (Platform.OS === 'web') {
-      openLinkInner(location.pathname);
-    } else {
-      Linking.getInitialURL().then(openLinkInner);
+    if (!initialUrl) {
+      console.log({ initialUrl });
+      startDefault();
+      return;
     }
-    return { rootNavigator: stateNavigator, openLink: openLinkInner };
-  }, [navigationRoot, screens, preloadRoot, preloadElement, preloadScreen]);
-  React.useEffect(() => {
-    if (Platform.OS !== 'web') {
-      const handler = Linking.addEventListener('url', ({ url }) =>
-        openLink(url)
+
+    const path = getPathFromUrl(initialUrl);
+    const initialRootKey = getRootKeyFromPath(path) || defaultKey;
+    const hasBottomTabs = navigationRoot[initialRootKey]?.type === 'bottomTabs';
+    const bottomTabKey = getBottomTabKeyFromPath(path);
+    const paths = getPaths(path, hasBottomTabs);
+    preloadRoot(initialRootKey);
+
+    let fluentNavigator = rootNavigator.fluent(true);
+    fluentNavigator = fluentNavigator.navigate(initialRootKey);
+
+    const hasNestedNavigator = hasBottomTabs && Platform.OS !== 'web';
+
+    if (!hasNestedNavigator && paths.length > 0) {
+      const match = findMatchedRoute(paths, screens);
+      if (!match) {
+        console.warn(`[ridge-navigation] No route found for path: ${path}`, {
+          paths,
+        });
+        startDefault();
+        return;
+      }
+      const navigateKey = rootKeyAndPaths(
+        initialRootKey,
+        match.matchedRoute.path
       );
-      return () => {
-        return handler.remove();
-      };
+      preloadElement(match.matchedRoute);
+      preloadScreen(navigateKey, match.matchedRoute.preload(match.params));
+      fluentNavigator = fluentNavigator.navigate(navigateKey, match.params);
     }
-    return undefined;
-  }, [openLink]);
+    console.log(
+      '[ridge-navigation] Initial url',
+      fluentNavigator.url,
+      initialUrl
+    );
+    rootNavigator.navigateLink(fluentNavigator.url);
+  }, [
+    initialUrl,
+    navigationRoot,
+    preloadElement,
+    preloadRoot,
+    preloadScreen,
+    rootNavigator,
+    screens,
+  ]);
 
   return (
     <RidgeNavigationContext.Provider

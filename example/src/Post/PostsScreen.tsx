@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRenderLog } from '../helpers/utils';
 import ListItemLink from '../ListItemLink';
 
-const ITEM_HEIGHT = 80;
+const ITEM_HEIGHT = 79;
 
 function PostsScreen() {
   useRenderLog('PostsScreen');

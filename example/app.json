@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "example",
-    "slug": "example",
+    "name": "navigation",
+    "slug": "navigation",
+    "scheme": "navigation",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -30,9 +31,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "./android-material-you-bottom-bar.plugin.js"
-    ]
+    }
   }
 }

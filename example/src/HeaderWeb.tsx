@@ -24,6 +24,7 @@ export default function HeaderWeb({
             paddingBottom: 12,
             elevation: 4,
             justifyContent: 'space-between',
+            paddingHorizontal: 24,
           }}
         >
           <Text style={{ color: '#000', fontSize: 22 }}>Logo</Text>

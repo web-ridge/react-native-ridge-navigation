@@ -21,6 +21,7 @@ export default function useBottomTabIndex() {
   );
 
   const currentTab =
+    bottomTabIndex &&
     currentRoot?.type === 'bottomTabs' &&
     currentRoot?.children?.[bottomTabIndex];
   return {

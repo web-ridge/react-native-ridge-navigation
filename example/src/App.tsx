@@ -87,6 +87,7 @@ const navigationRoot = {
     }
   ),
   [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
+  [NavigationRoots.RootExample]: createNormalRoot(routes.HomeScreen),
 };
 export default function App() {
   const colorScheme = useColorScheme(); // Can be dark | light | no-preference

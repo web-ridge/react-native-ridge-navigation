@@ -13,7 +13,7 @@ export default function useDeepLinkingBottomTabsIndex() {
           (child, index) =>
             stateNavigator.stateContext.state.key.startsWith(
               `/${currentRootKey}${child.path}`
-            ) ||
+            ) || // TODO: this is tricky we should also use current index in url of bottom tab
             (stateNavigator.stateContext.state.key === currentRootKey &&
               index === 0)
         )

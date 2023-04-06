@@ -12,6 +12,8 @@ export default function NavigationStackWrapper({
   const { currentRootKey, currentRoot } = useCurrentRoot();
   let inner = children;
 
+  console.log('navigation stack wrapper');
+
   if (currentRoot?.type === 'bottomTabs') {
     inner = (
       <BottomTabIndexProvider>

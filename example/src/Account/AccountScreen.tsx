@@ -99,13 +99,13 @@ function AccountScreen() {
 }
 
 const SimpleComponent = React.memo(({ onClose }: { onClose: () => void }) => {
-  console.log(new Date().getTime(), 'SimpleComponent');
+  // console.log(new Date().getTime(), 'SimpleComponent');
   return (
-    <View style={{ height: 250, backgroundColor: 'pink' }}>
+    <View style={{ height: 250 }}>
       <Header title="Modal stack" />
       <Button onPress={onClose}>Close modal</Button>
       <ButtonLink to={routes.PostScreen} params={{ id: '2' }}>
-        Account
+        Go to post detail
       </ButtonLink>
     </View>
   );

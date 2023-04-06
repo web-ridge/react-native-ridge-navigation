@@ -4,6 +4,7 @@ import { createScreens } from 'react-native-ridge-navigation';
 export const NavigationRoots = {
   RootHome: 'app',
   RootAuth: 'auth',
+  RootExample: 'example',
 };
 
 export const BottomRoot = {

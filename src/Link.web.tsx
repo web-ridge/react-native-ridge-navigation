@@ -4,6 +4,7 @@ import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
 import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
 import { generatePath } from './navigationUtils';
+import useModal from './useModal';
 
 function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -19,6 +20,7 @@ export default function Link<T extends BaseScreen>({
   replace: isReplaceInsteadOfPush,
   refresh: isRefreshInsteadOfPush,
 }: LinkProps<T>) {
+  const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
 
@@ -81,13 +83,14 @@ export default function Link<T extends BaseScreen>({
       linkMode === 'sensitive' ? preloadDataAndElement : preloadElementInner,
     onPress: onPress,
   };
-  let childrenProps: LinkRenderProps = onCustomPress
-    ? baseProps
-    : {
-        ...baseProps,
-        accessibilityRole: 'link',
-        href: generatePath('/' + currentRootKey + to.path, params),
-      };
+  let childrenProps: LinkRenderProps =
+    onCustomPress || inModal
+      ? baseProps
+      : {
+          ...baseProps,
+          accessibilityRole: 'link',
+          href: generatePath('/' + currentRootKey + to.path, params),
+        };
 
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
     children({ onPress: onCustomPress });

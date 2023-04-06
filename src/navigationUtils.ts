@@ -141,12 +141,17 @@ export function createScreens(screenMap: Record<string, BaseScreen>) {
     return screenMap[key as keyof typeof screenMap]!;
   });
 }
-export function rootKeyAndPath(rootKey: string, path: string) {
-  return '/' + rootKey + path;
+export function rootKeyAndPaths(
+  rootKey: string,
+  ...paths: (string | undefined)[]
+) {
+  const test = '/' + rootKey + paths.filter((p) => p).join('');
+  console.log({ test });
+  return test;
 }
 
 export function makeVariablesNavigationFriendly(s: string) {
-  // replace :id with {id} and son on
+  // replace :id with {id} and so on
   return s.replace(/:([^/]+)/g, '{$1}');
 }
 
@@ -160,14 +165,25 @@ export function generatePath(
   });
 }
 
-export function getFirstPartAndOthers(pathSplit: string[]) {
-  const firstPart = pathSplit[0];
-  pathSplit.shift();
-  return {
-    firstPart,
-    pathSplit,
-  };
+export function getRootKeyFromPath(path: string) {
+  return splitPath(path)[0];
 }
+export function getBottomTabKeyFromPath(path: string) {
+  return splitPath(path)?.[1];
+}
+export function getPaths(path: string, hasBottomTabs: boolean) {
+  const paths = splitPath(path);
+  // 0 = rootKey
+  // 1 = bottomTabKey
+  return paths.filter((_, index) => {
+    if (hasBottomTabs) {
+      return index >= 2;
+    }
+    return index >= 1;
+  });
+}
+
+export function matchRoutes(paths: string[]) {}
 
 export function splitPath(path: string): string[] {
   let splitMatchPath = path.split('/');
