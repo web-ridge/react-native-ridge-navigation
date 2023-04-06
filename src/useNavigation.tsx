@@ -20,6 +20,8 @@ export default function useNavigation() {
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
   const { currentTab } = useBottomTabIndex();
+
+  // TODO: we don't always want this, sometimes we want to switch tabs
   const tabPath = currentTab ? currentTab.path : undefined;
 
   const preload = React.useCallback(
