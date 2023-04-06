@@ -1,11 +1,10 @@
 import type { BaseScreen } from './navigationUtils';
-import { splitPath } from './navigationUtils';
 
 export type MatchedRoute = {
   route: BaseScreen;
   params: { [key: string]: string };
 };
-export function findMatchedRoute(
+export function findMatchedRoutes(
   paths: string[],
   routes: BaseScreen[]
 ): MatchedRoute[] {
@@ -16,7 +15,7 @@ export function findMatchedRoute(
     let matched = false;
 
     for (const route of routes) {
-      const routeParts = route.path.split('/');
+      const routeParts = route.path.split('/').filter((p) => p !== '');
       if (routeParts.length <= paths.length - i) {
         const params: { [key: string]: string } = {};
         const isMatch = routeParts.every((part, index) => {

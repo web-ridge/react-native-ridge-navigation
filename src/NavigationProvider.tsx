@@ -6,6 +6,7 @@ import {
   getPathFromUrl,
   getPaths,
   getRootKeyFromPath,
+  getScreenKey,
   makeVariablesNavigationFriendly,
   Root,
   rootKeyAndPaths,
@@ -25,7 +26,7 @@ import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
-import { findMatchedRoute } from './parseUrl';
+import { findMatchedRoutes } from './parseUrl';
 import useUrl from './useUrl';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
@@ -113,14 +114,20 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               },
               ...root.children
                 .map((tab) =>
-                  screens.map((screen) => ({
-                    key: rootKeyAndPaths(rootKey, tab.path, screen.path),
-                    route: makeVariablesNavigationFriendly(
-                      rootKeyAndPaths(rootKey, tab.path, screen.path)
-                    ),
-                    renderScene: () => <screen.element />,
-                    trackCrumbTrail: true,
-                  }))
+                  screens.map((screen) => {
+                    // we don't want too much segments in the url if the tab is the same
+                    // so we don't add the tab path if it's the same
+                    const isTheSame = tab.path === screen.path;
+                    const screenPath = isTheSame ? undefined : screen.path;
+                    return {
+                      key: getScreenKey(rootKey, tab.path, screenPath),
+                      route: makeVariablesNavigationFriendly(
+                        getScreenKey(rootKey, tab.path, screenPath)
+                      ),
+                      renderScene: () => <screen.element />,
+                      trackCrumbTrail: !isTheSame,
+                    };
+                  })
                 )
                 .flat(2),
             ];
@@ -167,32 +174,51 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
 
     const path = getPathFromUrl(initialUrl);
     const initialRootKey = getRootKeyFromPath(path) || defaultKey;
-    const hasBottomTabs = navigationRoot[initialRootKey]?.type === 'bottomTabs';
+    const root = navigationRoot[initialRootKey];
+    const rootType = root?.type;
+    const isBottomTabs = rootType === 'bottomTabs';
+    const isNormal = rootType === 'normal';
     const bottomTabKey = getBottomTabKeyFromPath(path);
-    const paths = getPaths(path, hasBottomTabs);
+    const paths = getPaths(path, isBottomTabs);
     preloadRoot(initialRootKey);
 
     let fluentNavigator = rootNavigator.fluent(true);
     fluentNavigator = fluentNavigator.navigate(initialRootKey);
+    const isWeb = Platform.OS === 'web';
+    const isNormalStack = isNormal || (isBottomTabs && isWeb);
+    const hasHistory = paths.length > 0;
 
-    const hasNestedNavigator = hasBottomTabs && Platform.OS !== 'web';
+    // add the bottom tab to the stack if it's not the default
+    if (isBottomTabs && isWeb) {
+      const route = root?.children.find(
+        (tab, index) => tab.path === '/' + bottomTabKey && index !== 0
+      );
+      if (route) {
+        const navigateKey = getScreenKey(initialRootKey, bottomTabKey);
+        preloadElement(route.child);
+        preloadScreen(navigateKey, route.child.preload({}));
+        fluentNavigator = fluentNavigator.navigate(navigateKey, {});
+      }
+    }
 
-    if (!hasNestedNavigator && paths.length > 0) {
-      const match = findMatchedRoute(paths, screens);
-      if (!match) {
-        console.warn(`[ridge-navigation] No route found for path: ${path}`, {
-          paths,
-        });
+    if (isNormalStack && hasHistory) {
+      const matches = findMatchedRoutes(paths, screens);
+      console.log({ paths, matches });
+      if (matches.length === 0) {
+        console.warn(`[ridge-navigation] No route found for path: ${path}`);
         startDefault();
         return;
       }
-      const navigateKey = rootKeyAndPaths(
-        initialRootKey,
-        match.matchedRoute.path
-      );
-      preloadElement(match.matchedRoute);
-      preloadScreen(navigateKey, match.matchedRoute.preload(match.params));
-      fluentNavigator = fluentNavigator.navigate(navigateKey, match.params);
+      matches.forEach(({ route, params }) => {
+        const navigateKey = getScreenKey(
+          initialRootKey,
+          bottomTabKey,
+          route.path
+        );
+        preloadElement(route);
+        preloadScreen(navigateKey, route.preload(params));
+        fluentNavigator = fluentNavigator.navigate(navigateKey, params);
+      });
     }
     console.log(
       '[ridge-navigation] Initial url',

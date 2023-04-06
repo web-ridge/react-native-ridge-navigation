@@ -2,33 +2,34 @@ import * as React from 'react';
 import useNavigation from './useNavigation';
 import OptimizedContext from './contexts/OptimizedContext';
 import useCurrentRoot from './useCurrentRoot';
+import { getBottomTabKeyFromPath } from './navigationUtils';
 
 export default function useDeepLinkingBottomTabsIndex() {
   const { push } = useNavigation();
-  const { currentRoot, currentRootKey } = useCurrentRoot();
+  const { currentRoot } = useCurrentRoot();
   const { stateNavigator } = React.useContext(OptimizedContext);
-  const bottomTabIndex =
-    currentRoot?.type === 'bottomTabs'
-      ? currentRoot.children.findIndex(
-          (child, index) =>
-            stateNavigator.stateContext.state.key.startsWith(
-              `/${currentRootKey}${child.path}`
-            ) || // TODO: this is tricky we should also use current index in url of bottom tab
-            (stateNavigator.stateContext.state.key === currentRootKey &&
-              index === 0)
-        )
-      : 0;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const children =
+    currentRoot?.type === 'bottomTabs' ? currentRoot.children : [];
+  const stateKey = stateNavigator.stateContext.state.key;
+  const currentTabKey = getBottomTabKeyFromPath(stateKey);
+  const bottomTabIndex = React.useMemo(() => {
+    return (
+      children.findIndex((child) => child.path === '/' + currentTabKey) || 0
+    );
+  }, [children, currentTabKey]);
+
+  console.log({ bottomTabIndex, currentTabKey, stateKey });
 
   const setBottomTabIndex = React.useCallback(
     (index: number) => {
-      if (currentRoot?.type === 'bottomTabs') {
-        const screen = currentRoot?.children?.[index]?.child;
-        if (screen) {
-          push(screen, {}, true);
-        }
+      const screen = children?.[index]?.child;
+      if (screen) {
+        push(screen, {}, true);
       }
     },
-    [currentRoot, push]
+    [children, push]
   );
   return React.useMemo(
     () => ({ bottomTabIndex, setBottomTabIndex }),

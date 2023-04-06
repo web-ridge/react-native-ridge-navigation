@@ -141,13 +141,38 @@ export function createScreens(screenMap: Record<string, BaseScreen>) {
     return screenMap[key as keyof typeof screenMap]!;
   });
 }
+
+export function getScreenKey(
+  rootKey: string,
+  tabPath: string | undefined,
+  ...paths: (string | undefined)[]
+) {
+  const isTheSame = tabPath === paths[0];
+  const screenPath = isTheSame ? undefined : paths[0];
+  return rootKeyAndPaths(rootKey, tabPath, screenPath);
+}
+
 export function rootKeyAndPaths(
   rootKey: string,
   ...paths: (string | undefined)[]
 ) {
-  const test = '/' + rootKey + paths.filter((p) => p).join('');
-  console.log({ test });
-  return test;
+  const sanitizedRoot = rootKey.endsWith('/') ? rootKey.slice(0, -1) : rootKey; // Remove trailing slash from rootKey
+  const sanitizedPaths = paths
+    .filter((p) => p)
+    .map((path) => {
+      const trimmedPath = path!.trim();
+      const withoutLeadingSlash = trimmedPath.startsWith('/')
+        ? trimmedPath.slice(1)
+        : trimmedPath;
+      const withoutTrailingSlash = withoutLeadingSlash.endsWith('/')
+        ? withoutLeadingSlash.slice(0, -1)
+        : withoutLeadingSlash;
+      return withoutTrailingSlash;
+    }); // Remove leading and trailing slashes from paths
+
+  const url = sanitizedRoot + '/' + sanitizedPaths.join('/');
+  console.log({ url });
+  return url;
 }
 
 export function makeVariablesNavigationFriendly(s: string) {
@@ -183,11 +208,8 @@ export function getPaths(path: string, hasBottomTabs: boolean) {
   });
 }
 
-export function matchRoutes(paths: string[]) {}
-
 export function splitPath(path: string): string[] {
-  let splitMatchPath = path.split('/');
-  splitMatchPath.shift();
+  let splitMatchPath = path.split('/').filter((p) => p);
   return splitMatchPath;
 }
 

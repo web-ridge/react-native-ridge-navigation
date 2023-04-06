@@ -1,4 +1,4 @@
-import { findMatchedRoute, MatchedRoute } from './parseUrl';
+import { findMatchedRoutes, MatchedRoute } from './parseUrl';
 import type { BaseScreen } from './navigationUtils';
 
 const getRoute = (path: string) => ({
@@ -28,7 +28,7 @@ const getExpectedMatchedRoute = (
   params,
 });
 
-describe('findMatchedRoute', () => {
+describe('findMatchedRoutes', () => {
   // Test cases
   test('single route match', () => {
     const inputUrl = 'post/10';
@@ -36,7 +36,7 @@ describe('findMatchedRoute', () => {
       getExpectedMatchedRoute('post/:id', { id: '10' }),
     ];
 
-    let result = findMatchedRoute(inputUrl.split('/'), routes);
+    let result = findMatchedRoutes(inputUrl.split('/'), routes);
     console.log({ result });
     expect(result).toEqual(expectedOutput);
   });
@@ -53,7 +53,7 @@ describe('findMatchedRoute', () => {
       ),
     ];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -69,7 +69,7 @@ describe('findMatchedRoute', () => {
       }),
     ];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -84,7 +84,7 @@ describe('findMatchedRoute', () => {
       }),
     ];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -95,7 +95,7 @@ describe('findMatchedRoute', () => {
       getExpectedMatchedRoute('admin', {}),
     ];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -104,7 +104,7 @@ describe('findMatchedRoute', () => {
     const inputUrl = 'nonexistent';
     const expectedOutput: MatchedRoute[] = [];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -115,7 +115,7 @@ describe('findMatchedRoute', () => {
       getExpectedMatchedRoute('post/:id', { id: '1' }),
     ];
 
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -127,7 +127,7 @@ describe('findMatchedRoute', () => {
       getExpectedMatchedRoute('post-author/:id', { id: '10' }),
       getExpectedMatchedRoute('search/:query', { query: 'query' }),
     ];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -138,7 +138,7 @@ describe('findMatchedRoute', () => {
       getExpectedMatchedRoute('category/:category', { category: 'tech' }),
       getExpectedMatchedRoute('tags/:tag/posts', { tag: 'javascript' }),
     ];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -151,7 +151,7 @@ describe('findMatchedRoute', () => {
         'author-id': '5',
       }),
     ];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -159,7 +159,7 @@ describe('findMatchedRoute', () => {
   test('empty input URL', () => {
     const inputUrl = '';
     const expectedOutput: MatchedRoute[] = [];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -167,7 +167,7 @@ describe('findMatchedRoute', () => {
   test('only non-matching segments', () => {
     const inputUrl = 'nonexistent/another-nonexistent';
     const expectedOutput: MatchedRoute[] = [];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });
@@ -176,7 +176,7 @@ describe('findMatchedRoute', () => {
     routes.length = 0;
     const inputUrl = 'post/10';
     const expectedOutput: MatchedRoute[] = [];
-    expect(findMatchedRoute(inputUrl.split('/'), routes)).toEqual(
+    expect(findMatchedRoutes(inputUrl.split('/'), routes)).toEqual(
       expectedOutput
     );
   });

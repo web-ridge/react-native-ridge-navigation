@@ -2,7 +2,7 @@ import * as React from 'react';
 import {
   BaseScreen,
   ExtractRouteParams,
-  rootKeyAndPaths,
+  getScreenKey,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
@@ -21,14 +21,13 @@ export default function useNavigation() {
   const { currentRootKey, currentRoot } = useCurrentRoot();
   const { currentTab } = useBottomTabIndex();
   const tabPath = currentTab ? currentTab.path : undefined;
-  console.log({ tabPath });
 
   const preload = React.useCallback(
     async <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      const screenKey = rootKeyAndPaths(currentRootKey, tabPath, screen.path);
+      const screenKey = getScreenKey(currentRootKey, tabPath, screen.path);
       preloadScreen(screenKey, screen.preload(params));
     },
     [preloadScreen, tabPath, currentRootKey]
@@ -99,7 +98,7 @@ export default function useNavigation() {
       if (doPreload) {
         preload(screen, params);
       }
-      const screenKey = rootKeyAndPaths(currentRootKey!, tabPath, screen.path);
+      const screenKey = getScreenKey(currentRootKey!, tabPath, screen.path);
       stateNavigator.navigate(screenKey, params, historyAction);
     },
     [currentRootKey, tabPath, stateNavigator, preload]
@@ -125,7 +124,7 @@ export default function useNavigation() {
       if (doPreload) {
         preload(screen, params);
       }
-      const screenKey = rootKeyAndPaths(currentRootKey!, tabPath, screen.path);
+      const screenKey = getScreenKey(currentRootKey!, tabPath, screen.path);
       const url = stateNavigator
         .fluent(true)
         .navigateBack(1)
