@@ -8,6 +8,10 @@ import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
 import useBottomTabIndex from './useBottomTabIndex';
 
+type NavigateOptions = {
+  preload?: boolean;
+  toBottomTab?: string;
+};
 export default function useNavigation() {
   const {
     rootNavigator,
@@ -80,9 +84,9 @@ export default function useNavigation() {
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
-      doPreload = true
+      options?: NavigateOptions
     ) => {
-      if (doPreload) {
+      if (options?.preload) {
         preload(screen, params);
       }
       stateNavigator.refresh(params, 'replace');
@@ -94,13 +98,17 @@ export default function useNavigation() {
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
-      doPreload = true,
+      options?: NavigateOptions,
       historyAction?: 'add' | 'replace' | 'none'
     ) => {
-      if (doPreload) {
+      if (options?.preload) {
         preload(screen, params);
       }
-      const screenKey = getScreenKey(currentRootKey!, tabPath, screen.path);
+      const screenKey = getScreenKey(
+        currentRootKey!,
+        options?.toBottomTab || tabPath,
+        screen.path
+      );
       stateNavigator.navigate(screenKey, params, historyAction);
     },
     [currentRootKey, tabPath, stateNavigator, preload]
@@ -110,9 +118,9 @@ export default function useNavigation() {
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
-      doPreload = true
+      options?: NavigateOptions
     ) => {
-      innerNavigate(screen, params, doPreload);
+      innerNavigate(screen, params, options);
     },
     [innerNavigate]
   );
@@ -121,12 +129,16 @@ export default function useNavigation() {
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
-      doPreload = true
+      options?: NavigateOptions
     ) => {
-      if (doPreload) {
+      if (options?.preload) {
         preload(screen, params);
       }
-      const screenKey = getScreenKey(currentRootKey!, tabPath, screen.path);
+      const screenKey = getScreenKey(
+        currentRootKey!,
+        options?.toBottomTab || tabPath,
+        screen.path
+      );
       const url = stateNavigator
         .fluent(true)
         .navigateBack(1)

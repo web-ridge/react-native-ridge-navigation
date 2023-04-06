@@ -114,6 +114,7 @@ export type LinkRenderProps = {
 
 export type LinkProps<T extends BaseScreen> = {
   to: T;
+  toBottomTab?: string;
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
   linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter

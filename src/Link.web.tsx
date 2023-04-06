@@ -12,6 +12,7 @@ function isModifiedEvent(event: React.MouseEvent) {
 
 export default function Link<T extends BaseScreen>({
   to,
+  toBottomTab,
   params,
   children,
   linkMode = 'default',
@@ -52,12 +53,13 @@ export default function Link<T extends BaseScreen>({
         !isModifiedEvent(nativeEvent) // Ignore clicks with modifier keys
       ) {
         event.preventDefault();
+        const options = { preload: false, toBottomTab };
         if (isRefreshInsteadOfPush) {
-          refresh(to, params, false);
+          refresh(to, params, options);
         } else if (isReplaceInsteadOfPush) {
-          replace(to, params, false);
+          replace(to, params, options);
         } else {
-          push(to, params, false);
+          push(to, params, options);
         }
       }
     },
