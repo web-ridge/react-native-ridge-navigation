@@ -172,7 +172,6 @@ export function rootKeyAndPaths(
     }); // Remove leading and trailing slashes from paths
 
   const url = sanitizedRoot + '/' + sanitizedPaths.join('/');
-  console.log({ url });
   return url;
 }
 

@@ -5,7 +5,6 @@ import {
 } from './navigationUtils';
 
 import * as React from 'react';
-import NavigationBar from './navigation/NavigationBar';
 import TabBar from './navigation/TabBar';
 import TabBarItem from './navigation/TabBarItem';
 import { NavigationHandler } from 'navigation-react';
@@ -18,6 +17,7 @@ import OptimizedContext, {
 import BottomTabIndexContext from './contexts/BottomTabIndexContext';
 import BottomTabBadgesContext from './contexts/BottomTabBadgesContext';
 import useCurrentRoot from './useCurrentRoot';
+import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 
 export default function BottomTabsStack() {
   const { currentRoot, currentRootKey } = useCurrentRoot();
@@ -36,7 +36,7 @@ export default function BottomTabsStack() {
 
   return (
     <>
-      <NavigationBar hidden backTitle="fix-swipe-back" />
+      <HiddenNavbarWithSwipeBack />
       <TabBar
         primary={true}
         bottomTabs={true}
@@ -93,7 +93,7 @@ function TabBarItemStack({
         renderScene={(state, data) => {
           return (
             <>
-              <NavigationBar hidden backTitle="fix-swipe-back" />
+              <HiddenNavbarWithSwipeBack />
               <OptimizedContextProvider screenKey={state.key} data={data}>
                 {state.renderScene()}
               </OptimizedContextProvider>

@@ -1,48 +1,66 @@
 import * as React from 'react';
 import { NavigationContext } from 'navigation-react';
 import { StateNavigator } from 'navigation';
-import * as Linking from 'expo-linking';
-import { getPathFromUrl, splitPath } from '../navigationUtils';
-import { findMatchedRoute } from '../parseUrl';
-import { useNavigation } from 'react-native-ridge-navigation';
+import {
+  getBottomTabKeyFromPath,
+  getPathFromUrl,
+  getPaths,
+  getRootKeyFromPath,
+  getScreenKey,
+} from '../navigationUtils';
+import { findMatchedRoutes } from '../parseUrl';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
+import { useURL } from 'expo-linking';
 
-export function useBottomTabsStateNavigator(key: string) {
+export function useBottomTabsStateNavigator(tabKey: string) {
+  const { screens, preloadScreen, preloadElement } = React.useContext(
+    RidgeNavigationContext
+  );
   const { stateNavigator } = React.useContext(NavigationContext);
-  useHandleDeeplinking(key);
+
+  const initialUrl = useURL();
   return React.useMemo(() => {
-    const navigator = new StateNavigator(stateNavigator);
-    navigator.start(key);
-    return navigator;
-  }, [key]);
-}
-
-function useHandleDeeplinking(key: string) {
-  const initialUrl = Linking.useURL();
-  const { screens } = React.useContext(RidgeNavigationContext);
-  const { preloadElement, push } = useNavigation();
-  const handled = React.useRef(false);
-  React.useEffect(() => {
-    if (handled.current) {
-      return;
-    }
+    const goToDefault = () => {
+      const navigator = new StateNavigator(stateNavigator);
+      navigator.start(tabKey);
+      return navigator;
+    };
     if (initialUrl) {
-      handled.current = true;
+      const navigator = new StateNavigator(stateNavigator);
+      let fluentNavigator = navigator.fluent(true);
+      fluentNavigator = fluentNavigator.navigate(tabKey);
       const path = getPathFromUrl(initialUrl);
-      const split = splitPath(path);
-      const rootAndBottomTabKey = [split[0], split[1]].join('/');
-      const currentBottomTab = '/' + rootAndBottomTabKey === key;
-
-      const rest = split.slice(1);
-      console.log({ rest });
-      if (currentBottomTab && rest.length > 0) {
-        const match = findMatchedRoute(rest, screens);
-        if (match) {
-          console.log({ match });
-          preloadElement(match.matchedRoute);
-          push(match.matchedRoute, match.params, true);
-        }
+      const initialRootKey = getRootKeyFromPath(path)!;
+      const bottomTabKey = getBottomTabKeyFromPath(path);
+      const bottomTabScreenKey = getScreenKey(initialRootKey, bottomTabKey);
+      if (bottomTabScreenKey !== tabKey) {
+        return goToDefault();
       }
+      const paths = getPaths(path, true);
+      const matches = findMatchedRoutes(paths, screens);
+      matches.forEach(({ route, params }) => {
+        const navigateKey = getScreenKey(
+          initialRootKey,
+          bottomTabKey,
+          route.path
+        );
+        preloadElement(route);
+        preloadScreen(navigateKey, route.preload(params));
+        fluentNavigator = fluentNavigator.navigate(navigateKey, params);
+      });
+      console.log('fluent', fluentNavigator.url);
+
+      navigator.navigateLink(fluentNavigator.url);
+      return navigator;
     }
-  }, [initialUrl]);
+
+    return goToDefault();
+  }, [
+    tabKey,
+    initialUrl,
+    preloadElement,
+    preloadScreen,
+    screens,
+    // stateNavigator,
+  ]);
 }

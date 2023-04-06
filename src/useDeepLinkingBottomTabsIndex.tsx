@@ -1,30 +1,27 @@
 import * as React from 'react';
 import useCurrentRoot from './useCurrentRoot';
-import {
-  getFirstPartAndOthers,
-  getPathFromUrl,
-  RootChildBottomTabs,
-  splitPath,
-} from './navigationUtils';
-import * as Linking from 'expo-linking';
+import { getBottomTabKeyFromPath, getPathFromUrl } from './navigationUtils';
+import useUrl from './useUrl';
 
 export default function useDeepLinkingBottomTabsIndex() {
-  const [bottomTabIndex, setBottomTabIndex] = React.useState(0);
   const { currentRoot } = useCurrentRoot();
-  const initialUrl = Linking.useURL();
+  const initialUrl = useUrl();
 
-  React.useEffect(() => {
-    if (initialUrl && currentRoot?.type === 'bottomTabs') {
-      const path = getPathFromUrl(initialUrl);
-      const { pathSplit } = getFirstPartAndOthers(splitPath(path));
-      const newIndex = (currentRoot as RootChildBottomTabs).children.findIndex(
-        (tab) => tab.path === '/' + pathSplit[0]
-      );
-      if (newIndex >= 0) {
-        setBottomTabIndex(newIndex);
-      }
+  const children =
+    currentRoot?.type === 'bottomTabs' ? currentRoot.children : [];
+
+  const initialIndex = React.useMemo(() => {
+    if (!initialUrl) {
+      return 0;
     }
-  }, [currentRoot, initialUrl]);
+    const path = getPathFromUrl(initialUrl);
+    const currentTabKey = getBottomTabKeyFromPath(path);
+    return (
+      children.findIndex((child) => child.path === '/' + currentTabKey) || 0
+    );
+  }, [children, initialUrl]);
+  const [bottomTabIndex, setBottomTabIndex] = React.useState(initialIndex);
+
   return React.useMemo(
     () => ({ bottomTabIndex, setBottomTabIndex }),
     [bottomTabIndex, setBottomTabIndex]

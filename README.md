@@ -120,31 +120,7 @@ Add react-native-web-image-loader (see example), this will make sure the images 
 // ...
 ```
 
-Support for Material You bottom bar in Android. (This is probably not needed anymore)
 
-#### 1. add file `android-material-you-bottom-bar.plugin.js` to your root folder
-
-```js
-const { withAndroidStyles } = require("@expo/config-plugins");
-
-module.exports = function androidMaterialYouBottomBarPlugin(config) {
-  return withAndroidStyles(config, async (config) => {
-    const styleFile = config.modResults;
-    const appTheme = styleFile.resources.style.find(
-      (style) => style.$.name === 'AppTheme',
-    );
-    appTheme.$.parent = 'Theme.Material3.DayNight.NoActionBar';
-
-    return config;
-  });
-};
-```
-#### 2. add this to your expo config app.config.js or app.json
-```json
-"plugins": [
-  "./android-material-you-bottom-bar.plugin.js"
-]
-```
 
 
 ## Usage

@@ -1,6 +1,5 @@
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
-import NavigationBar from './navigation/NavigationBar';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
@@ -13,6 +12,7 @@ import {
 } from './navigationUtils';
 import { StateNavigator } from 'navigation';
 import { Text } from 'react-native';
+import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 
 function NavigationNestedProvider({ children }: { children: any }) {
   const id = React.useId();
@@ -86,7 +86,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
           renderScene={(state, data) => {
             return (
               <>
-                <NavigationBar hidden backTitle="fix-swipe-back" />
+                <HiddenNavbarWithSwipeBack />
                 <OptimizedContextProvider
                   withSuspenseContainer={false}
                   screenKey={state.key}

@@ -28,6 +28,7 @@ import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 import { findMatchedRoutes } from './parseUrl';
 import useUrl from './useUrl';
+import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -206,7 +207,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
 
     if (isNormalStack && hasHistory) {
       const matches = findMatchedRoutes(paths, screens);
-      console.log({ paths, matches });
       if (matches.length === 0) {
         console.warn(`[ridge-navigation] No route found for path: ${path}`);
         startDefault();
@@ -277,7 +277,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               renderScene={(state, data) => {
                 return (
                   <>
-                    <NavigationBar hidden backTitle="fix-swipe-back" />
+                    <HiddenNavbarWithSwipeBack />
                     <OptimizedContextProvider screenKey={state.key} data={data}>
                       <OptimizedRenderScene renderScene={state.renderScene} />
                     </OptimizedContextProvider>

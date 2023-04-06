@@ -20,13 +20,12 @@ export default function useDeepLinkingBottomTabsIndex() {
     );
   }, [children, currentTabKey]);
 
-  console.log({ bottomTabIndex, currentTabKey, stateKey });
-
   const setBottomTabIndex = React.useCallback(
     (index: number) => {
+      const tab = children?.[index];
       const screen = children?.[index]?.child;
       if (screen) {
-        push(screen, {}, true);
+        push(screen, {}, { preload: true, toBottomTab: tab?.path });
       }
     },
     [children, push]

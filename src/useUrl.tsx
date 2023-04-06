@@ -1,5 +1,6 @@
-import * as Linking from 'expo-linking';
+import { initialUrl } from './url';
+import { useURL } from 'expo-linking';
 
 export default function useUrl() {
-  return Linking.useURL();
+  return useURL() || initialUrl;
 }
