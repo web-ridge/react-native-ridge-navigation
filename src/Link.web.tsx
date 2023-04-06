@@ -65,6 +65,7 @@ export default function Link<T extends BaseScreen>({
     },
     [
       onCustomPress,
+      toBottomTab,
       isRefreshInsteadOfPush,
       isReplaceInsteadOfPush,
       refresh,
