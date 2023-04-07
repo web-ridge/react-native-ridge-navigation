@@ -19,9 +19,10 @@ export function useBottomTabsStateNavigator(tabKey: string) {
   const { stateNavigator } = React.useContext(NavigationContext);
 
   const navigator = React.useMemo(() => {
-    const navigator = new StateNavigator(stateNavigator);
-    navigator.start(tabKey);
-    return navigator;
+    const n = new StateNavigator(stateNavigator);
+    n.start(tabKey);
+    return n;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const initialUrl = useURL();
   React.useEffect(() => {

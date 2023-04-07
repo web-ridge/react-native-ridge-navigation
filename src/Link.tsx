@@ -31,12 +31,14 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
+      const options = { preload: false };
+
       if (isRefreshInsteadOfPush) {
-        refresh(to, params, false);
+        refresh(to, params, options);
       } else if (isReplaceInsteadOfPush) {
-        replace(to, params, false);
+        replace(to, params, options);
       } else {
-        push(to, params, false);
+        push(to, params, options);
       }
       isPushing.current = false;
     },

@@ -7,6 +7,7 @@ export default function useDeepLinkingBottomTabsIndex() {
   const { currentRoot } = useCurrentRoot();
   const initialUrl = useUrl();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const children =
     currentRoot?.type === 'bottomTabs' ? currentRoot.children : [];
 
