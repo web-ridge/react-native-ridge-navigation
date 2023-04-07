@@ -14,9 +14,9 @@ export default function Redirect<T extends BaseScreen>({
   const { push, replace } = useNavigation();
   React.useEffect(() => {
     if (addToHistory) {
-      push(to, params, true);
+      push(to, params, { preload: true });
     } else {
-      replace(to, params, true);
+      replace(to, params, { preload: true });
     }
   }, [push, replace, to, params, addToHistory]);
   return null;
