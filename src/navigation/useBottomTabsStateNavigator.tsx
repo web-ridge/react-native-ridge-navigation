@@ -18,49 +18,49 @@ export function useBottomTabsStateNavigator(tabKey: string) {
   );
   const { stateNavigator } = React.useContext(NavigationContext);
 
+  const navigator = React.useMemo(() => {
+    const navigator = new StateNavigator(stateNavigator);
+    navigator.start(tabKey);
+    return navigator;
+  }, []);
   const initialUrl = useURL();
-  return React.useMemo(() => {
-    const goToDefault = () => {
-      const navigator = new StateNavigator(stateNavigator);
-      navigator.start(tabKey);
-      return navigator;
-    };
-    if (initialUrl) {
-      const navigator = new StateNavigator(stateNavigator);
-      let fluentNavigator = navigator.fluent(true);
-      fluentNavigator = fluentNavigator.navigate(tabKey);
-      const path = getPathFromUrl(initialUrl);
-      const initialRootKey = getRootKeyFromPath(path)!;
-      const bottomTabKey = getBottomTabKeyFromPath(path);
-      const bottomTabScreenKey = getScreenKey(initialRootKey, bottomTabKey);
-      if (bottomTabScreenKey !== tabKey) {
-        return goToDefault();
+  React.useEffect(() => {
+    const timerId = setTimeout(() => {
+      if (initialUrl) {
+        let fluentNavigator = navigator.fluent(false).navigate(tabKey);
+        const path = getPathFromUrl(initialUrl);
+        const initialRootKey = getRootKeyFromPath(path)!;
+        const bottomTabKey = getBottomTabKeyFromPath(path);
+        const bottomTabScreenKey = getScreenKey(initialRootKey, bottomTabKey);
+        if (bottomTabScreenKey !== tabKey) {
+          return;
+        }
+        const paths = getPaths(path, true);
+        const matches = findMatchedRoutes(paths, screens);
+        matches.forEach(({ route, params }) => {
+          const navigateKey = getScreenKey(
+            initialRootKey,
+            bottomTabKey,
+            route.path
+          );
+          preloadElement(route);
+          preloadScreen(navigateKey, route.preload(params));
+          fluentNavigator = fluentNavigator.navigate(navigateKey, params);
+        });
+        console.log('fluent', fluentNavigator.url);
+
+        navigator.navigateLink(fluentNavigator.url);
       }
-      const paths = getPaths(path, true);
-      const matches = findMatchedRoutes(paths, screens);
-      matches.forEach(({ route, params }) => {
-        const navigateKey = getScreenKey(
-          initialRootKey,
-          bottomTabKey,
-          route.path
-        );
-        preloadElement(route);
-        preloadScreen(navigateKey, route.preload(params));
-        fluentNavigator = fluentNavigator.navigate(navigateKey, params);
-      });
-      console.log('fluent', fluentNavigator.url);
-
-      navigator.navigateLink(fluentNavigator.url);
-      return navigator;
-    }
-
-    return goToDefault();
+    }, 600);
+    return () => clearTimeout(timerId);
   }, [
-    tabKey,
     initialUrl,
-    preloadElement,
-    preloadScreen,
+    tabKey,
+    stateNavigator,
     screens,
-    // stateNavigator,
+    preloadScreen,
+    preloadElement,
+    navigator,
   ]);
+  return navigator;
 }

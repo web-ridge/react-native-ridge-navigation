@@ -21,6 +21,11 @@ export default function useDeepLinkingBottomTabsIndex() {
     );
   }, [children, initialUrl]);
   const [bottomTabIndex, setBottomTabIndex] = React.useState(initialIndex);
+  React.useEffect(() => {
+    if (initialIndex >= 0) {
+      setBottomTabIndex(initialIndex);
+    }
+  }, [initialIndex]);
 
   return React.useMemo(
     () => ({ bottomTabIndex, setBottomTabIndex }),
