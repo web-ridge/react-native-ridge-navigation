@@ -8,14 +8,14 @@ import {
   Platform,
   useColorScheme,
 } from 'react-native';
-import Link from '../Link';
 import type { BottomTabType, Orientation } from '../navigationUtils';
 import BottomTabBadge from './BottomTabBadgeWeb';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
+import { BottomTabLink } from 'react-native-ridge-navigation';
 
 function BottomTabWeb({
   isSelected,
-  bottomTab: { path, child, selectedIcon, icon, title },
+  bottomTab,
   count,
   orientation,
 }: {
@@ -28,11 +28,10 @@ function BottomTabWeb({
   const { theme } = React.useContext(RidgeNavigationContext);
 
   return (
-    <Link key={path} to={child} params={{}} linkMode="sensitive">
+    <BottomTabLink key={bottomTab.path} to={bottomTab} params={{}}>
       {(linkProps) => (
         <Pressable
           {...linkProps}
-          testID={`bottomTab-${child.path}`}
           style={({ pressed, hovered }: any) => [
             styles.touchable,
             Platform.OS === 'web'
@@ -51,7 +50,7 @@ function BottomTabWeb({
               : undefined,
           ]}
           accessibilityRole="button"
-          accessibilityLabel={title()}
+          accessibilityLabel={bottomTab.title()}
         >
           <View style={styles.touchableInner}>
             <View style={styles.badge}>
@@ -59,7 +58,7 @@ function BottomTabWeb({
             </View>
 
             <Image
-              source={isSelected ? selectedIcon : icon}
+              source={isSelected ? bottomTab.selectedIcon : bottomTab.icon}
               style={[
                 orientation === 'horizontal' && styles.horizontalIcon,
                 orientation === 'vertical' && styles.verticalIcon,
@@ -80,12 +79,12 @@ function BottomTabWeb({
                 },
               ]}
             >
-              {title()}
+              {bottomTab.title()}
             </Text>
           </View>
         </Pressable>
       )}
-    </Link>
+    </BottomTabLink>
   );
 }
 

@@ -119,9 +119,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                     // so we don't add the tab path if it's the same
                     const isTheSame = tab.path === screen.path;
                     const screenPath = isTheSame ? undefined : screen.path;
-                    if (isTheSame) {
-                      console.log('stop tracking', tab.path + screen.path);
-                    }
+
                     return {
                       key: getScreenKey(rootKey, tab.path, screenPath),
                       route: makeVariablesNavigationFriendly(

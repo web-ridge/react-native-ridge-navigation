@@ -14,16 +14,14 @@ export default function useDeepLinkingBottomTabsIndex() {
     currentRoot?.type === 'bottomTabs' ? currentRoot.children : [];
   const stateKey = stateNavigator.stateContext.state.key;
   const currentTabKey = getBottomTabKeyFromPath(stateKey);
-  const bottomTabIndex = React.useMemo(() => {
-    return (
-      children.findIndex((child) => child.path === '/' + currentTabKey) || 0
-    );
-  }, [children, currentTabKey]);
 
+  const bottomTabIndex =
+    children.findIndex((child) => child.path === '/' + currentTabKey) || 0;
   const setBottomTabIndex = React.useCallback(
     (index: number) => {
       const tab = children?.[index];
       const screen = children?.[index]?.child;
+      console.log({ tab, screen });
       if (screen) {
         push(screen, {}, { preload: true, toBottomTab: tab?.path });
       }

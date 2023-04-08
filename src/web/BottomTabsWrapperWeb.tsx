@@ -51,6 +51,9 @@ export function OriginalBottomTabs({
   const { badges } = React.useContext(BottomTabBadgesContext);
   const { bottomTabIndex } = React.useContext(BottomTabIndexContext);
 
+  console.log('original bottom tabs', {
+    bottomTabIndex,
+  });
   if (currentRoot?.type !== 'bottomTabs') {
     return children;
   }

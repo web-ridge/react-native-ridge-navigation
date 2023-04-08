@@ -104,6 +104,7 @@ export default function useNavigation() {
       if (options?.preload) {
         preload(screen, params);
       }
+      console.log('innerNavigate', options?.toBottomTab);
       const screenKey = getScreenKey(
         currentRootKey!,
         options?.toBottomTab || tabPath,
