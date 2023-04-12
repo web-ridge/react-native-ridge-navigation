@@ -20,10 +20,12 @@ export default function useBottomTabIndex() {
     [currentRoot, setBottomTabIndex]
   );
 
+  const hasBottomIndex =
+    bottomTabIndex !== undefined && bottomTabIndex !== null;
   const currentTab =
-    bottomTabIndex &&
-    currentRoot?.type === 'bottomTabs' &&
-    currentRoot?.children?.[bottomTabIndex];
+    hasBottomIndex && currentRoot?.type === 'bottomTabs'
+      ? currentRoot?.children?.[bottomTabIndex]
+      : undefined;
   return {
     switchToTab,
     currentTab,

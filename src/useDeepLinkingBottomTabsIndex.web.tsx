@@ -21,9 +21,8 @@ export default function useDeepLinkingBottomTabsIndex() {
     (index: number) => {
       const tab = children?.[index];
       const screen = children?.[index]?.child;
-      console.log({ tab, screen });
       if (screen) {
-        push(screen, {}, { preload: true, toBottomTab: tab?.path });
+        push(screen, {}, { preload: true, toBottomTab: tab });
       }
     },
     [children, push]

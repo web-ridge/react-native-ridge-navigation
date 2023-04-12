@@ -72,35 +72,31 @@ export default function BottomTabsStack() {
   );
 }
 
-function TabBarItemStack({
-  tab,
-  rootKey,
-}: {
-  tab: BottomTabType;
-  rootKey: string;
-}) {
-  const start = rootKeyAndPaths(rootKey, tab.path);
-  const navigator = useBottomTabsStateNavigator(start);
-  const {
-    theme: { layout },
-  } = React.useContext(RidgeNavigationContext);
+const TabBarItemStack = React.memo(
+  ({ tab, rootKey }: { tab: BottomTabType; rootKey: string }) => {
+    const start = rootKeyAndPaths(rootKey, tab.path);
+    const navigator = useBottomTabsStateNavigator(start);
+    const {
+      theme: { layout },
+    } = React.useContext(RidgeNavigationContext);
 
-  return (
-    <NavigationHandler stateNavigator={navigator}>
-      <NavigationStack
-        underlayColor={layout.backgroundColor}
-        backgroundColor={() => layout.backgroundColor}
-        renderScene={(state, data) => {
-          return (
-            <>
-              <HiddenNavbarWithSwipeBack />
-              <OptimizedContextProvider screenKey={state.key} data={data}>
-                {state.renderScene()}
-              </OptimizedContextProvider>
-            </>
-          );
-        }}
-      />
-    </NavigationHandler>
-  );
-}
+    return (
+      <NavigationHandler stateNavigator={navigator}>
+        <NavigationStack
+          underlayColor={layout.backgroundColor}
+          backgroundColor={() => layout.backgroundColor}
+          renderScene={(state, data) => {
+            return (
+              <>
+                <HiddenNavbarWithSwipeBack />
+                <OptimizedContextProvider screenKey={state.key} data={data}>
+                  {state.renderScene()}
+                </OptimizedContextProvider>
+              </>
+            );
+          }}
+        />
+      </NavigationHandler>
+    );
+  }
+);

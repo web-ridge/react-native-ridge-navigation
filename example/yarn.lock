@@ -2135,17 +2135,17 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tanstack/query-core@4.26.1":
-  version "4.26.1"
-  resolved "https://registry.npmjs.org/@tanstack/query-core/-/query-core-4.26.1.tgz#7a441086c4d3d79e1d156c0a355bd3567213626e"
-  integrity sha512-Zrx2pVQUP4ndnsu6+K/m8zerXSVY8QM+YSbxA1/jbBY21GeCd5oKfYl92oXPK0hPEUtoNuunIdiq0ZMqLos+Zg==
+"@tanstack/query-core@4.29.1":
+  version "4.29.1"
+  resolved "https://registry.npmjs.org/@tanstack/query-core/-/query-core-4.29.1.tgz#62a4bc120b85e6bb3c6c0aca96346e643e232248"
+  integrity sha512-vkPewLEG8ua0efo3SsVT0BcBtkq5RZX8oPhDAyKL+k/rdOYSQTEocfGEXSaBwIwsXeOGBUpfKqI+UmHvNqdWXg==
 
-"@tanstack/react-query@^4.19.1":
-  version "4.26.1"
-  resolved "https://registry.npmjs.org/@tanstack/react-query/-/react-query-4.26.1.tgz#d254f6b7b297b5ae4204c84e6622506e5ec77d09"
-  integrity sha512-i3dnz4TOARGIXrXQ5P7S25Zfi4noii/bxhcwPurh2nrf5EUCcAt/95TB2HSmMweUBx206yIMWUMEQ7ptd6zwDg==
+"@tanstack/react-query@^4.29.1":
+  version "4.29.1"
+  resolved "https://registry.npmjs.org/@tanstack/react-query/-/react-query-4.29.1.tgz#5f166aca63915c52f6eda930a54d6933bfd11d1b"
+  integrity sha512-/crv1v+OeuGG6EOvaQmyeo9GCKtH4jbmuhZkvk9ulufRiHcTr/A9+YP9GevEAZzUTdzXMwenpTbyxBGvG2xXvw==
   dependencies:
-    "@tanstack/query-core" "4.26.1"
+    "@tanstack/query-core" "4.29.1"
     use-sync-external-store "^1.2.0"
 
 "@trysound/sax@0.2.0":
@@ -2324,10 +2324,17 @@
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-native@0.71.3", "@types/react-native@^0.71.3":
+"@types/react-native@0.71.3":
   version "0.71.3"
   resolved "https://registry.npmjs.org/@types/react-native/-/react-native-0.71.3.tgz#537f669ed6b38b5ae47444bd9d253c4cff23bed7"
   integrity sha512-0Uqw1YZ0qbVla0MMWFTANFm6W8KYWNvGQmYfucdecbXivLMcQ2v4PovuYFKr7bE6Bc5nDCUEaga962Y8gcDF7A==
+  dependencies:
+    "@types/react" "*"
+
+"@types/react-native@^0.71.5":
+  version "0.71.5"
+  resolved "https://registry.npmjs.org/@types/react-native/-/react-native-0.71.5.tgz#229bc670433f97fe1e03d62758d4fccf34a07714"
+  integrity sha512-Tp5druh7DGwNDvWYH09PCE++hbH4zYz0OOvGFb3/QFIFKXgfezaT/txJeKlBkbiqs45QJzllp9S0qo0WpWyijA==
   dependencies:
     "@types/react" "*"
 
@@ -4685,6 +4692,14 @@ expo-status-bar@~1.4.4:
   version "1.4.4"
   resolved "https://registry.npmjs.org/expo-status-bar/-/expo-status-bar-1.4.4.tgz#6874ccfda5a270d66f123a9f220735a76692d114"
   integrity sha512-5DV0hIEWgatSC3UgQuAZBoQeaS9CqeWRZ3vzBR9R/+IUD87Adbi4FGhU10nymRqFXOizGsureButGZIXPs7zEA==
+
+expo-system-ui@~2.2.1:
+  version "2.2.1"
+  resolved "https://registry.npmjs.org/expo-system-ui/-/expo-system-ui-2.2.1.tgz#d955d2fcb93e196e183ed79e5da1b4427f1d4896"
+  integrity sha512-a//8woMYFz5k4lSm8Mt84kueuQRv4TEU1ESwZQl0cEZcKlxw5e4t4Z/68KGVzCLWOMUFoCN67BgFwxpwHBbrMw==
+  dependencies:
+    "@react-native/normalize-color" "^2.0.0"
+    debug "^4.3.2"
 
 expo@^48.0.0:
   version "48.0.9"
@@ -7160,10 +7175,10 @@ navigation-react-native-web@^1.3.0:
   dependencies:
     navigation-react-mobile "*"
 
-navigation-react-native@^9.2.1:
-  version "9.2.1"
-  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-9.2.1.tgz#fbf42199f36f4ba18e8c3d4a0ae3f77c4d8a289e"
-  integrity sha512-GwqYUPIsXrP7GT50p4YpNuCvQddn953ihB9fgUj4qpW8KoWhpYVwphhTkUZkQak2BnFAiYVcZbi74bxEb1mwMw==
+navigation-react-native@^9.2.2:
+  version "9.2.2"
+  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-9.2.2.tgz#91968f9e407f1e91e654a3f94394d772094acfe0"
+  integrity sha512-XaxKMtczRnFF+9yLHAteP09sWVcgyADMv8dPHfHUI8DyR/RhZs3bmHtG6PX33r2nd4Rl27pYTYe4w3e1+02n+Q==
 
 navigation-react@^4.5.1:
   version "4.5.1"
@@ -8398,11 +8413,6 @@ react-refresh@^0.4.0:
   version "0.4.3"
   resolved "https://registry.npmjs.org/react-refresh/-/react-refresh-0.4.3.tgz#966f1750c191672e76e16c2efa569150cc73ab53"
   integrity sha512-Hwln1VNuGl/6bVwnd0Xdn1e84gT/8T9aYNL+HAKDArLCS7LWjwr7StE30IEYbIkx0Vi3vs+coQxe+SQDbGbbpA==
-
-react-ridge-state@^4.2.9:
-  version "4.2.9"
-  resolved "https://registry.npmjs.org/react-ridge-state/-/react-ridge-state-4.2.9.tgz#27cc7d0d65d866a2b5221bf52d315de482dff4be"
-  integrity sha512-1u2a5l5wl0H//hR1R69ZFbvD9mnvOXK3rit859vy15THQv/M+t7U5VF27Ufzcxb8kbKMwZ1Ni/J5f2chrrTHCQ==
 
 react-shallow-renderer@^16.15.0:
   version "16.15.0"

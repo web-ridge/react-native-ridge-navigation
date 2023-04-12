@@ -11,6 +11,7 @@ export function extractLinkProps<T extends BaseScreen>(
     skipLinkBehaviourIfPressIsDefined,
     replace,
     refresh,
+    toBottomTab,
     ...otherProps
   } = props;
   return {
@@ -21,6 +22,7 @@ export function extractLinkProps<T extends BaseScreen>(
     skipLinkBehaviourIfPressIsDefined,
     replace,
     refresh,
+    toBottomTab,
     otherProps,
   };
 }

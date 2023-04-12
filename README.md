@@ -1,23 +1,26 @@
-
 <h1 align="center">
   <img src="https://user-images.githubusercontent.com/6492229/124349256-854c4680-dbee-11eb-84ca-fd410a4a0fcd.png" width="128">
   <br>
   react-native-ridge-navigation (⚠️ in beta)
 </h1>
 
-Simple and performant cross platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (alpha)
+Simple and performant cross platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (
+alpha)
 
-Build on top of [grahammendick/navigation](https://github.com/grahammendick/navigation). Check it out if you want more control over the navigation!
-
+Build on top of [grahammendick/navigation](https://github.com/grahammendick/navigation). Check it out if you want more
+control over the navigation!
 
 ⚠️ This is beta software, things can break.
 
 Things which are not finished yet:
+
 - documentation
-- create universal lazyWithPreload for screens (only on web, but [callstack/repack](https://github.com/callstack/repack) can fix it native too)
+- create universal lazyWithPreload for screens (only on web, but [callstack/repack](https://github.com/callstack/repack)
+  can fix it native too)
 - universal modal (web support too)
 
 ## Features
+
 - Superior performance (we use [grahammendick/navigation](https://github.com/grahammendick/navigation))
 - Simple api
 - Type safety (routes, params, bottom tabs)
@@ -31,11 +34,13 @@ Things which are not finished yet:
 - Out of the box scroll restoration (on web), because screens in tab are pushed on top of each other!
 
 ## Example
+
 [![Demo of react-native-ridge-navigation](https://drive.google.com/uc?id=1nE0DzlaVza_h3K1KCkPnK5NfIXfYM5c-)](https://www.youtube.com/watch?v=EvNxrRIF7C0)
 This is an older video which used react-native-navigation so we have newer material you bottom bar in the meantime :)
 View video in better frame [on YouTube](https://www.youtube.com/watch?v=EvNxrRIF7C0)
 
 ## About us
+
 We want developers to be able to build software faster using modern tools like GraphQL, Golang and React Native.
 
 Give us a follow on Twitter:
@@ -43,18 +48,23 @@ Give us a follow on Twitter:
 [web_ridge](https://twitter.com/web_ridge)
 
 ## Donate
+
 Please contribute or donate so we can spend more time on this library
 
 [Donate with PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7B9KKQLXTEW9Q&source=url)
 
-
 ### Demo
+
 [See example: reactnativeridgenavigation.com](https://www.reactnativeridgenavigation.com/)
+
 ### Source
+
 [See source of example app](https://github.com/web-ridge/react-native-ridge-navigation/tree/main/example)
 
 ### Register screens
+
 You can register screens with a preload function, the params will be automatically in string format based on the url.
+
 ```tsx
 // NavigatorRoutes.ts
 const PostScreen = registerScreen(
@@ -83,6 +93,7 @@ export default routes
 ```
 
 ## Supported stacks
+
 - normal
 - bottomTabs
 
@@ -91,37 +102,67 @@ every screen can be used within every stack. You don't have to configure screens
 ## Installation
 
 #### 1. If you don't have an app yet (optional, but recommended)
-Use Expo with prebuild (Expo Go is not supported since we have native libraries)
 
+Use Expo with prebuild (Expo Go is not supported since we have native libraries)
 
 #### 2. Install deps + library
 
 ```
 yarn add react-native-navigation navigation navigation-react navigation-react-mobile navigation-react-native
 ```
+
 or with npm
+
 ```
 npm install react-native-navigation navigation navigation-react navigation-react-mobile navigation-react-native
 ```
 
 ### 2. Extra (optional)
-Add react-native-web-image-loader (see example), this will make sure the images in the BottomBar will be in good quality on the web.
+
+Add react-native-web-image-loader (see example), this will make sure the images in the BottomBar will be in good quality
+on the web.
+
 ```js
 
 // ...
-  addWebpackModuleRule({
-    test: /\.(png|jpe?g|gif)$/,
-    options: {
-      name: 'static/media/[name].[hash:8].[ext]',
-      scalings: { '@3x': 1 },
-    },
-    loader: 'react-native-web-image-loader',
-  })
+addWebpackModuleRule({
+  test: /\.(png|jpe?g|gif)$/,
+  options: {
+    name: 'static/media/[name].[hash:8].[ext]',
+    scalings: { '@3x': 1 },
+  },
+  loader: 'react-native-web-image-loader',
+})
 // ...
 ```
 
+Support for Material You bottom bar in Android
 
+#### 1. add file `expo-plugin-android-material-you-bottom-bar.js` to your root folder
 
+```js
+const { withAndroidStyles } = require("@expo/config-plugins");
+
+module.exports = function androidMaterialYouBottomBarPlugin(config) {
+  return withAndroidStyles(config, async (config) => {
+    const styleFile = config.modResults;
+    const appTheme = styleFile.resources.style.find(
+      (style) => style.$.name === 'AppTheme',
+    );
+    appTheme.$.parent = 'Theme.Material3.DayNight.NoActionBar';
+
+    return config;
+  });
+};
+```
+
+#### 2. add this to your expo config app.config.js or app.json
+
+```json
+"plugins": [
+"./expo-plugin-android-material-you-bottom-bar"
+]
+```
 
 ## Usage
 
@@ -195,21 +236,24 @@ export default function App() {
   LogBox.ignoreLogs(['Require cycle: src/Navigator']);
 
   return (
-      <SafeAreaProvider>
-          <NavigationProvider
-            screens={screens}
-            SuspenseContainer={AsyncBoundaryScreen}
-            navigationRoot={navigationRoot}
-          />
-      </SafeAreaProvider>
+    <SafeAreaProvider>
+      <NavigationProvider
+        screens={screens}
+        SuspenseContainer={AsyncBoundaryScreen}
+        navigationRoot={navigationRoot}
+      />
+    </SafeAreaProvider>
   );
 }
 
 ```
+
 See example code for the asyncboundary stuff :)
 
 ## New screen
+
 Use the `<Link />` component as much as possible since it will work with ctrl+click on the web :)
+
 ```tsx
 <Link
   to={routes.PostScreen}
@@ -226,9 +270,12 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
 
 
 ```
+
 ## createLinkComponent
-Use the `createLinkComponent` component to create re-usable links without render props.
-E.g to create a linkable button for react-native-paper
+
+Use the `createLinkComponent` component to create re-usable links without render props. E.g to create a linkable button
+for react-native-paper
+
 ```tsx
 //ButtonLink.tsx
 import { Button } from 'react-native-paper';
@@ -250,8 +297,8 @@ export default ButtonLink;
 </ButtonLink>
 ```
 
-
 Alternative push (or replace)
+
 ```tsx
 const { push, replace, refresh } = useNavigation();
 
@@ -273,14 +320,20 @@ refresh(routes.PostScreen, {
 ```
 
 ## Switch root
-Switch root can be used to switch from e.g. the auth screen to a different entrypoint of your app. E.g. check the role and switch the stacks to different roots for different user roles.
+
+Switch root can be used to switch from e.g. the auth screen to a different entrypoint of your app. E.g. check the role
+and switch the stacks to different roots for different user roles.
+
 ```tsx
 <SwitchRoot rootKey={NavigationRoots.RootHome} params={{}} />;
 // or e.g.
 <SwitchRoot rootKey={NavigationRoots.RootAuth} params={{}} />;
 ```
+
 ## useNavigation
+
 All available properties
+
 ```tsx
 const {
   pop, // go back
@@ -293,69 +346,77 @@ const {
 ```
 
 ## Control bottom tabs
+
 ```tsx
   const { switchToTab, currentTab } = useBottomTabIndex();
-  const { updateBadge, badges } = useBottomTabBadges();
-  // updateBadge(BottomRoots.Projects, '10');
-  // switchToTab(BottomRoot.Posts);
+const { updateBadge, badges } = useBottomTabBadges();
+// updateBadge(BottomRoots.Projects, '10');
+// switchToTab(BottomRoot.Posts);
 ```
 
 ## Modal stack
-If you want a nested stack e.g. in a modal, check out the [example code](https://github.com/web-ridge/react-native-ridge-navigation/blob/main/example/src/Account/AccountScreen.tsx).
+
+If you want a nested stack e.g. in a modal, check out
+the [example code](https://github.com/web-ridge/react-native-ridge-navigation/blob/main/example/src/Account/AccountScreen.tsx)
+.
+
 ```tsx
 import {
   NavigationNestedProvider,
   ModalBackHandler,
 } from 'react-native-ridge-navigation';
- <ModalBackHandler>
-        {(handleBack) => (
-          <Modal
-            visible={modalVisible}
-            style={{ backgroundColor: theme.colors.background }}
-            statusBarTranslucent={true}
-            presentationStyle="pageSheet"
-            animationType="slide"
-            onRequestClose={() => {
-              if (!handleBack()) setModalVisible(false);
-            }}
-          >
-            <NavigationNestedProvider>
-              {/* you can render your children here and push to all registered screens*/}
-              <View style={{ height: 250, backgroundColor: 'pink' }}>
-                <Header title="Modal stack" />
-                <Button onPress={onClose}>Close modal</Button>
-                <Link to={routes.PostScreen} params={{ id: '2' }}>
-                  {(linkProps) => <Button {...linkProps}>Account</Button>}
-                </Link>
-              </View>
-            </NavigationNestedProvider>
-          </Modal>
-        )}
-      </ModalBackHandler>
+
+<ModalBackHandler>
+  {(handleBack) => (
+    <Modal
+      visible={modalVisible}
+      style={{ backgroundColor: theme.colors.background }}
+      statusBarTranslucent={true}
+      presentationStyle="pageSheet"
+      animationType="slide"
+      onRequestClose={() => {
+        if (!handleBack()) setModalVisible(false);
+      }}
+    >
+      <NavigationNestedProvider>
+        {/* you can render your children here and push to all registered screens*/}
+        <View style={{ height: 250, backgroundColor: 'pink' }}>
+          <Header title="Modal stack" />
+          <Button onPress={onClose}>Close modal</Button>
+          <Link to={routes.PostScreen} params={{ id: '2' }}>
+            {(linkProps) => <Button {...linkProps}>Account</Button>}
+          </Link>
+        </View>
+      </NavigationNestedProvider>
+    </Modal>
+  )}
+</ModalBackHandler>
 ```
+
 ## Deep linking
+
 You have to enable url schemes etc in your app and it'll work!
 
 E.g. our example app can open the following urls:
 
 ### Bottom tabs
+
 navigation://home/post/post-1
 
 ## normal stack
-
 
 ## More
 
 ```ts
 // global
-  createLinkComponent,
+createLinkComponent,
   SwitchRoot,
   BottomTabLink,
   Link
-  BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
-  lazyWithPreload // only available on the web: see example app
-  Redirect
-  NavigationRoot,
+BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
+lazyWithPreload // only available on the web: see example app
+Redirect
+NavigationRoot,
   createNavigation,
   // refreshBottomTabs, TODO: implement this
   createBottomTabsRoot,
@@ -380,16 +441,20 @@ navigation://home/post/post-1
 ```
 
 ## Do global stuff like updating badge
+
 If you want to use a component globally with the navigation context pass them as children of the NavigationProvider
+
 ```tsx
 <NavigationProvider {...}>
- <UpdateBottomTabBadgeSubscriber />
+  <UpdateBottomTabBadgeSubscriber />
 </NavigationProvider>
 ```
 
 # Scroll fix on web version
-On the web version we need to disable window scroll since else it will sometimes use windows scroll instead of the scrollview
-Add this to your css
+
+On the web version we need to disable window scroll since else it will sometimes use windows scroll instead of the
+scrollview Add this to your css
+
 ```css
 body {
   overflow: hidden;
@@ -404,12 +469,16 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 
 MIT
 
-
 ### Checkout our other libraries
-- Simple form library for React Native with great UX for developer and end-user [react-native-use-form](https://github.com/web-ridge/react-native-use-form)
-- Smooth and fast cross platform Material Design date and time picker for React Native Paper: [react-native-paper-dates](https://github.com/web-ridge/react-native-paper-dates)
-- Smooth and fast cross platform Material Design Tabs for React Native Paper: [react-native-paper-tabs](https://github.com/web-ridge/react-native-paper-tabs)
 
-- Simple translations in React (Native): [react-ridge-translations](https://github.com/web-ridge/react-ridge-translations)
+- Simple form library for React Native with great UX for developer and
+  end-user [react-native-use-form](https://github.com/web-ridge/react-native-use-form)
+- Smooth and fast cross platform Material Design date and time picker for React Native
+  Paper: [react-native-paper-dates](https://github.com/web-ridge/react-native-paper-dates)
+- Smooth and fast cross platform Material Design Tabs for React Native
+  Paper: [react-native-paper-tabs](https://github.com/web-ridge/react-native-paper-tabs)
+
+- Simple translations in React (
+  Native): [react-ridge-translations](https://github.com/web-ridge/react-ridge-translations)
 - Simple global state management in React (Native): [react-ridge-state](https://github.com/web-ridge/react-ridge-state)
 

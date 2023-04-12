@@ -7,6 +7,7 @@ import useNavigation from './useNavigation';
 
 export default function Link<T extends BaseScreen>({
   to,
+  toBottomTab,
   params,
   children,
   onPress: onCustomPress,
@@ -31,7 +32,7 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
-      const options = { preload: false };
+      const options = { preload: false, toBottomTab };
 
       if (isRefreshInsteadOfPush) {
         refresh(to, params, options);
@@ -43,6 +44,7 @@ export default function Link<T extends BaseScreen>({
       isPushing.current = false;
     },
     [
+      toBottomTab,
       onCustomPress,
       isRefreshInsteadOfPush,
       isReplaceInsteadOfPush,

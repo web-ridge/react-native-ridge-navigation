@@ -23,7 +23,7 @@ export const AccountScreen = registerScreen(
 );
 
 export const PostsScreen = registerScreen(
-  '/post',
+  '/overview',
   RequireAuthHOC(PostsScreenLazy),
   () => {
     queryClient.prefetchQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise, {

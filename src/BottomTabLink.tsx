@@ -18,7 +18,7 @@ export default function BottomTabLink<T extends BottomTabType>({
       params={params}
       onPress={onPress}
       linkMode="sensitive"
-      toBottomTab={to.path}
+      toBottomTab={to}
     >
       {(linkProps) =>
         children({

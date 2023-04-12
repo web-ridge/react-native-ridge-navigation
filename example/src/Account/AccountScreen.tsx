@@ -7,6 +7,7 @@ import {
   useBottomTabBadges,
   NavigationNestedProvider,
   ModalBackHandler,
+  BottomTabLink,
 } from 'react-native-ridge-navigation';
 import { View, ScrollView, Modal } from 'react-native';
 import { BottomRoot } from '../Navigator';
@@ -55,6 +56,14 @@ function AccountScreen() {
           >
             Go to posts tab
           </Button>
+          <BottomTabLink to={BottomRoot.Posts} params={{}}>
+            {(linkProps) => (
+              <Button style={{ marginTop: 12 }} mode="outlined" {...linkProps}>
+                Go to posts tab (route)
+              </Button>
+            )}
+          </BottomTabLink>
+
           <Button
             style={{ marginTop: 12 }}
             mode="contained"

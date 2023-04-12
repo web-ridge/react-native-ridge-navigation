@@ -48,7 +48,6 @@ export function useBottomTabsStateNavigator(tabKey: string) {
           preloadScreen(navigateKey, route.preload(params));
           fluentNavigator = fluentNavigator.navigate(navigateKey, params);
         });
-        console.log('fluent', fluentNavigator.url);
 
         navigator.navigateLink(fluentNavigator.url);
       }

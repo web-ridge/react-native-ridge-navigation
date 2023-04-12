@@ -115,15 +115,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               ...root.children
                 .map((tab) =>
                   screens.map((screen) => {
-                    // we don't want too much segments in the url if the tab is the same
-                    // so we don't add the tab path if it's the same
-                    const isTheSame = tab.path === screen.path;
-                    const screenPath = isTheSame ? undefined : screen.path;
+                    // we don't want the child path segment in the url
+                    const isTheSame = tab.child.path === screen.path;
 
                     return {
-                      key: getScreenKey(rootKey, tab.path, screenPath),
+                      key: getScreenKey(rootKey, tab, screen.path),
                       route: makeVariablesNavigationFriendly(
-                        getScreenKey(rootKey, tab.path, screenPath)
+                        getScreenKey(rootKey, tab, screen.path)
                       ),
                       renderScene: () => <screen.element />,
                       trackCrumbTrail: !isTheSame,
@@ -168,7 +166,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       rootNavigator.start(defaultKey);
     };
     if (!initialUrl) {
-      console.log({ initialUrl });
       startDefault();
       return;
     }
@@ -189,15 +186,19 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     const isNormalStack = isNormal || (isBottomTabs && isWeb);
     const hasHistory = paths.length > 0;
 
+    const currentTab = isBottomTabs
+      ? root?.children?.find((tab) => tab.path === '/' + bottomTabKey)
+      : undefined;
     // add the bottom tab to the stack if it's not the default
     if (isBottomTabs && isWeb) {
-      const route = root?.children.find(
-        (tab) => tab.path === '/' + bottomTabKey
-      );
-      if (route) {
-        const navigateKey = getScreenKey(initialRootKey, bottomTabKey);
-        preloadElement(route.child);
-        preloadScreen(navigateKey, route.child.preload({}));
+      if (currentTab) {
+        const navigateKey = getScreenKey(
+          initialRootKey,
+          currentTab,
+          currentTab.child.path
+        );
+        preloadElement(currentTab.child);
+        preloadScreen(navigateKey, currentTab.child.preload({}));
         fluentNavigator = fluentNavigator.navigate(navigateKey, {});
       }
     }
@@ -212,7 +213,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       matches.forEach(({ route, params }) => {
         const navigateKey = getScreenKey(
           initialRootKey,
-          bottomTabKey,
+          currentTab,
           route.path
         );
         preloadElement(route);

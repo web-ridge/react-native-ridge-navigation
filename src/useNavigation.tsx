@@ -1,16 +1,18 @@
 import * as React from 'react';
 import {
   BaseScreen,
+  BottomTabType,
   ExtractRouteParams,
   getScreenKey,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
 import useBottomTabIndex from './useBottomTabIndex';
+import { Platform } from 'react-native';
 
 type NavigateOptions = {
   preload?: boolean;
-  toBottomTab?: string;
+  toBottomTab?: BottomTabType;
 };
 export default function useNavigation() {
   const {
@@ -23,20 +25,17 @@ export default function useNavigation() {
   } = React.useContext(OptimizedContext);
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
-  const { currentTab } = useBottomTabIndex();
-
-  // TODO: we don't always want this, sometimes we want to switch tabs
-  const tabPath = currentTab ? currentTab.path : undefined;
+  const { currentTab, switchToTab } = useBottomTabIndex();
 
   const preload = React.useCallback(
     async <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      const screenKey = getScreenKey(currentRootKey, tabPath, screen.path);
+      const screenKey = getScreenKey(currentRootKey, currentTab, screen.path);
       preloadScreen(screenKey, screen.preload(params));
     },
-    [preloadScreen, tabPath, currentRootKey]
+    [preloadScreen, currentTab, currentRootKey]
   );
 
   const canNavigateBack = React.useCallback(
@@ -104,15 +103,20 @@ export default function useNavigation() {
       if (options?.preload) {
         preload(screen, params);
       }
-      console.log('innerNavigate', options?.toBottomTab);
-      const screenKey = getScreenKey(
-        currentRootKey!,
-        options?.toBottomTab || tabPath,
-        screen.path
-      );
-      stateNavigator.navigate(screenKey, params, historyAction);
+
+      // on web, it works based on url but on mobile it works based on bottom tab index
+      if (options?.toBottomTab && Platform.OS !== 'web') {
+        switchToTab(options.toBottomTab);
+      } else {
+        const screenKey = getScreenKey(
+          currentRootKey!,
+          options?.toBottomTab || currentTab,
+          screen.path
+        );
+        stateNavigator.navigate(screenKey, params, historyAction);
+      }
     },
-    [currentRootKey, tabPath, stateNavigator, preload]
+    [currentRootKey, currentTab, stateNavigator, preload, switchToTab]
   );
 
   const push = React.useCallback(
@@ -137,7 +141,7 @@ export default function useNavigation() {
       }
       const screenKey = getScreenKey(
         currentRootKey!,
-        options?.toBottomTab || tabPath,
+        options?.toBottomTab || currentTab,
         screen.path
       );
       const url = stateNavigator
@@ -146,7 +150,7 @@ export default function useNavigation() {
         .navigate(screenKey, params).url;
       stateNavigator.navigateLink(url);
     },
-    [currentRootKey, tabPath, preload, stateNavigator]
+    [currentRootKey, currentTab, preload, stateNavigator]
   );
 
   return {

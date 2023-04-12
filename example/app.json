@@ -22,15 +22,22 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.webridge.navigation"
     },
+    "androidStatusBar": {
+      "translucent": true
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
+
       "package": "com.webridge.navigation"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "./expo-plugin-android-material-you-bottom-bar"
+    ]
   }
 }

@@ -114,7 +114,7 @@ export type LinkRenderProps = {
 
 export type LinkProps<T extends BaseScreen> = {
   to: T;
-  toBottomTab?: string;
+  toBottomTab?: BottomTabType;
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
   linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
@@ -143,14 +143,25 @@ export function createScreens(screenMap: Record<string, BaseScreen>) {
   });
 }
 
+export function skipUrlSegment(
+  tab: BottomTabType | undefined,
+  screenPath: string | undefined
+) {
+  if (!tab) {
+    return false;
+  }
+
+  return tab.child.path === screenPath;
+}
+
 export function getScreenKey(
   rootKey: string,
-  tabPath: string | undefined,
+  tab: BottomTabType | undefined,
   ...paths: (string | undefined)[]
 ) {
-  const isTheSame = tabPath === paths[0];
-  const screenPath = isTheSame ? undefined : paths[0];
-  return rootKeyAndPaths(rootKey, tabPath, screenPath);
+  const skipSegment = skipUrlSegment(tab, paths?.[0]);
+  const screenPath = skipSegment ? undefined : paths?.[0];
+  return rootKeyAndPaths(rootKey, tab?.path, screenPath);
 }
 
 export function rootKeyAndPaths(
