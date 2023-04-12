@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-import authState, { AuthState } from './AuthState';
-
 import { SwitchRoot } from 'react-native-ridge-navigation';
 import { NavigationRoots } from '../Navigator';
+import useAuthState from './useAuthState';
 
 export function RequireAuthHOC<T>(WrappedComponent: any) {
   let func = function (props: T) {
@@ -30,18 +29,4 @@ export function RequireAuth({ children }: { children?: any }) {
   }
 
   return null;
-}
-
-// useAuthState for easy getting your auth data in your components
-interface AuthStateHooks extends AuthState {
-  isAuthenticated: boolean;
-}
-
-export function useAuthState(): AuthStateHooks {
-  const state = authState.useValue();
-  const isAuthenticated = !!state.user;
-  return {
-    ...state,
-    isAuthenticated,
-  };
 }

@@ -1,4 +1,4 @@
-import { newRidgeState } from 'react-ridge-state';
+import { create } from 'zustand';
 import { storage } from '../storage';
 import api from '../api';
 
@@ -11,7 +11,7 @@ export interface User {
   website: string;
 }
 
-export interface AuthState {
+export interface UseAuthState {
   user: User | null;
   token: string | null | undefined;
   resolving: undefined | false | true;
@@ -32,16 +32,14 @@ try {
   console.error('storage (auth)', { error });
 }
 
-const authState = newRidgeState<AuthState>(initialState || emptyAuthState, {
-  onSet: (newState) => {
-    if (newState.user && newState.token && !newState.resolving) {
-      storage.set('auth', JSON.stringify(newState));
-    }
-  },
-});
+const useAuthState = create<UseAuthState>(() => initialState || emptyAuthState);
+
+export function setAuthState(state: UseAuthState) {
+  useAuthState.setState(state);
+}
 fetchAndSaveProfileForToken({ token: initialState.token });
 export function reset() {
-  authState.set(emptyAuthState);
+  setAuthState(emptyAuthState);
 }
 
 export async function fetchAndSaveProfileForToken({
@@ -52,7 +50,7 @@ export async function fetchAndSaveProfileForToken({
   if (!token) {
     return;
   }
-  authState.set((prev) => ({
+  useAuthState.setState((prev) => ({
     ...prev,
     token,
     resolving: true,
@@ -62,11 +60,11 @@ export async function fetchAndSaveProfileForToken({
     path: 'users/1',
   });
 
-  authState.set({
+  useAuthState.setState({
     token,
     user: response,
     resolving: false,
   });
 }
 
-export default authState;
+export default useAuthState;

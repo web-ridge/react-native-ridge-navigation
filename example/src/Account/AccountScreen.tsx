@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button, Paragraph, Text, useTheme } from 'react-native-paper';
-import authState, { reset } from '../Auth/AuthState';
+import useAuthState, { reset } from '../Auth/useAuthState';
 
 import {
   useBottomTabIndex,
@@ -22,7 +22,7 @@ function AccountScreen() {
   const { switchToTab } = useBottomTabIndex();
   const { updateBadge } = useBottomTabBadges();
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [{ user }] = authState.use();
+  const { user } = useAuthState();
 
   const onClose = React.useCallback(() => {
     setModalVisible(false);
