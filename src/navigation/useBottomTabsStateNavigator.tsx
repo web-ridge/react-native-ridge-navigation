@@ -2,7 +2,6 @@ import * as React from 'react';
 import { NavigationContext } from 'navigation-react';
 import { StateNavigator } from 'navigation';
 import {
-  BottomTabType,
   getBottomTabKeyFromPath,
   getPathFromUrl,
   getPaths,
