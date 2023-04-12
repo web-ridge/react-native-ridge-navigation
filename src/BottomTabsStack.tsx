@@ -2,7 +2,6 @@ import {
   BottomTabType,
   getScreenKey,
   RootChildBottomTabs,
-  rootKeyAndPaths,
 } from './navigationUtils';
 
 import * as React from 'react';
