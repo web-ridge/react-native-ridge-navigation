@@ -159,8 +159,9 @@ export function getScreenKey(
   tab: BottomTabType | undefined,
   ...paths: (string | undefined)[]
 ) {
-  const skipSegment = skipUrlSegment(tab, paths?.[0]);
-  const screenPath = skipSegment ? undefined : paths?.[0];
+  const firstPath = paths?.[0] || tab?.child.path;
+  const skipSegment = skipUrlSegment(tab, firstPath);
+  const screenPath = skipSegment ? undefined : firstPath;
   return rootKeyAndPaths(rootKey, tab?.path, screenPath);
 }
 

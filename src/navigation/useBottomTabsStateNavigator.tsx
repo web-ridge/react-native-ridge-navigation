@@ -2,25 +2,26 @@ import * as React from 'react';
 import { NavigationContext } from 'navigation-react';
 import { StateNavigator } from 'navigation';
 import {
+  BottomTabType,
   getBottomTabKeyFromPath,
   getPathFromUrl,
   getPaths,
   getRootKeyFromPath,
   getScreenKey,
+  RootChildBottomTabs,
 } from '../navigationUtils';
 import { findMatchedRoutes } from '../parseUrl';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
 import { useURL } from 'expo-linking';
 
-export function useBottomTabsStateNavigator(tabKey: string) {
-  const { screens, preloadScreen, preloadElement } = React.useContext(
-    RidgeNavigationContext
-  );
+export function useBottomTabsStateNavigator(startKey: string) {
+  const { screens, preloadScreen, preloadElement, navigationRoot } =
+    React.useContext(RidgeNavigationContext);
   const { stateNavigator } = React.useContext(NavigationContext);
 
   const navigator = React.useMemo(() => {
     const n = new StateNavigator(stateNavigator);
-    n.start(tabKey);
+    n.start(startKey);
     return n;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -28,12 +29,16 @@ export function useBottomTabsStateNavigator(tabKey: string) {
   React.useEffect(() => {
     const timerId = setTimeout(() => {
       if (initialUrl) {
-        let fluentNavigator = navigator.fluent(false).navigate(tabKey);
+        let fluentNavigator = navigator.fluent(false).navigate(startKey);
         const path = getPathFromUrl(initialUrl);
         const initialRootKey = getRootKeyFromPath(path)!;
         const bottomTabKey = getBottomTabKeyFromPath(path);
-        const bottomTabScreenKey = getScreenKey(initialRootKey, bottomTabKey);
-        if (bottomTabScreenKey !== tabKey) {
+        const bottomTab = (
+          navigationRoot[initialRootKey] as RootChildBottomTabs
+        )?.children?.find((t) => t.path === '/' + bottomTabKey);
+
+        const bottomTabScreenKey = getScreenKey(initialRootKey, bottomTab);
+        if (bottomTabScreenKey !== startKey) {
           return;
         }
         const paths = getPaths(path, true);
@@ -41,7 +46,7 @@ export function useBottomTabsStateNavigator(tabKey: string) {
         matches.forEach(({ route, params }) => {
           const navigateKey = getScreenKey(
             initialRootKey,
-            bottomTabKey,
+            bottomTab,
             route.path
           );
           preloadElement(route);
@@ -55,12 +60,13 @@ export function useBottomTabsStateNavigator(tabKey: string) {
     return () => clearTimeout(timerId);
   }, [
     initialUrl,
-    tabKey,
     stateNavigator,
     screens,
     preloadScreen,
     preloadElement,
     navigator,
+    startKey,
+    navigationRoot,
   ]);
   return navigator;
 }

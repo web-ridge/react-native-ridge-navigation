@@ -1,5 +1,6 @@
 import {
   BottomTabType,
+  getScreenKey,
   RootChildBottomTabs,
   rootKeyAndPaths,
 } from './navigationUtils';
@@ -74,7 +75,7 @@ export default function BottomTabsStack() {
 
 const TabBarItemStack = React.memo(
   ({ tab, rootKey }: { tab: BottomTabType; rootKey: string }) => {
-    const start = rootKeyAndPaths(rootKey, tab.path);
+    const start = getScreenKey(rootKey, tab);
     const navigator = useBottomTabsStateNavigator(start);
     const {
       theme: { layout },
