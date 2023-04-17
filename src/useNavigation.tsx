@@ -72,11 +72,8 @@ export default function useNavigation() {
         preloadRoot(rootKey);
       }
       rootNavigator.start(rootKey);
-      if (rootKey === currentRootKey) {
-        stateNavigator.refresh({}, 'replace');
-      }
     },
-    [preloadRoot, rootNavigator, currentRootKey, stateNavigator]
+    [preloadRoot, rootNavigator]
   );
 
   const refresh = React.useCallback(
