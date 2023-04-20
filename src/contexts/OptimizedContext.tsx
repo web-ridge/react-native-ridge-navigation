@@ -4,6 +4,7 @@ import { NavigationContext } from 'navigation-react';
 import type { Theme } from '../theme';
 import type { BaseScreen } from '../navigationUtils';
 import type { StateNavigator } from 'navigation';
+import type { State } from 'navigation';
 
 // TODO: this could be deprecated in favor of a useContextSelector :)
 // We only want to render the screen once, not twice
@@ -12,7 +13,7 @@ const OptimizedContext = React.createContext<{
   rootNavigator: StateNavigator;
   stateNavigator: StateNavigator;
   preloadRoot: (rootKey: string) => void;
-  preloadScreen: (key: string, result: any) => void;
+  preloadScreen: (screen: BaseScreen, params: any) => void;
   preloadElement: (screen: BaseScreen) => void;
   theme: Theme;
   preloaded: any;
@@ -20,12 +21,12 @@ const OptimizedContext = React.createContext<{
 
 export function OptimizedContextProvider({
   data,
-  screenKey,
+  state,
   children,
   withSuspenseContainer = true,
 }: {
   data: any;
-  screenKey: string;
+  state: State | null;
   children: any;
   withSuspenseContainer?: boolean;
 }) {
@@ -38,7 +39,9 @@ export function OptimizedContextProvider({
     theme,
     SuspenseContainer,
   } = React.useContext(RidgeNavigationContext);
-  const { stateNavigator } = React.useContext(NavigationContext);
+  const { stateNavigator, state: fallbackState } =
+    React.useContext(NavigationContext);
+  const preloadId = fallbackState?.preloadId || state?.preloadId;
   const value = React.useMemo(
     () => ({
       data,
@@ -48,7 +51,7 @@ export function OptimizedContextProvider({
       preloadScreen,
       preloadElement,
       theme,
-      preloaded: preloadedCache[screenKey],
+      preloaded: preloadedCache[preloadId],
     }),
     [
       data,
@@ -59,7 +62,7 @@ export function OptimizedContextProvider({
       preloadElement,
       theme,
       preloadedCache,
-      screenKey,
+      preloadId,
     ]
   );
   return (

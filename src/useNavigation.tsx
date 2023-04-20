@@ -32,10 +32,9 @@ export default function useNavigation() {
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      const screenKey = getScreenKey(currentRootKey, currentTab, screen.path);
-      preloadScreen(screenKey, screen.preload(params));
+      preloadScreen(screen, params);
     },
-    [preloadScreen, currentTab, currentRootKey]
+    [preloadScreen]
   );
 
   const canNavigateBack = React.useCallback(

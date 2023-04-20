@@ -398,6 +398,8 @@ import {
 You have to enable url schemes etc in your app and it'll work!
 
 E.g. our example app can open the following urls:
+### crumb
+
 
 ### Bottom tabs
 

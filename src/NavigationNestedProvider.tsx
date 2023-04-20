@@ -29,6 +29,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
         route: rootKey,
         trackCrumbTrail: false,
         renderScene: () => <EmptyElement />,
+        preloadId: rootKey,
       },
       ...screens.map((screen) => ({
         key: rootKeyAndPaths(rootKey, screen.path),
@@ -37,6 +38,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
         ),
         renderScene: () => <screen.element />,
         trackCrumbTrail: true,
+        preloadId: screen.path,
       })),
     ];
 
@@ -64,14 +66,6 @@ function NavigationNestedProvider({ children }: { children: any }) {
     <RidgeNavigationContext.Provider
       value={{
         screens,
-        // rootNavigator,
-        // navigationRoot,
-        // preloadedCache,
-        // preloadRoot,
-        // preloadScreen,
-        // theme,
-        // preloadElement,
-        // SuspenseContainer,
         ...rest,
         rootNavigator,
         navigationRoot: navigationRootWithModal,
@@ -89,7 +83,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
                 <HiddenNavbarWithSwipeBack />
                 <OptimizedContextProvider
                   withSuspenseContainer={false}
-                  screenKey={state.key}
+                  state={state}
                   data={data}
                 >
                   {state.key === rootKey ? children : state.renderScene()}

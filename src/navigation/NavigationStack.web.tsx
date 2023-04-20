@@ -20,7 +20,7 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
             },
           ]}
         >
-          <OptimizedContextProvider screenKey={state.key} data={data}>
+          <OptimizedContextProvider state={state} data={data}>
             {renderWeb?.(state.key) || scene}
           </OptimizedContextProvider>
         </View>

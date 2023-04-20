@@ -2,9 +2,7 @@ import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
   BaseScreen,
-  getBottomTabKeyFromPath,
   getPathFromUrl,
-  getPaths,
   getRootKeyFromPath,
   getScreenKey,
   makeVariablesNavigationFriendly,
@@ -25,7 +23,6 @@ import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
-import { findMatchedRoutes } from './parseUrl';
 import useUrl from './useUrl';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 
@@ -50,9 +47,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
 
   const preloadedCache = React.useRef<Record<string, any>>({});
 
-  const preloadScreen = React.useCallback((k: string, result: any) => {
-    preloadedCache.current[k] = result;
-  }, []);
+  const preloadScreen = React.useCallback(
+    <T extends BaseScreen>(screen: T, params: any) => {
+      const result = screen.preload(params);
+      preloadedCache.current[screen.path] = result;
+    },
+    []
+  );
 
   const preloadElement = React.useCallback(
     async <T extends BaseScreen>(screen: T) => {
@@ -74,17 +75,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       switch (root.type) {
         case 'bottomTabs':
           root.children.forEach((tab) => {
-            const path = rootKeyAndPaths(rootKey, tab.path);
             preloadElement(tab.child);
-            preloadScreen(path, tab.child.preload({}));
+            preloadScreen(tab.child, {});
           });
           break;
         case 'normal':
-          const path = rootKeyAndPaths(rootKey, root.child.path);
-
           if (root.child) {
             preloadElement(root.child);
-            preloadScreen(path, root.child.preload({}));
+            preloadScreen(root.child, {});
           }
       }
     },
@@ -103,10 +101,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 key: rootKey,
                 route: rootKey,
                 trackCrumbTrail: false,
+                preload: () => preloadRoot(rootKey),
+                preloadId: rootKey,
                 renderScene: () =>
-                  Platform.OS === 'web' ? (
-                    <BottomTabsStack />
-                  ) : (
+                  Platform.OS === 'web' ? null : (
                     <BottomTabIndexProvider>
                       <BottomTabsStack />
                     </BottomTabIndexProvider>
@@ -125,6 +123,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                       ),
                       renderScene: () => <screen.element />,
                       trackCrumbTrail: !isTheSame,
+                      screen,
+                      preloadId: screen.path,
                     };
                   })
                 )
@@ -138,6 +138,9 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 route: rootKey,
                 trackCrumbTrail: false,
                 renderScene: () => <root.child.element />,
+                screen: root.child,
+                preload: () => preloadRoot(rootKey),
+                preloadId: root.child.path,
               },
               ...screens.map((screen) => ({
                 key: rootKeyAndPaths(rootKey, screen.path),
@@ -146,96 +149,76 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 ),
                 renderScene: () => <screen.element />,
                 trackCrumbTrail: true,
+                screen,
+                preloadId: screen.path,
               })),
             ];
         }
       })
       .flat();
     return new StateNavigator(navigators, getHistoryManager());
-  }, [navigationRoot, screens]);
+  }, [navigationRoot, preloadRoot, screens]);
 
-  const initialUrl = useUrl();
+  const initialDefaultUrl = React.useMemo(() => {
+    const defaultRootKey = Object.keys(navigationRoot)[0]!;
+    const defaultRoot = navigationRoot[defaultRootKey]!;
+    if (defaultRoot.type === 'bottomTabs') {
+      return (
+        '/' +
+        getScreenKey(
+          defaultRootKey,
+          defaultRoot.children[0],
+          Platform.OS === 'web' ? defaultRoot.children[0]!.path : undefined
+        )
+      );
+    }
+
+    return (
+      '/' + getScreenKey(defaultRootKey, undefined, defaultRoot.child!.path)
+    );
+  }, [navigationRoot]);
+  const initialUrl = useUrl() || initialDefaultUrl;
+
   const done = React.useRef<boolean>(false);
+
+  const preloadLink = React.useCallback(
+    (url: string) => {
+      const { state, data, crumbs } = rootNavigator.parseLink(url);
+
+      state?.preload?.();
+      if (state.screen) {
+        preloadElement(state.screen);
+        preloadScreen(state.screen, data);
+      }
+      crumbs.forEach((crumb) => {
+        crumb.state?.preload?.();
+        if (crumb.state.screen) {
+          preloadElement(crumb.state.screen);
+          preloadScreen(crumb.state.screen, crumb.data);
+        }
+      });
+    },
+    [preloadElement, preloadScreen, rootNavigator]
+  );
   React.useMemo(() => {
     if (done.current) return;
     done.current = true;
 
-    const defaultKey = Object.keys(navigationRoot)[0]!;
-    const startDefault = () => {
-      preloadRoot(defaultKey);
-      rootNavigator.start(defaultKey);
-    };
-    if (!initialUrl) {
-      startDefault();
-      return;
-    }
-
     const path = getPathFromUrl(initialUrl);
-    const initialRootKey = getRootKeyFromPath(path) || defaultKey;
-    const root = navigationRoot[initialRootKey];
+    const rootKey = getRootKeyFromPath(path)!;
+    const root = navigationRoot[rootKey];
     const rootType = root?.type;
     const isBottomTabs = rootType === 'bottomTabs';
-    const isNormal = rootType === 'normal';
-    const bottomTabKey = getBottomTabKeyFromPath(path);
-    const paths = getPaths(path, isBottomTabs);
-    preloadRoot(initialRootKey);
+    const isNative = Platform.OS !== 'web';
 
-    let fluentNavigator = rootNavigator.fluent(true);
-    fluentNavigator = fluentNavigator.navigate(initialRootKey);
-    const isWeb = Platform.OS === 'web';
-    const isNormalStack = isNormal || (isBottomTabs && isWeb);
-    const hasHistory = paths.length > 0;
-
-    const currentTab = isBottomTabs
-      ? root?.children?.find((tab) => tab.path === '/' + bottomTabKey)
-      : undefined;
-    // add the bottom tab to the stack if it's not the default
-    if (isBottomTabs && isWeb) {
-      if (currentTab) {
-        const navigateKey = getScreenKey(
-          initialRootKey,
-          currentTab,
-          currentTab.child.path
-        );
-        preloadElement(currentTab.child);
-        preloadScreen(navigateKey, currentTab.child.preload({}));
-        fluentNavigator = fluentNavigator.navigate(navigateKey, {});
-      }
+    if (isNative && isBottomTabs) {
+      preloadRoot(rootKey);
+      rootNavigator.start(rootKey);
+    } else {
+      preloadLink(initialUrl);
+      rootNavigator.navigateLink(initialUrl);
     }
-
-    if (isNormalStack && hasHistory) {
-      const matches = findMatchedRoutes(paths, screens);
-      if (matches.length === 0) {
-        console.warn(`[ridge-navigation] No route found for path: ${path}`);
-        startDefault();
-        return;
-      }
-      matches.forEach(({ route, params }) => {
-        const navigateKey = getScreenKey(
-          initialRootKey,
-          currentTab,
-          route.path
-        );
-        preloadElement(route);
-        preloadScreen(navigateKey, route.preload(params));
-        fluentNavigator = fluentNavigator.navigate(navigateKey, params);
-      });
-    }
-    console.log(
-      '[ridge-navigation] Initial url',
-      fluentNavigator.url,
-      initialUrl
-    );
-    rootNavigator.navigateLink(fluentNavigator.url);
-  }, [
-    initialUrl,
-    navigationRoot,
-    preloadElement,
-    preloadRoot,
-    preloadScreen,
-    rootNavigator,
-    screens,
-  ]);
+  }, [initialUrl, navigationRoot, preloadLink, preloadRoot, rootNavigator]);
 
   return (
     <RidgeNavigationContext.Provider
@@ -261,7 +244,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           <NavigationStackWrapper>
             {children && (
               <OptimizedContextProvider
-                screenKey=""
+                state={null}
                 data={undefined}
                 withSuspenseContainer={false}
               >
@@ -276,7 +259,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 return (
                   <>
                     <HiddenNavbarWithSwipeBack />
-                    <OptimizedContextProvider screenKey={state.key} data={data}>
+                    <OptimizedContextProvider state={state} data={data}>
                       <OptimizedRenderScene renderScene={state.renderScene} />
                     </OptimizedContextProvider>
                   </>

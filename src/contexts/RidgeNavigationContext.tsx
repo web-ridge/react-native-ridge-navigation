@@ -9,7 +9,7 @@ const RidgeNavigationContext = React.createContext<{
   navigationRoot: Root;
   preloadedCache: Record<string, any>;
   preloadRoot: (rootKey: string) => void;
-  preloadScreen: (key: string, preload: any) => void;
+  preloadScreen: (screen: BaseScreen, params: any) => void;
   preloadElement: (screen: BaseScreen) => void;
   theme: Theme;
   SuspenseContainer: any;

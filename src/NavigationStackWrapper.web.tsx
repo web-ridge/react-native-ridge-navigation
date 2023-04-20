@@ -9,7 +9,7 @@ export default function NavigationStackWrapper({
 }: {
   children: any;
 }) {
-  const { currentRootKey, currentRoot } = useCurrentRoot();
+  const { currentRoot } = useCurrentRoot();
   let inner = children;
 
   if (currentRoot?.type === 'bottomTabs') {
@@ -20,7 +20,7 @@ export default function NavigationStackWrapper({
     );
   }
   return (
-    <OptimizedContextProvider data={undefined} screenKey={currentRootKey}>
+    <OptimizedContextProvider data={undefined} state={null}>
       {inner}
     </OptimizedContextProvider>
   );

@@ -1,3 +1,8 @@
 export default function useUrl() {
-  return window.location.pathname;
+  const url = window.location.pathname + window.location.search;
+
+  if (url === '/') {
+    return null;
+  }
+  return url;
 }

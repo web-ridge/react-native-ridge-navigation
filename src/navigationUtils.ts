@@ -161,6 +161,7 @@ export function getScreenKey(
 ) {
   const firstPath = paths?.[0] || tab?.child.path;
   const skipSegment = skipUrlSegment(tab, firstPath);
+
   const screenPath = skipSegment ? undefined : firstPath;
   return rootKeyAndPaths(rootKey, tab?.path, screenPath);
 }
@@ -234,7 +235,8 @@ export function getPathFromUrl(url: string): string {
     const u = new URL(url);
     return u.pathname + u.search;
   }
-  return '/' + url.split('://')[1];
+  const split = url.split('://');
+  return '/' + split[1];
 }
 export function partMatches(
   urlPart: string | undefined,

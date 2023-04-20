@@ -89,7 +89,7 @@ const TabBarItemStack = React.memo(
             return (
               <>
                 <HiddenNavbarWithSwipeBack />
-                <OptimizedContextProvider screenKey={state.key} data={data}>
+                <OptimizedContextProvider state={state} data={data}>
                   {state.renderScene()}
                 </OptimizedContextProvider>
               </>

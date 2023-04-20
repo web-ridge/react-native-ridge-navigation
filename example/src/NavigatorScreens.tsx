@@ -34,7 +34,7 @@ export const PostsScreen = registerScreen(
 );
 
 export const PostScreen = registerScreen(
-  '/post/:id',
+  '/post-test/:id',
   RequireAuthHOC(PostScreenLazy),
   (params) => {
     const { id } = params;
