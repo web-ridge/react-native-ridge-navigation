@@ -2,7 +2,7 @@ import * as React from 'react';
 import RidgeNavigationContext from './RidgeNavigationContext';
 import { NavigationContext } from 'navigation-react';
 import type { Theme } from '../theme';
-import type { BaseScreen } from '../navigationUtils';
+import { BaseScreen, generatePath } from '../navigationUtils';
 import type { StateNavigator } from 'navigation';
 import type { State } from 'navigation';
 
@@ -39,22 +39,27 @@ export function OptimizedContextProvider({
     theme,
     SuspenseContainer,
   } = React.useContext(RidgeNavigationContext);
-  const { stateNavigator, state: fallbackState } =
-    React.useContext(NavigationContext);
-  const preloadId = fallbackState?.preloadId || state?.preloadId;
+  const {
+    stateNavigator,
+    state: fallbackState,
+    data: fallbackData,
+  } = React.useContext(NavigationContext);
+  const preloadId = state?.preloadId || fallbackState?.preloadId;
+  const params = data || fallbackData;
+
   const value = React.useMemo(
     () => ({
-      data,
+      data: params,
       rootNavigator,
       stateNavigator,
       preloadRoot,
       preloadScreen,
       preloadElement,
       theme,
-      preloaded: preloadedCache[preloadId],
+      preloaded: preloadedCache[generatePath(preloadId, params)],
     }),
     [
-      data,
+      params,
       rootNavigator,
       stateNavigator,
       preloadRoot,
