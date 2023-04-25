@@ -83,7 +83,7 @@ const TabBarItemStack = React.memo(
     return (
       <NavigationHandler stateNavigator={navigator}>
         <NavigationStack
-          underlayColor={layout.backgroundColor}
+          // underlayColor={layout.backgroundColor} // Disables touchables if returned from background
           backgroundColor={() => layout.backgroundColor}
           renderScene={(state, data) => {
             return (
