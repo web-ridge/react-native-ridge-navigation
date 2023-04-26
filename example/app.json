@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "navigation",
+    "name": "Navigation",
     "slug": "navigation",
     "scheme": "navigation",
     "version": "1.0.0",
@@ -15,9 +15,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.webridge.navigation"
@@ -30,14 +28,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-
       "package": "com.webridge.navigation"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "./expo-plugin-android-material-you-bottom-bar"
+      "./expo-plugin-android-material-you-bottom-bar",
+      "./expo-plugin-android-duplicate-classes-fix"
     ]
   }
 }

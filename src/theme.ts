@@ -172,11 +172,11 @@ export function createSimpleTheme(
           simpleTheme.dark.bottomTabs?.selectedTextColor ||
           simpleTheme.dark.accent,
         activeIndicatorColor:
-          simpleTheme.light.bottomTabs?.activeIndicatorColor ||
-          Color(simpleTheme.dark.accent).lighten(0.7).hex(),
+          simpleTheme.dark.bottomTabs?.activeIndicatorColor ||
+          Color(simpleTheme.dark.accent).darken(0.9).hex(),
         rippleColor:
-          simpleTheme.light.bottomTabs?.rippleColor ||
-          Color(simpleTheme.dark.accent).lighten(0.9).hex(),
+          simpleTheme.dark.bottomTabs?.rippleColor ||
+          Color(simpleTheme.dark.accent).darken(0.9).hex(),
         badgeTextColor: '#fff', // not supported yet in iOS/Android
         elevation: 5,
         labelVisibilityMode: 'labeled',

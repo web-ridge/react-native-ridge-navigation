@@ -52,7 +52,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     <T extends BaseScreen>(screen: T, params: any) => {
       const result = screen.preload(params);
       const path = generatePath(screen.path, params);
-      console.log({ path });
       preloadedCache.current[path] = result;
     },
     []

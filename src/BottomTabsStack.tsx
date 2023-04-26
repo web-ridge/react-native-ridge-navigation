@@ -30,6 +30,7 @@ export default function BottomTabsStack() {
   const { setBottomTabIndex, bottomTabIndex } = React.useContext(
     BottomTabIndexContext
   );
+
   if (root.type !== 'bottomTabs') {
     return null;
   }
