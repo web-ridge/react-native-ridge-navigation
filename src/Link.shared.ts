@@ -12,6 +12,8 @@ export function extractLinkProps<T extends BaseScreen>(
     replace,
     refresh,
     toBottomTab,
+    onPressIn,
+    onHoverIn,
     ...otherProps
   } = props;
   return {
@@ -23,6 +25,8 @@ export function extractLinkProps<T extends BaseScreen>(
     replace,
     refresh,
     toBottomTab,
+    onPressIn,
+    onHoverIn,
     otherProps,
   };
 }
