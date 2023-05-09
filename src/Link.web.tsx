@@ -82,12 +82,16 @@ export default function Link<T extends BaseScreen>({
   }, [preloadElement, to]);
 
   let baseProps: LinkRenderProps = {
-    onPressIn:
-      rest.onPressIn || linkMode === 'sensitive' ? undefined : preloadData,
-    onHoverIn:
-      rest.onHoverIn || linkMode === 'sensitive'
-        ? preloadDataAndElement
-        : preloadElementInner,
+    onPressIn: rest.onPressIn
+      ? rest.onPressIn
+      : linkMode === 'sensitive'
+      ? undefined
+      : preloadData,
+    onHoverIn: rest.onHoverIn
+      ? rest.onHoverIn
+      : linkMode === 'sensitive'
+      ? preloadDataAndElement
+      : preloadElementInner,
     onPress: onPress,
   };
   let childrenProps: LinkRenderProps =
