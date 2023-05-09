@@ -14,6 +14,7 @@ export default function Link<T extends BaseScreen>({
   skipLinkBehaviourIfPressIsDefined,
   replace: isReplaceInsteadOfPush,
   refresh: isRefreshInsteadOfPush,
+  ...rest
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
   const { push, replace, refresh, preload } = useNavigation();
@@ -65,6 +66,6 @@ export default function Link<T extends BaseScreen>({
   }
   return children({
     onPress: onPress,
-    onPressIn: onPressIn,
+    onPressIn: rest.onPressIn || onPressIn,
   });
 }
