@@ -20,6 +20,7 @@ export default function Link<T extends BaseScreen>({
   skipLinkBehaviourIfPressIsDefined,
   replace: isReplaceInsteadOfPush,
   refresh: isRefreshInsteadOfPush,
+  ...rest
 }: LinkProps<T>) {
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
@@ -81,9 +82,12 @@ export default function Link<T extends BaseScreen>({
   }, [preloadElement, to]);
 
   let baseProps: LinkRenderProps = {
-    onPressIn: linkMode === 'sensitive' ? undefined : preloadData,
+    onPressIn:
+      rest.onPressIn || linkMode === 'sensitive' ? undefined : preloadData,
     onHoverIn:
-      linkMode === 'sensitive' ? preloadDataAndElement : preloadElementInner,
+      rest.onHoverIn || linkMode === 'sensitive'
+        ? preloadDataAndElement
+        : preloadElementInner,
     onPress: onPress,
   };
   let childrenProps: LinkRenderProps =
