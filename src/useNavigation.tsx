@@ -9,6 +9,7 @@ import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
 import useBottomTabIndex from './useBottomTabIndex';
 import { Platform } from 'react-native';
+import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 
 type NavigateOptions = {
   preload?: boolean;
@@ -23,6 +24,7 @@ export default function useNavigation() {
     theme,
     stateNavigator,
   } = React.useContext(OptimizedContext);
+  const { navigationRoot } = React.useContext(RidgeNavigationContext);
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
   const { currentTab, switchToTab } = useBottomTabIndex();
@@ -70,9 +72,21 @@ export default function useNavigation() {
       if (preloadSetting) {
         preloadRoot(rootKey);
       }
-      rootNavigator.start(rootKey);
+
+      const root = navigationRoot[rootKey];
+      const screenKey = Platform.select({
+        web: getScreenKey(
+          rootKey,
+          root?.type === 'bottomTabs' ? root.children[0] : undefined,
+          root?.type === 'bottomTabs'
+            ? root.children[0]!.path
+            : root?.child.path
+        ),
+        default: rootKey,
+      });
+      rootNavigator.start(screenKey);
     },
-    [preloadRoot, rootNavigator]
+    [preloadRoot, navigationRoot, rootNavigator]
   );
 
   const refresh = React.useCallback(

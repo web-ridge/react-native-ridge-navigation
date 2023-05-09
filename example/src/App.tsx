@@ -55,12 +55,20 @@ let theme = createSimpleTheme({
     //   fontWeight: '900',
     //   fontFamily: 'Arial',
     // },
+    // bottomTabs: {
+    //   rippleColor: MD3LightTheme.colors.secondaryContainer,
+    //   activeIndicatorColor: MD3LightTheme.colors.secondaryContainer,
+    // },
   },
   dark: {
     text: MD3DarkTheme.colors.onBackground,
     primary: MD3DarkTheme.colors.primary,
     accent: MD3DarkTheme.colors.primary,
     backgroundColor: MD3DarkTheme.colors.background,
+    // bottomTabs: {
+    //   rippleColor: MD3DarkTheme.colors.secondaryContainer,
+    //   activeIndicatorColor: MD3DarkTheme.colors.secondaryContainer,
+    // },
     // Optional styling of bottom tabs
     // bottomTabs: {
     //   backgroundColor: MD3DarkTheme.colors.background,

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
   BaseScreen,
+  generatePath,
   getPathFromUrl,
   getRootKeyFromPath,
   getScreenKey,
@@ -50,7 +51,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   const preloadScreen = React.useCallback(
     <T extends BaseScreen>(screen: T, params: any) => {
       const result = screen.preload(params);
-      preloadedCache.current[screen.path] = result;
+      const path = generatePath(screen.path, params);
+      preloadedCache.current[path] = result;
     },
     []
   );
