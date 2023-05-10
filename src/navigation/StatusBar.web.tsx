@@ -1,11 +1,12 @@
 import * as React from 'react';
-import type { StatusBarProps } from 'navigation-react-native';
-function StatusBar({ barTintColor }: StatusBarProps) {
+import type { StatusBarProps } from 'expo-status-bar';
+
+function StatusBar({ backgroundColor }: StatusBarProps) {
   React.useEffect(() => {
-    if (barTintColor && typeof barTintColor === 'string') {
+    if (backgroundColor && typeof backgroundColor === 'string') {
       const themeColor = document.querySelector('meta[name=theme-color]');
-      themeColor?.setAttribute('content', barTintColor);
+      themeColor?.setAttribute('content', backgroundColor);
     }
-  }, [barTintColor]);
+  }, [backgroundColor]);
 }
 export default StatusBar;

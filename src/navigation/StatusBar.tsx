@@ -1,2 +1,3 @@
-import { StatusBar } from 'navigation-react-native';
+import { StatusBar } from 'expo-status-bar';
+
 export default StatusBar;
