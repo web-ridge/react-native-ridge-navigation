@@ -241,8 +241,9 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       }}
     >
       <StatusBar
-        tintStyle={theme.statusBar.style}
-        barTintColor={theme.statusBar.backgroundColor}
+        style={theme.statusBar.style}
+        backgroundColor={theme.statusBar.backgroundColor as any}
+        translucent
       />
 
       <BottomTabBadgeProvider>

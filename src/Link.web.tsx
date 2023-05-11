@@ -22,13 +22,32 @@ export default function Link<T extends BaseScreen>({
   refresh: isRefreshInsteadOfPush,
   ...rest
 }: LinkProps<T>) {
+  const staleTime = 60;
+  const lastPreloadedAt = React.useRef<Date | null>(null);
+  const isStale = React.useCallback(() => {
+    if (
+      lastPreloadedAt.current === null ||
+      (lastPreloadedAt.current &&
+        Date.now() - lastPreloadedAt.current.getTime() > staleTime * 1000)
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [lastPreloadedAt]);
+
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
 
   const preloadData = React.useCallback(() => {
+    if (!isStale()) {
+      return;
+    }
+
+    lastPreloadedAt.current = new Date();
     preload(to, params);
-  }, [preload, to, params]);
+  }, [preload, to, params, isStale]);
 
   const preloadDataAndElement = React.useCallback(() => {
     preloadElement(to);
@@ -54,7 +73,7 @@ export default function Link<T extends BaseScreen>({
         !isModifiedEvent(nativeEvent) // Ignore clicks with modifier keys
       ) {
         event.preventDefault();
-        const options = { preload: false, toBottomTab };
+        const options = { preload: isStale(), toBottomTab };
         if (isRefreshInsteadOfPush) {
           refresh(to, params, options);
         } else if (isReplaceInsteadOfPush) {
@@ -74,6 +93,7 @@ export default function Link<T extends BaseScreen>({
       params,
       replace,
       push,
+      isStale,
     ]
   );
 
@@ -109,3 +129,5 @@ export default function Link<T extends BaseScreen>({
 
   return children(childrenProps);
 }
+
+//document.querySelector("[data-testid='bottomTab-/overview-text']").click()

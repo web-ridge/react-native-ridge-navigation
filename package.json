@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "1.15.18",
+  "version": "1.15.22",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -37,7 +37,7 @@
     "pods": "cd example && pod-install --quiet",
     "bootstrap": "yarn example && yarn && yarn pods",
     "prepack": "bob build",
-    "build-example": "cd example && npx expo build:web"
+    "build-example": "cd example && npx expo export:web"
   },
   "keywords": [
     "react-native",
@@ -174,5 +174,8 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "expo-status-bar": "^1.4.4"
   }
 }
