@@ -33,12 +33,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   SuspenseContainer,
   themeSettings,
   children,
+  initialRootKey,
 }: {
   screens: ScreenItems;
   navigationRoot: Root;
   SuspenseContainer: any;
   themeSettings?: ThemeSettings;
   children?: any;
+  initialRootKey: string;
 }) {
   const colorScheme = useColorScheme();
   const theme = React.useMemo(
@@ -161,8 +163,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     return new StateNavigator(navigators, getHistoryManager());
   }, [navigationRoot, preloadRoot, screens]);
 
+  const cachedInitialRootKey = React.useRef<string | undefined>(initialRootKey);
   const initialDefaultUrl = React.useMemo(() => {
-    const defaultRootKey = Object.keys(navigationRoot)[0]!;
+    const defaultRootKey =
+      cachedInitialRootKey.current || Object.keys(navigationRoot)[0]!;
     const defaultRoot = navigationRoot[defaultRootKey]!;
     if (defaultRoot.type === 'bottomTabs') {
       return (
