@@ -3,7 +3,7 @@ export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
 export { default as BottomTabLink } from './BottomTabLink';
 export { usePreloadResult } from './Preloader';
-export { default as lazyWithPreload } from './LazyWithPreload';
+export { default as lazy } from './lazy';
 export {
   useNavigating as useFocus,
   useNavigating,

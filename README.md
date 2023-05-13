@@ -62,7 +62,7 @@ You can register screens with a preload function, the params will be automatical
 // NavigatorRoutes.ts
 const PostScreen = registerScreen(
   '/post/:id',
-  PostScreenLazy,
+  lazy(() => import('./PostScreen'),
   ({ id }) => {
     queryClient.prefetchQuery(
       queryKeyPostScreen({ id }),
