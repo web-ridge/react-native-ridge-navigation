@@ -16,7 +16,7 @@
     "expo": "~48.0.15",
     "expo-linking": "~4.0.1",
     "expo-splash-screen": "~0.18.2",
-    "expo-status-bar": "~1.4.4",
+    "expo-status-bar": "^1.4.4",
     "expo-system-ui": "~2.2.1",
     "navigation": "^6.1.0",
     "navigation-react": "^4.5.1",

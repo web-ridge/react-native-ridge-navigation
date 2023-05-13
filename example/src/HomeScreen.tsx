@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { StyleSheet, ScrollView, View, Linking } from 'react-native';
 import { Button } from 'react-native-paper';
-import Introduction from '../Introduction';
-import { useRenderLog } from '../helpers/utils';
+import Introduction from './Introduction';
+import { useRenderLog } from './helpers/utils';
 
 function HomeScreen() {
   useRenderLog('HomeScreen');

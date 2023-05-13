@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { storage } from '../storage';
-import api from '../api';
+import { storage } from './storage';
+import api from './api';
 
 export interface User {
   id: number;

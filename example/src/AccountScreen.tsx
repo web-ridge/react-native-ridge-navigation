@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button, Paragraph, Text, useTheme } from 'react-native-paper';
-import useAuthState, { reset } from '../Auth/useAuthState';
+import useAuthState, { reset } from './useAuthState';
 
 import {
   useBottomTabIndex,
@@ -10,11 +10,11 @@ import {
   BottomTabLink,
 } from 'react-native-ridge-navigation';
 import { View, ScrollView, Modal } from 'react-native';
-import { BottomRoot } from '../Navigator';
-import Header from '../Header';
-import { useRenderLog } from '../helpers/utils';
-import routes from '../Routes';
-import ButtonLink from '../ButtonLink';
+import { BottomRoot } from './Navigator';
+import Header from './Header';
+import { useRenderLog } from './helpers/utils';
+import routes from './Routes';
+import ButtonLink from './ButtonLink';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');

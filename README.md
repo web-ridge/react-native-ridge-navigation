@@ -117,24 +117,6 @@ or with npm
 npm install react-native-navigation navigation navigation-react navigation-react-mobile navigation-react-native
 ```
 
-### 2. Extra (optional)
-
-Add react-native-web-image-loader (see example), this will make sure the images in the BottomBar will be in good quality
-on the web.
-
-```js
-
-// ...
-addWebpackModuleRule({
-  test: /\.(png|jpe?g|gif)$/,
-  options: {
-    name: 'static/media/[name].[hash:8].[ext]',
-    scalings: { '@3x': 1 },
-  },
-  loader: 'react-native-web-image-loader',
-})
-// ...
-```
 
 Support for Material You bottom bar in Android
 
@@ -410,15 +392,16 @@ navigation://home/post/post-1
 ## More
 
 ```ts
-// global
-createLinkComponent,
+  // global
+  createLinkComponent,
   SwitchRoot,
   BottomTabLink,
   Link
-BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
-lazyWithPreload // only available on the web: see example app
-Redirect
-NavigationRoot,
+  BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
+  lazyWithPreload // only available on the web: see example app
+  Redirect,
+  StatusBar,
+  NavigationRoot,
   createNavigation,
   // refreshBottomTabs, TODO: implement this
   createBottomTabsRoot,

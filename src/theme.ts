@@ -1,49 +1,6 @@
 import type { ColorValue } from 'react-native';
 import Color from 'color';
 
-export interface OptionsStatusBar {
-  /**
-   * Set the status bar visibility
-   * @default true
-   */
-  visible?: boolean;
-  /**
-   * Set the text color of the status bar
-   * @default 'light'
-   */
-  style?: 'light' | 'dark';
-  /**
-   * Set the background color of the status bar
-   * #### (Android specific)
-   */
-  backgroundColor?: ColorValue;
-  /**
-   * Draw screen behind the status bar
-   * #### (Android specific)
-   */
-  drawBehind?: boolean;
-  /**
-   * Allows the StatusBar to be translucent (blurred)
-   * #### (Android specific)
-   */
-  translucent?: boolean;
-  /**
-   * Animate StatusBar style changes.
-   * #### (iOS specific)
-   */
-  animated?: boolean;
-  /**
-   * Automatically hide the StatusBar when the TopBar hides.
-   * #### (iOS specific)
-   */
-  hideWithTopBar?: boolean;
-  /**
-   * Blur content beneath the StatusBar.
-   * #### (iOS specific)
-   */
-  blur?: boolean;
-}
-
 export interface ThemeLayout {
   backgroundColor: ColorValue;
 }
@@ -71,7 +28,6 @@ export interface ThemeBottomBar {
 export interface Theme {
   bottomBar: ThemeBottomBar;
   layout: ThemeLayout;
-  statusBar: OptionsStatusBar;
 }
 
 type FontWeight =
@@ -120,12 +76,6 @@ export function createSimpleTheme(
 ): ThemeSettings {
   return {
     light: {
-      statusBar: {
-        translucent: false,
-        drawBehind: true,
-        style: 'dark',
-        backgroundColor: 'transparent',
-      },
       layout: {
         backgroundColor: simpleTheme.light.backgroundColor || '#fff',
       },
@@ -154,12 +104,6 @@ export function createSimpleTheme(
       },
     },
     dark: {
-      statusBar: {
-        translucent: false,
-        drawBehind: true,
-        style: 'light',
-        backgroundColor: 'transparent',
-      },
       layout: {
         backgroundColor: simpleTheme.dark.backgroundColor || '#000',
       },

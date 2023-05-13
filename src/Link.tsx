@@ -17,8 +17,10 @@ export default function Link<T extends BaseScreen>({
   ...rest
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
-  const { push, replace, refresh, preload } = useNavigation();
-
+  const { push, replace, refresh, preload, preloadElement } = useNavigation();
+  const preloadElementInner = React.useCallback(() => {
+    preloadElement(to);
+  }, [preloadElement, to]);
   const onPress = React.useCallback(
     async (event: GestureResponderEvent) => {
       // we don't want to go to another screen but we do want preloading
@@ -58,8 +60,9 @@ export default function Link<T extends BaseScreen>({
   );
 
   const onPressIn = React.useCallback(() => {
+    preloadElementInner();
     preload(to, params);
-  }, [to, preload, params]);
+  }, [to, preload, preloadElementInner, params]);
 
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
     return children({ onPress: onCustomPress });

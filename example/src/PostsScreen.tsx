@@ -4,13 +4,13 @@ import { usePreloadResult } from 'react-native-ridge-navigation';
 import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 
-import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from '../queryKeys';
+import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from './queryKeys';
 
-import routes from '../Routes';
+import routes from './Routes';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useRenderLog } from '../helpers/utils';
-import ListItemLink from '../ListItemLink';
+import { useRenderLog } from './helpers/utils';
+import ListItemLink from './ListItemLink';
 
 const ITEM_HEIGHT = 79;
 

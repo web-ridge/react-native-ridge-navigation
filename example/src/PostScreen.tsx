@@ -7,11 +7,11 @@ import {
 } from 'react-native-ridge-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ScrollView } from 'react-native';
-import Header from '../Header';
-import { queryKeyPostScreen, queryKeyPostScreenPromise } from '../queryKeys';
-import routes from '../Routes';
-import ButtonLink from '../ButtonLink';
-import Spacer from '../helpers/Spacer';
+import Header from './Header';
+import { queryKeyPostScreen, queryKeyPostScreenPromise } from './queryKeys';
+import routes from './Routes';
+import ButtonLink from './ButtonLink';
+import Spacer from './helpers/Spacer';
 
 function PostScreen() {
   // optional with react-query  but could be used i.c.w. Relay.dev etc.

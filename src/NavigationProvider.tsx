@@ -15,7 +15,7 @@ import { defaultTheme, ThemeSettings } from './theme';
 import { Platform, useColorScheme } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
-import StatusBar from './navigation/StatusBar';
+
 import BottomTabsStack from './BottomTabsStack';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import NavigationStackWrapper from './NavigationStackWrapper';
@@ -240,12 +240,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         SuspenseContainer,
       }}
     >
-      <StatusBar
-        style={theme.statusBar.style}
-        backgroundColor={theme.statusBar.backgroundColor as any}
-        translucent
-      />
-
       <BottomTabBadgeProvider>
         <NavigationHandler stateNavigator={rootNavigator}>
           <NavigationStackWrapper>

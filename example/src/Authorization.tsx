@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { SwitchRoot } from 'react-native-ridge-navigation';
-import { NavigationRoots } from '../Navigator';
+import { NavigationRoots } from './Navigator';
 import useAuthState from './useAuthState';
 
 export function RequireAuthHOC<T>(WrappedComponent: any) {

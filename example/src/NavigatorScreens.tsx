@@ -1,10 +1,5 @@
-import { registerScreen } from 'react-native-ridge-navigation';
-import { RequireAuthHOC } from './Auth/Authorization';
-import AuthScreenLazy from './Auth/AuthScreenLazy';
-import PostsScreenLazy from './Post/PostsScreenLazy';
-import AccountScreenLazy from './Account/AccountScreenLazy';
-import PostScreenLazy from './Post/PostScreenLazy';
-import HomeScreenLazy from './Home/HomeScreenLazy';
+import { lazyWithPreload, registerScreen } from 'react-native-ridge-navigation';
+import { RequireAuthHOC } from './Authorization';
 
 import queryClient from './queryClient';
 import {
@@ -14,17 +9,25 @@ import {
   queryKeyPostsScreenPromise,
 } from './queryKeys';
 
-export const AuthScreen = registerScreen('/auth', AuthScreenLazy, () => {});
-export const HomeScreen = registerScreen('/home', HomeScreenLazy, () => {});
+export const AuthScreen = registerScreen(
+  '/auth',
+  lazyWithPreload(() => import('./AuthScreen')),
+  () => {}
+);
+export const HomeScreen = registerScreen(
+  '/home',
+  lazyWithPreload(() => import('./HomeScreen')),
+  () => {}
+);
 export const AccountScreen = registerScreen(
   '/account',
-  RequireAuthHOC(AccountScreenLazy),
+  RequireAuthHOC(lazyWithPreload(() => import('./AccountScreen'))),
   () => {}
 );
 
 export const PostsScreen = registerScreen(
   '/overview',
-  RequireAuthHOC(PostsScreenLazy),
+  RequireAuthHOC(lazyWithPreload(() => import('./PostsScreen'))),
   () => {
     queryClient.prefetchQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise, {
       staleTime: 3000,
@@ -35,7 +38,7 @@ export const PostsScreen = registerScreen(
 
 export const PostScreen = registerScreen(
   '/post-test/:id',
-  RequireAuthHOC(PostScreenLazy),
+  RequireAuthHOC(lazyWithPreload(() => import('./PostScreen'))),
   (params) => {
     const { id } = params;
     queryClient.prefetchQuery(
