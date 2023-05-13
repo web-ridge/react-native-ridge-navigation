@@ -19,7 +19,7 @@ import NavigationStack from './navigation/NavigationStack';
 import BottomTabsStack from './BottomTabsStack';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import NavigationStackWrapper from './NavigationStackWrapper';
-import type { PreloadableComponent } from './LazyWithPreload.web';
+import type { PreloadableComponent } from './LazyWithPreload';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
