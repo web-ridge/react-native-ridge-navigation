@@ -13,7 +13,7 @@ control over the navigation!
 
 ## Features
 
-- Superior performance (we use [grahammendick/navigation](https://github.com/grahammendick/navigation))
+- New architecture (Fabric) ready
 - Simple api
 - 100% Type safety (routes, params, bottom tabs)
 - Bundle splitting (lazy loading, smart prefetching)
