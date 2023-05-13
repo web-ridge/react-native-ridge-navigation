@@ -1,23 +1,16 @@
 <h1 align="center">
   <img src="https://user-images.githubusercontent.com/6492229/124349256-854c4680-dbee-11eb-84ca-fd410a4a0fcd.png" width="128">
   <br>
-  react-native-ridge-navigation (⚠️ in beta)
+  react-native-ridge-navigation
 </h1>
 
-Simple and performant cross platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (
+Simple and performant cross-platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (
 alpha)
 
 Build on top of [grahammendick/navigation](https://github.com/grahammendick/navigation). Check it out if you want more
 control over the navigation!
 
-⚠️ This is beta software, things can break.
 
-Things which are not finished yet:
-
-- documentation
-- create universal lazyWithPreload for screens (only on web, but [callstack/repack](https://github.com/callstack/repack)
-  can fix it native too)
-- universal modal (web support too)
 
 ## Features
 
