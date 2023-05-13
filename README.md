@@ -4,8 +4,7 @@
   react-native-ridge-navigation
 </h1>
 
-Simple and performant cross-platform navigation on iOS, Android and the web with simple and type-safe api for React 18 (
-alpha)
+Simple and performant navigation on iOS, Android and the web with simple and type-safe api.
 
 Build on top of [grahammendick/navigation](https://github.com/grahammendick/navigation). Check it out if you want more
 control over the navigation!
@@ -16,8 +15,8 @@ control over the navigation!
 
 - Superior performance (we use [grahammendick/navigation](https://github.com/grahammendick/navigation))
 - Simple api
-- Type safety (routes, params, bottom tabs)
-- Bundle splitting on web
+- 100% Type safety (routes, params, bottom tabs)
+- Bundle splitting (lazy loading, smart prefetching)
 - Render as you fetch on iOS, Android & web
 - Works on Android, iOS & web!
 - Preload data on mouseDown (or more sensitive on hover, see `<Link />` example)
@@ -25,6 +24,9 @@ control over the navigation!
 - Automatic deep-linking
 - Real-time light/dark mode
 - Out of the box scroll restoration (on web), because screens in tab are pushed on top of each other!
+- A lot of control over the web layout
+- Universal links (already works, but docs need work)
+- PWA documentation (already works, but docs need work)
 
 ## Example
 
