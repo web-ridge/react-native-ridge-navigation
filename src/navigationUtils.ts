@@ -1,5 +1,5 @@
 import type { ComponentType, FC, ReactNode } from 'react';
-import type { PressableProps } from 'react-native';
+import type { PressableProps, GestureResponderEvent } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 
 export type ExtractRouteParams<T extends string> = string extends T
@@ -105,9 +105,9 @@ export function registerScreen<
 }
 
 export type LinkRenderProps = {
-  onPressIn?: PressableProps['onPressIn'];
-  onHoverIn?: PressableProps['onHoverIn'];
-  onPress: PressableProps['onPress'];
+  onPressIn?: (event: GestureResponderEvent) => void;
+  onHoverIn?: (event: any) => void;
+  onPress: (event: GestureResponderEvent) => void;
   accessibilityRole?: 'link';
   href?: string;
 };
