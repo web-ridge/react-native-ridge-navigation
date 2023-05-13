@@ -210,8 +210,6 @@ const navigationRoot = {
 };
 
 export default function App() {
-  LogBox.ignoreLogs(['Require cycle: src/Navigator']);
-
   return (
     <SafeAreaProvider>
       <NavigationProvider
