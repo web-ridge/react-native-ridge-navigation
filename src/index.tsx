@@ -4,6 +4,7 @@ export { default as Link } from './Link';
 export { default as BottomTabLink } from './BottomTabLink';
 export { usePreloadResult } from './Preloader';
 export { default as lazy } from './lazy';
+export { default as StatusBar } from './StatusBar';
 export {
   useNavigating as useFocus,
   useNavigating,
