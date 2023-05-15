@@ -5,6 +5,7 @@ export { default as BottomTabLink } from './BottomTabLink';
 export { usePreloadResult } from './Preloader';
 export { default as lazy } from './lazy';
 export { default as StatusBar } from './StatusBar';
+export { default as FocusAwareStatusBar } from './FocusAwareStatusBar';
 export {
   useNavigating as useFocus,
   useNavigating,
@@ -12,6 +13,7 @@ export {
   useUnloaded,
   useUnloading,
 } from './useFocus';
+export { default as useIsFocused } from './useIsFocused';
 export { default as useParams } from './useParams';
 export { default as useBottomTabBadges } from './useBottomTabBadges';
 export { default as useBottomTabIndex } from './useBottomTabIndex';

@@ -394,6 +394,7 @@ navigation://home/post/post-1
   lazyWithPreload // only available on the web: see example app
   Redirect,
   StatusBar,
+  FocusAwareStatusBar,
   NavigationRoot,
   createNavigation,
   // refreshBottomTabs, TODO: implement this
@@ -407,10 +408,14 @@ navigation://home/post/post-1
   createSimpleTheme,
   setPreloadResult, // should not need this as it is done automatically
 
-  // hooks
-  useTheme,
+  // common hooks
   useParams,
   useNavigation,
+
+
+  // extra
+  useTheme,
+  useIsFocused,
   useFocus,// same as useNavigating
   useNavigating,
   useNavigated,
