@@ -24,6 +24,7 @@ export interface BottomTabType {
   child: BaseScreen;
   path: string;
   title: () => string;
+
   icon?: any;
   selectedIcon?: any;
 }

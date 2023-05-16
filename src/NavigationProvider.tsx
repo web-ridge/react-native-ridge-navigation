@@ -26,6 +26,7 @@ import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 import useUrl from './useUrl';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
+import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -109,9 +110,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 preloadId: rootKey,
                 renderScene: () =>
                   Platform.OS === 'web' ? null : (
-                    <BottomTabIndexProvider>
-                      <BottomTabsStack />
-                    </BottomTabIndexProvider>
+                    <BottomTabRefreshProvider>
+                      <BottomTabIndexProvider>
+                        <BottomTabsStack />
+                      </BottomTabIndexProvider>
+                    </BottomTabRefreshProvider>
                   ),
               },
               ...root.children

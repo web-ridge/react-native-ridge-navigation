@@ -18,6 +18,7 @@ import BottomTabIndexContext from './contexts/BottomTabIndexContext';
 import BottomTabBadgesContext from './contexts/BottomTabBadgesContext';
 import useCurrentRoot from './useCurrentRoot';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
+import BottomTabRefreshContext from './contexts/BottomTabRefreshContext';
 
 export default function BottomTabsStack() {
   const { currentRoot, currentRootKey } = useCurrentRoot();
@@ -26,6 +27,7 @@ export default function BottomTabsStack() {
     theme: { bottomBar: bottomTheme },
   } = React.useContext(OptimizedContext);
   const { badges } = React.useContext(BottomTabBadgesContext);
+  React.useContext(BottomTabRefreshContext);
 
   const { setBottomTabIndex, bottomTabIndex } = React.useContext(
     BottomTabIndexContext

@@ -397,7 +397,6 @@ navigation://home/post/post-1
   FocusAwareStatusBar,
   NavigationRoot,
   createNavigation,
-  // refreshBottomTabs, TODO: implement this
   createBottomTabsRoot,
   createNormalRoot,
   registerScreen,

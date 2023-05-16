@@ -3,6 +3,7 @@ import BottomTabsWrapperWeb from './web/BottomTabsWrapperWeb';
 import useCurrentRoot from './useCurrentRoot';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
+import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
 
 export default function NavigationStackWrapper({
   children,
@@ -14,9 +15,11 @@ export default function NavigationStackWrapper({
 
   if (currentRoot?.type === 'bottomTabs') {
     inner = (
-      <BottomTabIndexProvider>
-        <BottomTabsWrapperWeb>{children}</BottomTabsWrapperWeb>
-      </BottomTabIndexProvider>
+      <BottomTabRefreshProvider>
+        <BottomTabIndexProvider>
+          <BottomTabsWrapperWeb>{children}</BottomTabsWrapperWeb>
+        </BottomTabIndexProvider>
+      </BottomTabRefreshProvider>
     );
   }
   return (
