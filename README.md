@@ -413,6 +413,9 @@ navigation://home/post/post-1
 
 
   // extra
+  useBottomTabIndex,
+  useBottomTabBadges,
+  useBottomTabRefresh,
   useTheme,
   useIsFocused,
   useFocus,// same as useNavigating
