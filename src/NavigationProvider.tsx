@@ -188,8 +188,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   }, [navigationRoot]);
   const initialUrl = useUrl() || initialDefaultUrl;
 
-  const done = React.useRef<boolean>(false);
-
   const preloadLink = React.useCallback(
     (url: string) => {
       const { state, data, crumbs } = rootNavigator.parseLink(url);
@@ -209,10 +207,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     },
     [preloadElement, preloadScreen, rootNavigator]
   );
-  React.useMemo(() => {
-    if (done.current) return;
-    done.current = true;
 
+  React.useMemo(() => {
     const path = getPathFromUrl(initialUrl);
     const rootKey = getRootKeyFromPath(path)!;
     const root = navigationRoot[rootKey];
@@ -227,7 +223,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       preloadLink(initialUrl);
       rootNavigator.navigateLink(initialUrl);
     }
-  }, [initialUrl, navigationRoot, preloadLink, preloadRoot, rootNavigator]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUrl]);
 
   return (
     <RidgeNavigationContext.Provider

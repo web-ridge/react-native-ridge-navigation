@@ -8,5 +8,18 @@ export default function useUrl() {
     return null;
   }
 
-  return url || initialUrl;
+  let finalUrl = url || initialUrl;
+  if (!finalUrl) {
+    return null;
+  }
+
+  return removePrefix(finalUrl);
+}
+
+function removePrefix(str: string) {
+  const parts = str.split('://');
+  if (parts.length > 1) {
+    return parts.slice(1).join('://');
+  }
+  return str;
 }
