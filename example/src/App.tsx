@@ -23,7 +23,6 @@ import { BottomRoot, NavigationRoots, screens } from './Navigator';
 import routes from './Routes';
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
 import HeaderWeb from './HeaderWeb';
-
 function getTheme(colorScheme: ColorSchemeName): typeof MD3LightTheme {
   const isDark = colorScheme === 'dark';
   const baseTheme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
@@ -114,6 +113,7 @@ export default function App() {
               SuspenseContainer={AsyncBoundaryScreen}
               navigationRoot={navigationRoot}
               themeSettings={theme}
+              initialRootKey={NavigationRoots.RootHome}
             />
           </AsyncBoundary>
         </PaperProvider>

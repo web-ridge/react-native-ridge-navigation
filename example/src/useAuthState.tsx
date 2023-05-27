@@ -36,6 +36,7 @@ const useAuthState = create<UseAuthState>(() => initialState || emptyAuthState);
 
 export function setAuthState(state: UseAuthState) {
   useAuthState.setState(state);
+  storage.set('auth', JSON.stringify(state));
 }
 fetchAndSaveProfileForToken({ token: initialState.token });
 export function reset() {
@@ -50,17 +51,12 @@ export async function fetchAndSaveProfileForToken({
   if (!token) {
     return;
   }
-  useAuthState.setState((prev) => ({
-    ...prev,
-    token,
-    resolving: true,
-  }));
 
   const response: any = await api({
     path: 'users/1',
   });
 
-  useAuthState.setState({
+  setAuthState({
     token,
     user: response,
     resolving: false,

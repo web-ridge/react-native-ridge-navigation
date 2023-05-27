@@ -12,8 +12,10 @@ import { queryKeyPostScreen, queryKeyPostScreenPromise } from './queryKeys';
 import routes from './Routes';
 import ButtonLink from './ButtonLink';
 import Spacer from './helpers/Spacer';
+import { useRenderLog } from './helpers/utils';
 
 function PostScreen() {
+  useRenderLog('PostScreen');
   // optional with react-query  but could be used i.c.w. Relay.dev etc.
   // for now we use this to test if it keeps working
   const queryReference = usePreloadResult(routes.PostScreen);

@@ -208,23 +208,55 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     [preloadElement, preloadScreen, rootNavigator]
   );
 
-  React.useMemo(() => {
-    const path = getPathFromUrl(initialUrl);
-    const rootKey = getRootKeyFromPath(path)!;
-    const root = navigationRoot[rootKey];
-    const rootType = root?.type;
-    const isBottomTabs = rootType === 'bottomTabs';
-    const isNative = Platform.OS !== 'web';
+  const openUrl = React.useCallback(
+    (uri: string, change: boolean, fallback?: boolean) => {
+      try {
+        const path = getPathFromUrl(uri);
+        const rootKey = getRootKeyFromPath(path)!;
+        const root = navigationRoot[rootKey];
+        const rootType = root?.type;
+        const isBottomTabs = rootType === 'bottomTabs';
+        const isNative = Platform.OS !== 'web';
 
-    if (isNative && isBottomTabs) {
-      preloadRoot(rootKey);
-      rootNavigator.start(rootKey);
-    } else {
-      preloadLink(initialUrl);
-      rootNavigator.navigateLink(initialUrl);
-    }
+        if (isNative && isBottomTabs) {
+          preloadRoot(rootKey);
+          rootNavigator.start(rootKey);
+        } else {
+          preloadLink(uri);
+          // rootNavigator.start(rootKey);
+          rootNavigator.navigateLink(uri);
+        }
+      } catch (e) {
+        console.log(
+          `Can't convert deep link to the right stack: ${initialUrl}`,
+          e,
+          { fallback, change }
+        );
+        if (!fallback && !change) {
+          console.log(
+            'there is no app started yet, lets go to the default url}',
+            { defaultUrl: initialDefaultUrl }
+          );
+          // setTimeout(() => {
+          openUrl(initialDefaultUrl, false, true);
+          // }, 1000);
+        }
+      }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialUrl]);
+    []
+  );
+
+  const onStart = () => {
+    openUrl(initialUrl, false, false);
+    return initialUrl;
+  };
+  const startedUrl = React.useRef(onStart());
+  React.useEffect(() => {
+    if (startedUrl.current !== initialUrl) {
+      openUrl(initialUrl, false);
+    }
+  }, [initialUrl, openUrl]);
 
   return (
     <RidgeNavigationContext.Provider

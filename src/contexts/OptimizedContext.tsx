@@ -45,6 +45,7 @@ export function OptimizedContextProvider({
     data: fallbackData,
   } = React.useContext(NavigationContext);
   const preloadId = state?.preloadId || fallbackState?.preloadId;
+
   const params = data || fallbackData;
 
   const value = React.useMemo(

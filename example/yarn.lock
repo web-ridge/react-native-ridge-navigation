@@ -6480,10 +6480,15 @@ nanomatch@^1.2.9:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-navigation-react-mobile@*, navigation-react-mobile@^3.9.0:
+navigation-react-mobile@*:
   version "3.9.0"
   resolved "https://registry.npmjs.org/navigation-react-mobile/-/navigation-react-mobile-3.9.0.tgz#4b38bd2412f3a503346c1912c48b24639a3ba5fd"
   integrity sha512-ZWwRs3TAByIXgne2ZNvTLSgXa0tKK4puorEC05SUnmeJobXOMFPJpJiYDQrb/pZg0GBr69waFAqPiveGyr0CGw==
+
+navigation-react-mobile@^3.10.0:
+  version "3.10.0"
+  resolved "https://registry.npmjs.org/navigation-react-mobile/-/navigation-react-mobile-3.10.0.tgz#ba9ef10d51b492a449b3afa9777debe86f70dabf"
+  integrity sha512-SEOhP6ugX02kZ/f+2KZA1G+UTMLhyBWLSJAGUfUrOAPSFqCmPv0jKJTRM2EoAvQg+FVqfwOObXNoDWf2UXEBIA==
 
 navigation-react-native-web@^1.3.0:
   version "1.3.0"
@@ -6492,20 +6497,20 @@ navigation-react-native-web@^1.3.0:
   dependencies:
     navigation-react-mobile "*"
 
-navigation-react-native@^9.2.2:
-  version "9.2.2"
-  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-9.2.2.tgz#91968f9e407f1e91e654a3f94394d772094acfe0"
-  integrity sha512-XaxKMtczRnFF+9yLHAteP09sWVcgyADMv8dPHfHUI8DyR/RhZs3bmHtG6PX33r2nd4Rl27pYTYe4w3e1+02n+Q==
+navigation-react-native@^9.2.3:
+  version "9.2.3"
+  resolved "https://registry.npmjs.org/navigation-react-native/-/navigation-react-native-9.2.3.tgz#32ba22192d3e4d75e30008490616e5926e3dad50"
+  integrity sha512-P6VxlEUPD+qir1zGB80u43NQPuNwxXIsskpL79Kul65MnUDKSFvuua4LDTEE2y39hAIl0et3rA++8mzUP1AjbQ==
 
 navigation-react@^4.5.1:
   version "4.5.1"
   resolved "https://registry.npmjs.org/navigation-react/-/navigation-react-4.5.1.tgz#47adb8ba220f0701736328b359f347a619f2fc6c"
   integrity sha512-s8FUkLATlr2JcXiyOR9DUQlIAZNyqX3oW0m2u6VCLxmSNSUHUCqueSsULtRTS2FoBAYqN81tZzLMsSw0sBQeDg==
 
-navigation@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.npmjs.org/navigation/-/navigation-6.1.0.tgz#6addd11b212064250f6c7168c05b4ddb1fbbd2aa"
-  integrity sha512-lzFTF9L49o5v5/Ja3VTACLqg2cthMu63YjAa8ripzMA6+ayAVUvNmfulZcbHhU8LFX/qoUlb8fSSKFb+lNpwQQ==
+navigation@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/navigation/-/navigation-6.2.0.tgz#9dee79f82e1ab603fa2d9bdd5465e42441fcbf6e"
+  integrity sha512-PcAsKXzTJ4WSLEz2AWHeIv+R9tvagN7qdMaGO8mY0SuPaY11q5HLBbpYQi6+kwljbmRKHju0gxRMwNf17e1zDg==
 
 ncp@~2.0.0:
   version "2.0.0"

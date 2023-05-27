@@ -238,8 +238,12 @@ export function getPathFromUrl(url: string): string {
     const u = new URL(url);
     return u.pathname + u.search;
   }
-  const split = url.split('://');
-  return '/' + split[1];
+  if (url.includes('://')) {
+    const split = url.split('://');
+    return '/' + split[1];
+  }
+
+  return '/' + url;
 }
 export function partMatches(
   urlPart: string | undefined,

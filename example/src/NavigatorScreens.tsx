@@ -37,7 +37,7 @@ export const PostsScreen = registerScreen(
 );
 
 export const PostScreen = registerScreen(
-  '/post-test/:id',
+  '/post/:id',
   RequireAuthHOC(lazy(() => import('./PostScreen'))),
   (params) => {
     const { id } = params;

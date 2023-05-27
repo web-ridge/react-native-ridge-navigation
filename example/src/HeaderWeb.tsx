@@ -17,7 +17,7 @@ export default function HeaderWeb({
       <>
         <View
           style={{
-            backgroundColor: '#FCFCFC',
+            backgroundColor: theme.colors.background,
             alignItems: 'center',
             flexDirection: 'row',
             paddingTop: 12,
@@ -27,7 +27,9 @@ export default function HeaderWeb({
             paddingHorizontal: 24,
           }}
         >
-          <Text style={{ color: '#000', fontSize: 22 }}>Logo</Text>
+          <Text style={{ color: theme.colors.onBackground, fontSize: 22 }}>
+            Logo
+          </Text>
           <BottomTabLink to={BottomRoot.Home} params={{}}>
             {({ isSelected, ...linkProps }) => (
               <Button {...linkProps}>
