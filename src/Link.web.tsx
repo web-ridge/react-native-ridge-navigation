@@ -36,6 +36,10 @@ export default function Link<T extends BaseScreen>({
     return false;
   }, [lastPreloadedAt]);
 
+  React.useEffect(() => {
+    lastPreloadedAt.current = null;
+  }, []);
+
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
