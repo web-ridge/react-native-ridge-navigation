@@ -35,10 +35,10 @@ export default function Link<T extends BaseScreen>({
 
     return false;
   }, [lastPreloadedAt]);
-
+  const href = generatePath('/' + currentRootKey + to.path, params);
   React.useEffect(() => {
     lastPreloadedAt.current = null;
-  }, []);
+  }, [href]);
 
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
@@ -124,7 +124,7 @@ export default function Link<T extends BaseScreen>({
       : {
           ...baseProps,
           accessibilityRole: 'link',
-          href: generatePath('/' + currentRootKey + to.path, params),
+          href,
         };
 
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
