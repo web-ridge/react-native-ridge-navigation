@@ -10,6 +10,16 @@ function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
+const staleTimeInSeconds = 5;
+function isStale(lastPreloadedAt: number | null | undefined) {
+  if (!lastPreloadedAt) {
+    return true;
+  }
+  if (Date.now() - lastPreloadedAt > staleTimeInSeconds * 1000) {
+    return true;
+  }
+  return false;
+}
 export default function Link<T extends BaseScreen>({
   to,
   toBottomTab,
@@ -22,36 +32,25 @@ export default function Link<T extends BaseScreen>({
   refresh: isRefreshInsteadOfPush,
   ...rest
 }: LinkProps<T>) {
-  const staleTime = 60;
-  const lastPreloadedAt = React.useRef<Date | null>(null);
-  const isStale = React.useCallback(() => {
-    if (
-      lastPreloadedAt.current === null ||
-      (lastPreloadedAt.current &&
-        Date.now() - lastPreloadedAt.current.getTime() > staleTime * 1000)
-    ) {
-      return true;
-    }
-
-    return false;
-  }, [lastPreloadedAt]);
+  const { inModal } = useModal();
+  const { push, replace, refresh, preload, preloadElement, currentRootKey } =
+    useNavigation();
   const href = generatePath('/' + currentRootKey + to.path, params);
+
+  const lastPreloadedAt = React.useRef<number | null>(null);
+
   React.useEffect(() => {
     lastPreloadedAt.current = null;
   }, [href]);
 
-  const { inModal } = useModal();
-  const { push, replace, refresh, preload, preloadElement, currentRootKey } =
-    useNavigation();
-
   const preloadData = React.useCallback(() => {
-    if (!isStale()) {
+    if (!isStale(lastPreloadedAt.current)) {
       return;
     }
 
-    lastPreloadedAt.current = new Date();
+    lastPreloadedAt.current = new Date().getTime();
     preload(to, params);
-  }, [preload, to, params, isStale]);
+  }, [preload, to, params]);
 
   const preloadDataAndElement = React.useCallback(() => {
     preloadElement(to);
@@ -77,7 +76,10 @@ export default function Link<T extends BaseScreen>({
         !isModifiedEvent(nativeEvent) // Ignore clicks with modifier keys
       ) {
         event.preventDefault();
-        const options = { preload: isStale(), toBottomTab };
+        const options = {
+          preload: isStale(lastPreloadedAt.current),
+          toBottomTab,
+        };
         if (isRefreshInsteadOfPush) {
           refresh(to, params, options);
         } else if (isReplaceInsteadOfPush) {
@@ -97,7 +99,6 @@ export default function Link<T extends BaseScreen>({
       params,
       replace,
       push,
-      isStale,
     ]
   );
 
