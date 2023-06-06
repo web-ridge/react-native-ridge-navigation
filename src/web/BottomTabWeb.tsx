@@ -18,11 +18,13 @@ function BottomTabWeb({
   bottomTab,
   count,
   orientation,
+  aboveDrawerBreakingPoint,
 }: {
   orientation: Orientation;
   isSelected: boolean;
   bottomTab: BottomTabType;
   count?: string | number | undefined;
+  aboveDrawerBreakingPoint: boolean;
 }) {
   const { theme } = React.useContext(RidgeNavigationContext);
 
@@ -31,7 +33,10 @@ function BottomTabWeb({
       {(linkProps) => (
         <Pressable
           {...linkProps}
-          style={styles.touchable}
+          style={[
+            styles.touchable,
+            aboveDrawerBreakingPoint && styles.touchableBig,
+          ]}
           accessibilityRole="button"
           accessibilityLabel={bottomTab.title()}
         >
@@ -41,6 +46,7 @@ function BottomTabWeb({
                 <View
                   style={[
                     styles.iconWrapper,
+                    aboveDrawerBreakingPoint && styles.iconWrapperBig,
                     {
                       backgroundColor:
                         (isSelected || hovered || pressed) &&
@@ -55,37 +61,62 @@ function BottomTabWeb({
                       : undefined,
                   ]}
                 >
-                  <View style={styles.badge}>
-                    <BottomTabBadge visible={!!count}>{count}</BottomTabBadge>
+                  {!aboveDrawerBreakingPoint && (
+                    <View style={styles.badge}>
+                      <BottomTabBadge visible={!!count}>{count}</BottomTabBadge>
+                    </View>
+                  )}
+                  <View style={styles.leftWrapper}>
+                    <Image
+                      source={
+                        isSelected ? bottomTab.selectedIcon : bottomTab.icon
+                      }
+                      style={[
+                        orientation === 'horizontal' && styles.horizontalIcon,
+                        orientation === 'vertical' && styles.verticalIcon,
+                        {
+                          tintColor: isSelected
+                            ? theme.bottomBar.selectedTextColor
+                            : theme.bottomBar.textColor,
+                        },
+                      ]}
+                    />
+                    {aboveDrawerBreakingPoint && (
+                      <Text
+                        style={[
+                          styles.title,
+                          {
+                            color: isSelected
+                              ? theme.bottomBar.selectedTextColor
+                              : theme.bottomBar.textColor,
+                          },
+                        ]}
+                      >
+                        {bottomTab.title()}
+                      </Text>
+                    )}
                   </View>
-                  <Image
-                    source={
-                      isSelected ? bottomTab.selectedIcon : bottomTab.icon
-                    }
+                  {aboveDrawerBreakingPoint && (
+                    <View style={styles.badgeRight}>
+                      <Text>443</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.spacer} />
+                {!aboveDrawerBreakingPoint && (
+                  <Text
                     style={[
-                      orientation === 'horizontal' && styles.horizontalIcon,
-                      orientation === 'vertical' && styles.verticalIcon,
+                      styles.title,
                       {
-                        tintColor: isSelected
+                        color: isSelected
                           ? theme.bottomBar.selectedTextColor
                           : theme.bottomBar.textColor,
                       },
                     ]}
-                  />
-                </View>
-                <View style={styles.spacer} />
-                <Text
-                  style={[
-                    styles.title,
-                    {
-                      color: isSelected
-                        ? theme.bottomBar.selectedTextColor
-                        : theme.bottomBar.textColor,
-                    },
-                  ]}
-                >
-                  {bottomTab.title()}
-                </Text>
+                  >
+                    {bottomTab.title()}
+                  </Text>
+                )}
               </View>
             );
           }}
@@ -106,15 +137,37 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     // margin: 3,
   },
+  leftWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  badgeRight: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  touchableBig: {
+    maxWidth: '100%',
+    maxHeight: 64,
+  },
   spacer: {
     height: 4,
   },
   iconWrapper: {
-    borderRadius: 16,
+    borderRadius: 360,
     width: 64,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  iconWrapperBig: {
+    height: 56,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingLeft: 6,
+    paddingRight: 16,
   },
   touchableHovered: {
     backgroundColor: 'rgba(0, 0, 0, 0.04)',

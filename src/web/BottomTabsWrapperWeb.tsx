@@ -16,13 +16,19 @@ function BottomTabsWrapperWeb({ children }: { children: any }) {
   const aboveBreakingPoint = useAboveBreakingPoint(
     getBreakingPointFromRoot(currentRoot)
   );
+
+  const aboveDrawerBreakingPoint = useAboveBreakingPoint(1240);
+
   const orientation = aboveBreakingPoint ? 'horizontal' : 'vertical';
 
   if (currentRoot?.type !== 'bottomTabs') {
     return children;
   }
   const inner = (
-    <OriginalBottomTabs orientation={orientation}>
+    <OriginalBottomTabs
+      orientation={orientation}
+      aboveDrawerBreakingPoint={aboveDrawerBreakingPoint}
+    >
       {children}
     </OriginalBottomTabs>
   );
@@ -42,9 +48,11 @@ function BottomTabsWrapperWeb({ children }: { children: any }) {
 export function OriginalBottomTabs({
   children,
   orientation,
+  aboveDrawerBreakingPoint,
 }: {
   children: any;
   orientation: 'horizontal' | 'vertical';
+  aboveDrawerBreakingPoint: boolean;
 }) {
   const { currentRoot } = useCurrentRoot();
   const { theme } = React.useContext(OptimizedContext);
@@ -64,15 +72,16 @@ export function OriginalBottomTabs({
             backgroundColor: theme.bottomBar.backgroundColor,
           },
           bottomStyles[orientation],
+          aboveDrawerBreakingPoint && bottomStyles.horizontalBig,
         ]}
       >
         {currentRoot?.components?.start ? (
           <currentRoot.components.start orientation={orientation} />
         ) : null}
-        <View style={styles.spacer} />
         {currentRoot.children.map((child, index) => (
           <BottomTab
             orientation={orientation}
+            aboveDrawerBreakingPoint={aboveDrawerBreakingPoint}
             key={child.path}
             bottomTab={child}
             isSelected={bottomTabIndex === index}
@@ -99,9 +108,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
     alignItems: 'center',
   },
-  spacer: {
-    height: 24,
-  },
+
   horizontal: { flexDirection: 'row-reverse' },
   vertical: { flexDirection: 'column' },
 });
@@ -124,11 +131,14 @@ const bottomStyles = StyleSheet.create({
   horizontal: {
     flexDirection: 'column',
     justifyContent: 'flex-start',
-    paddingTop: 24,
   },
   vertical: {
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  horizontalBig: {
+    width: 320,
+    alignItems: 'flex-start',
   },
 });
 

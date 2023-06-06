@@ -92,7 +92,7 @@ const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
     [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
     {
-      breakingPointWidth: 500,
+      breakingPointWidth: 600,
       components: {
         // override: HeaderWeb,
         start: ({ orientation }) => {
@@ -100,7 +100,16 @@ const navigationRoot = {
             return null;
           }
           return (
-            <View>
+            <View
+              style={{
+                marginTop: 24,
+                marginBottom: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+                // alignSelf: 'center',
+                paddingHorizontal: 16,
+              }}
+            >
               <Image
                 source={{
                   uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2008px-Google_%22G%22_Logo.svg.png',
