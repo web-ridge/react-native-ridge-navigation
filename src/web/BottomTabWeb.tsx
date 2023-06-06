@@ -28,8 +28,6 @@ function BottomTabWeb({
 }) {
   const { theme } = React.useContext(RidgeNavigationContext);
 
-  count = 3;
-
   return (
     <BottomTabLink key={bottomTab.path} to={bottomTab} params={{}}>
       {(linkProps) => (
