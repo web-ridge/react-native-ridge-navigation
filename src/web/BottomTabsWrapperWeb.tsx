@@ -69,6 +69,7 @@ export function OriginalBottomTabs({
         {currentRoot?.components?.start ? (
           <currentRoot.components.start orientation={orientation} />
         ) : null}
+        <View style={styles.spacer} />
         {currentRoot.children.map((child, index) => (
           <BottomTab
             orientation={orientation}
@@ -98,6 +99,9 @@ const styles = StyleSheet.create({
     zIndex: 100,
     alignItems: 'center',
   },
+  spacer: {
+    height: 24,
+  },
   horizontal: { flexDirection: 'row-reverse' },
   vertical: { flexDirection: 'column' },
 });
@@ -106,19 +110,21 @@ const bottomStyles = StyleSheet.create({
   root: {
     position: 'relative',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.34,
-    shadowRadius: 6.27,
-    elevation: 10,
+    justifyContent: 'center',
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 5,
+    // },
+    // shadowOpacity: 0.34,
+    // shadowRadius: 6.27,
+    // elevation: 10,
     paddingBottom: 'env(safe-area-inset-bottom)',
   },
   horizontal: {
     flexDirection: 'column',
     justifyContent: 'flex-start',
+    paddingTop: 24,
   },
   vertical: {
     flexDirection: 'row',

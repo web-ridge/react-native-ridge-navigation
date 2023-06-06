@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
 
-const defaultSize = 20;
+const defaultSize = 18;
 
 type Props = React.ComponentProps<typeof Text> & {
   visible?: boolean;
@@ -32,9 +32,10 @@ function BottomTabBadgeWeb({
           opacity: 1,
           backgroundColor,
           color: textColor,
-          fontSize: size * 0.5,
+          fontSize: size * 0.7,
           lineHeight: size,
           height: size,
+          fontWeight: '500',
           minWidth: size,
           borderRadius,
         },
