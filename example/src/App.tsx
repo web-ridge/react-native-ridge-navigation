@@ -54,10 +54,9 @@ let theme = createSimpleTheme({
       rippleColor: MD3LightTheme.colors.primary,
       selectedTextColor: MD3LightTheme.colors.onSecondaryContainer,
       activeIndicatorColor: MD3LightTheme.colors.secondaryContainer,
-      fontSize: 10,
-      fontStyle: 'italic',
-      fontWeight: '900',
-      fontFamily: 'Arial',
+      fontSize: 13,
+      fontFamily: 'Montserrat',
+      fontWeight: '500',
     },
     // bottomTabs: {
     //   rippleColor: MD3LightTheme.colors.secondaryContainer,
@@ -74,17 +73,16 @@ let theme = createSimpleTheme({
     //   activeIndicatorColor: MD3DarkTheme.colors.secondaryContainer,
     // },
     // Optional styling of bottom tabs
-    // bottomTabs: {
-    //   backgroundColor: MD3DarkTheme.colors.background,
-    //   textColor: MD3DarkTheme.colors.onBackground,
-    //   rippleColor: MD3DarkTheme.colors.primary,
-    //   selectedTextColor: MD3DarkTheme.colors.primary,
-    //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
-    //     fontSize: 10,
-    //     fontStyle: 'italic',
-    //     fontWeight: '900',
-    //   fontFamily: 'sans-serif',
-    // },
+    bottomTabs: {
+      backgroundColor: MD3DarkTheme.colors.surface,
+      textColor: MD3DarkTheme.colors.onSurfaceVariant,
+      rippleColor: MD3DarkTheme.colors.primary,
+      selectedTextColor: MD3DarkTheme.colors.onSecondaryContainer,
+      activeIndicatorColor: MD3DarkTheme.colors.secondaryContainer,
+      fontSize: 13,
+      fontFamily: 'Montserrat',
+      fontWeight: '500',
+    },
   },
 });
 

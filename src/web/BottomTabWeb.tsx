@@ -28,6 +28,8 @@ function BottomTabWeb({
 }) {
   const { theme } = React.useContext(RidgeNavigationContext);
 
+  count = 3;
+
   return (
     <BottomTabLink key={bottomTab.path} to={bottomTab} params={{}}>
       {(linkProps) => (
@@ -84,8 +86,10 @@ function BottomTabWeb({
                     {aboveDrawerBreakingPoint && (
                       <Text
                         style={[
-                          styles.title,
                           {
+                            fontFamily: theme.bottomBar.fontFamily,
+                            fontSize: theme.bottomBar.fontSize,
+                            fontWeight: theme.bottomBar.fontWeight,
                             color: isSelected
                               ? theme.bottomBar.selectedTextColor
                               : theme.bottomBar.textColor,
@@ -96,9 +100,14 @@ function BottomTabWeb({
                       </Text>
                     )}
                   </View>
-                  {aboveDrawerBreakingPoint && (
+                  {aboveDrawerBreakingPoint && !!count && (
                     <View style={styles.badgeRight}>
-                      <Text>443</Text>
+                      <BottomTabBadge
+                        visible={!!count}
+                        aboveDrawerBreakingPoint={aboveDrawerBreakingPoint}
+                      >
+                        {count}
+                      </BottomTabBadge>
                     </View>
                   )}
                 </View>
@@ -106,8 +115,10 @@ function BottomTabWeb({
                 {!aboveDrawerBreakingPoint && (
                   <Text
                     style={[
-                      styles.title,
                       {
+                        fontFamily: theme.bottomBar.fontFamily,
+                        fontSize: theme.bottomBar.fontSize,
+                        fontWeight: theme.bottomBar.fontWeight,
                         color: isSelected
                           ? theme.bottomBar.selectedTextColor
                           : theme.bottomBar.textColor,
@@ -204,12 +215,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     margin: 10,
-  },
-  title: {
-    fontSize: 13,
-    fontWeight: '500',
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
   },
 });
 
