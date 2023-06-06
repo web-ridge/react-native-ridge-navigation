@@ -4,7 +4,13 @@ import {
   MD3DarkTheme,
   Provider as PaperProvider,
 } from 'react-native-paper';
-import { ColorSchemeName, LogBox, useColorScheme } from 'react-native';
+import {
+  ColorSchemeName,
+  Image,
+  LogBox,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AsyncBoundary from './helpers/AsyncBoundary';
@@ -22,7 +28,6 @@ import {
 import { BottomRoot, NavigationRoots, screens } from './Navigator';
 import routes from './Routes';
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
-import HeaderWeb from './HeaderWeb';
 function getTheme(colorScheme: ColorSchemeName): typeof MD3LightTheme {
   const isDark = colorScheme === 'dark';
   const baseTheme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
@@ -43,17 +48,16 @@ let theme = createSimpleTheme({
     accent: MD3LightTheme.colors.primary,
     backgroundColor: MD3LightTheme.colors.background,
     // Optional styling of bottom tabs
-    // bottomTabs: {
-    //   backgroundColor: MD3LightTheme.colors.background,
-    //   textColor: MD3LightTheme.colors.onBackground,
-    //   rippleColor: MD3LightTheme.colors.primary,
-    //   selectedTextColor: MD3LightTheme.colors.primary,
-    //   activeIndicatorColor: MD3LightTheme.colors.secondary,
-    //   fontSize: 10,
-    //   fontStyle: 'italic',
-    //   fontWeight: '900',
-    //   fontFamily: 'Arial',
-    // },
+    bottomTabs: {
+      backgroundColor: MD3LightTheme.colors.surface,
+      textColor: MD3LightTheme.colors.onSurfaceVariant,
+      rippleColor: MD3LightTheme.colors.primary,
+      selectedTextColor: MD3LightTheme.colors.onSecondaryContainer,
+      activeIndicatorColor: MD3LightTheme.colors.secondaryContainer,
+      fontSize: 13,
+      fontFamily: 'Montserrat',
+      fontWeight: '500',
+    },
     // bottomTabs: {
     //   rippleColor: MD3LightTheme.colors.secondaryContainer,
     //   activeIndicatorColor: MD3LightTheme.colors.secondaryContainer,
@@ -69,17 +73,16 @@ let theme = createSimpleTheme({
     //   activeIndicatorColor: MD3DarkTheme.colors.secondaryContainer,
     // },
     // Optional styling of bottom tabs
-    // bottomTabs: {
-    //   backgroundColor: MD3DarkTheme.colors.background,
-    //   textColor: MD3DarkTheme.colors.onBackground,
-    //   rippleColor: MD3DarkTheme.colors.primary,
-    //   selectedTextColor: MD3DarkTheme.colors.primary,
-    //   activeIndicatorColor: MD3DarkTheme.colors.secondary,
-    //     fontSize: 10,
-    //     fontStyle: 'italic',
-    //     fontWeight: '900',
-    //   fontFamily: 'sans-serif',
-    // },
+    bottomTabs: {
+      backgroundColor: MD3DarkTheme.colors.surface,
+      textColor: MD3DarkTheme.colors.onSurfaceVariant,
+      rippleColor: MD3DarkTheme.colors.primary,
+      selectedTextColor: MD3DarkTheme.colors.onSecondaryContainer,
+      activeIndicatorColor: MD3DarkTheme.colors.secondaryContainer,
+      fontSize: 13,
+      fontFamily: 'Montserrat',
+      fontWeight: '500',
+    },
   },
 });
 
@@ -87,15 +90,40 @@ const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
     [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
     {
-      breakingPointWidth: 500,
+      breakingPointWidth: 600,
       components: {
-        override: HeaderWeb,
+        // override: HeaderWeb,
+        start: ({ orientation }) => {
+          if (orientation === 'vertical') {
+            return null;
+          }
+          return (
+            <View
+              style={{
+                marginTop: 24,
+                marginBottom: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+                // alignSelf: 'center',
+                paddingHorizontal: 16,
+              }}
+            >
+              <Image
+                source={{
+                  uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2008px-Google_%22G%22_Logo.svg.png',
+                }}
+                style={{ width: 50, height: 50 }}
+              />
+            </View>
+          );
+        },
       },
     }
   ),
   [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
   [NavigationRoots.RootExample]: createNormalRoot(routes.HomeScreen),
 };
+
 export default function App() {
   const colorScheme = useColorScheme(); // Can be dark | light | no-preference
   const paperTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);

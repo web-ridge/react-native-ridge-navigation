@@ -2,18 +2,20 @@ import * as React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import RidgeNavigationContext from '../contexts/RidgeNavigationContext';
 
-const defaultSize = 20;
+const defaultSize = 18;
 
 type Props = React.ComponentProps<typeof Text> & {
   visible?: boolean;
   children?: string | number;
   size?: number;
+  aboveDrawerBreakingPoint: boolean;
 };
 
 function BottomTabBadgeWeb({
   children,
   size = defaultSize,
   visible = true,
+  aboveDrawerBreakingPoint,
   ...rest
 }: Props) {
   const { theme } = React.useContext(RidgeNavigationContext);
@@ -28,17 +30,21 @@ function BottomTabBadgeWeb({
     <Text
       numberOfLines={1}
       style={[
+        styles.container,
         {
           opacity: 1,
-          backgroundColor,
+          backgroundColor: aboveDrawerBreakingPoint
+            ? undefined
+            : backgroundColor,
           color: textColor,
-          fontSize: size * 0.5,
+          fontSize: size * 0.7,
           lineHeight: size,
           height: size,
+          fontWeight: '500',
           minWidth: size,
           borderRadius,
+          fontFamily: theme.bottomBar.fontFamily,
         },
-        styles.container,
       ]}
       {...rest}
     >
