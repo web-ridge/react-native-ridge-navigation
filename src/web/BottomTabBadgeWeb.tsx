@@ -36,7 +36,9 @@ function BottomTabBadgeWeb({
           backgroundColor: aboveDrawerBreakingPoint
             ? undefined
             : backgroundColor,
-          color: textColor,
+          color: aboveDrawerBreakingPoint
+            ? theme.bottomBar.textColor
+            : textColor,
           fontSize: size * 0.7,
           lineHeight: size,
           height: size,
