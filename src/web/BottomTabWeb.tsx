@@ -65,7 +65,12 @@ function BottomTabWeb({
                 >
                   {!aboveDrawerBreakingPoint && (
                     <View style={styles.badge}>
-                      <BottomTabBadge visible={!!count}>{count}</BottomTabBadge>
+                      <BottomTabBadge
+                        visible={!!count}
+                        aboveDrawerBreakingPoint={aboveDrawerBreakingPoint}
+                      >
+                        {count}
+                      </BottomTabBadge>
                     </View>
                   )}
                   <View style={styles.leftWrapper}>
