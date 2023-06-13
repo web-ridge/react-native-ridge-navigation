@@ -15,9 +15,9 @@ export default function useBottomTabBadges() {
   );
 
   const updateBadges = React.useCallback(
-    <T extends BottomTabType>(
+    (
       multipleBadges: {
-        tab: T;
+        tab: BottomTabType;
         badge: string | number;
       }[]
     ) => {
