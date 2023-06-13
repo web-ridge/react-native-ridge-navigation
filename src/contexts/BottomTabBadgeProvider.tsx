@@ -13,12 +13,20 @@ export default function BottomTabBadgeProvider({
     setBadges((prev) => ({ ...prev, [key]: badge }));
   }, []);
 
+  const setMultipleBadges = React.useCallback(
+    (multipleBadges: Record<string, string | number>) => {
+      setBadges((prev) => ({ ...prev, ...multipleBadges }));
+    },
+    []
+  );
+
   const value = React.useMemo(
     () => ({
       badges,
       setBadge,
+      setMultipleBadges,
     }),
-    [setBadge, badges]
+    [setBadge, badges, setMultipleBadges]
   );
 
   return (

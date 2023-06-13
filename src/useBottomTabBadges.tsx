@@ -3,7 +3,9 @@ import type { BottomTabType } from './navigationUtils';
 import BottomTabBadgesContext from './contexts/BottomTabBadgesContext';
 
 export default function useBottomTabBadges() {
-  const { setBadge, badges } = React.useContext(BottomTabBadgesContext);
+  const { setBadge, badges, setMultipleBadges } = React.useContext(
+    BottomTabBadgesContext
+  );
 
   const updateBadge = React.useCallback(
     <T extends BottomTabType>(tab: T, badge: string | number) => {
@@ -12,8 +14,25 @@ export default function useBottomTabBadges() {
     [setBadge]
   );
 
+  const updateBadges = React.useCallback(
+    <T extends BottomTabType>(
+      multipleBadges: {
+        tab: T;
+        badge: string | number;
+      }[]
+    ) => {
+      const newBadges: Record<string, string | number> = {};
+      multipleBadges.forEach(({ tab, badge }) => {
+        newBadges[tab.path] = badge;
+      });
+      setMultipleBadges(newBadges);
+    },
+    [setMultipleBadges]
+  );
+
   return {
     badges,
     updateBadge,
+    updateBadges,
   };
 }
