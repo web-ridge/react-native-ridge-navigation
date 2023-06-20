@@ -65,6 +65,7 @@ export default function BottomTabsStack() {
               fontSize={bottomTheme.fontSize}
               fontWeight={bottomTheme.fontWeight}
               fontStyle={bottomTheme.fontStyle}
+              testID={`bottomTab-${tab.child.path}`}
             >
               <TabBarItemStack tab={tab} rootKey={currentRootKey} />
             </TabBarItem>

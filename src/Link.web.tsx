@@ -134,5 +134,3 @@ export default function Link<T extends BaseScreen>({
 
   return children(childrenProps);
 }
-
-//document.querySelector("[data-testid='bottomTab-/overview-text']").click()
