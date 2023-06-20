@@ -56,6 +56,7 @@ export default function BottomTabsStack() {
         {root.children.map((tab, index) => {
           return (
             <TabBarItem
+              testID={`bottomTab-${tab.path}`}
               key={tab.path}
               title={tab.title()}
               image={bottomTabIndex === index ? tab.selectedIcon : tab.icon}
