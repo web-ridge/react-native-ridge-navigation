@@ -1,7 +1,8 @@
 import * as React from 'react';
 import type { StateNavigator } from 'navigation';
-import type { BaseScreen, Root } from '../navigationUtils';
+import type { BaseScreen, FluentParams, Root } from '../navigationUtils';
 import type { Theme } from '../theme';
+import type { FluentScreen } from '../navigationUtils';
 
 const RidgeNavigationContext = React.createContext<{
   screens: BaseScreen[];
@@ -13,6 +14,11 @@ const RidgeNavigationContext = React.createContext<{
   preloadElement: (screen: BaseScreen) => void;
   theme: Theme;
   SuspenseContainer: any;
+  fluent: (
+    rootSettings: FluentParams,
+    ...fluentScreens: FluentScreen[]
+  ) => void;
+  goToUrl: string | undefined;
 }>(undefined as any);
 
 export default RidgeNavigationContext;

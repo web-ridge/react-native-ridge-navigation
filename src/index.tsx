@@ -31,6 +31,9 @@ export {
   createNormalRoot,
   registerScreen,
   createScreens,
+  fluentScreen,
+  fluentRootBottomTabs,
+  fluentRootNormal,
 } from './navigationUtils';
 export { defaultTheme, createSimpleTheme } from './theme';
 export type {

@@ -24,7 +24,7 @@ export default function useNavigation() {
     theme,
     stateNavigator,
   } = React.useContext(OptimizedContext);
-  const { navigationRoot } = React.useContext(RidgeNavigationContext);
+  const { fluent, navigationRoot } = React.useContext(RidgeNavigationContext);
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
   const { currentTab, switchToTab } = useBottomTabIndex();
@@ -177,5 +177,6 @@ export default function useNavigation() {
     refresh,
     theme,
     canNavigateBack,
+    fluent,
   };
 }

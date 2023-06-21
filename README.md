@@ -266,10 +266,10 @@ export default ButtonLink;
 </ButtonLink>
 ```
 
-Alternative push (or replace)
+Alternatives (push, replace, refresh or fluent)
 
 ```tsx
-const { push, replace, refresh } = useNavigation();
+const { push, replace, refresh, fluent } = useNavigation();
 
 // call this where if you can't use <Link />
 push(routes.PostScreen, {
@@ -286,6 +286,24 @@ replace(routes.PostScreen, {
 refresh(routes.PostScreen, {
   id: `${item.id}`
 });
+
+// normal root, replace full history
+fluent(
+  fluentRootNormal(NavigationRoots.RootAuth),
+  fluentScreen(Routes.HomeScreen, {}),
+  fluentScreen(Routes.PostScreen, { id: '10' }),
+  fluentScreen(Routes.PostScreen, { id: '20' }),
+  fluentScreen(Routes.PostScreen, { id: '30' })
+);
+
+// bottom root, replace full history
+fluent(
+  fluentRootBottomTabs(NavigationRoots.RootHome, BottomRoot.Account),
+  fluentScreen(Routes.HomeScreen, {}),
+  fluentScreen(Routes.PostScreen, { id: '10' }),
+  fluentScreen(Routes.PostScreen, { id: '20' }),
+  fluentScreen(Routes.PostScreen, { id: '30' })
+);
 ```
 
 ## Switch root
