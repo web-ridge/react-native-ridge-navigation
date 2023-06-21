@@ -65,7 +65,9 @@ function PostScreen() {
             replace current with account screen
           </ButtonLink>
         )}
-        <Paragraph>{data!.body}</Paragraph>
+        <Paragraph>
+          Post {id} {data!.body}
+        </Paragraph>
       </ScrollView>
     </>
   );

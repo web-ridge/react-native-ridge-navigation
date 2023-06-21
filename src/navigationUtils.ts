@@ -20,6 +20,14 @@ export interface BaseScreen {
   preload: (params: any) => any;
 }
 
+export interface FluentParams {
+  rootKey: string;
+  tab?: BottomTabType;
+}
+export interface FluentScreen {
+  screen: BaseScreen;
+  params: ExtractRouteParams<BaseScreen['path']>;
+}
 export interface BottomTabType {
   child: BaseScreen;
   path: string;
@@ -290,4 +298,30 @@ export function getBreakingPointFromRoot(v?: RootValue): number {
 export function useAboveBreakingPoint(breakingPoint: number) {
   const { width } = useWindowDimensions();
   return width > breakingPoint;
+}
+
+export function fluentRootBottomTabs(
+  rootKey: string,
+  tab?: BottomTabType
+): FluentParams {
+  return {
+    rootKey,
+    tab,
+  };
+}
+
+export function fluentRootNormal(rootKey: string): FluentParams {
+  return {
+    rootKey,
+  };
+}
+
+export function fluentScreen<T extends BaseScreen>(
+  screen: T,
+  params: ExtractRouteParams<T['path']>
+): FluentScreen {
+  return {
+    screen,
+    params,
+  };
 }

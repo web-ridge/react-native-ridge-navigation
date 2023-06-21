@@ -1,29 +1,30 @@
 import * as React from 'react';
 import useCurrentRoot from './useCurrentRoot';
 import { getBottomTabKeyFromPath, getPathFromUrl } from './navigationUtils';
-import useUrl from './useUrl';
+
+import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 
 export default function useDeepLinkingBottomTabsIndex() {
+  const { goToUrl } = React.useContext(RidgeNavigationContext);
   const { currentRoot } = useCurrentRoot();
-  const initialUrl = useUrl();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const children =
     currentRoot?.type === 'bottomTabs' ? currentRoot.children : [];
 
   const initialIndex = React.useMemo(() => {
-    if (!initialUrl) {
-      return 0;
+    if (!goToUrl) {
+      return undefined;
     }
-    const path = getPathFromUrl(initialUrl);
+    const path = getPathFromUrl(goToUrl);
     const currentTabKey = getBottomTabKeyFromPath(path);
     return (
       children.findIndex((child) => child.path === '/' + currentTabKey) || 0
     );
-  }, [children, initialUrl]);
-  const [bottomTabIndex, setBottomTabIndex] = React.useState(initialIndex);
+  }, [children, goToUrl]);
+  const [bottomTabIndex, setBottomTabIndex] = React.useState(initialIndex || 0);
   React.useEffect(() => {
-    if (initialIndex >= 0) {
+    if (initialIndex !== undefined) {
       setBottomTabIndex(initialIndex);
     }
   }, [initialIndex]);

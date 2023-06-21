@@ -1,24 +1,19 @@
 import { Image, Linking, StyleSheet, View } from 'react-native';
 import * as React from 'react';
-import { Paragraph, Text, Title } from 'react-native-paper';
+import { IconButton, Paragraph, Text, Title } from 'react-native-paper';
 import Superman from './img/superman.png';
-// import FastImage from "react-native-fast-image";
+import { useNavigation } from 'react-native-ridge-navigation';
 
 function Introduction() {
+  const { canNavigateBack, pop } = useNavigation();
   return (
     <>
       <View style={styles.titleContainer}>
-        {/*// @ts-ignore*/}
-        <Image source={Superman} style={styles.logo} />
-        {/*<FastImage*/}
-        {/*  style={{ width: 200, height: 200 }}*/}
-        {/*  source={{*/}
-        {/*    uri: "https://unsplash.it/400/400?image=1",*/}
-        {/*    headers: { Authorization: "someAuthToken" },*/}
-        {/*    priority: FastImage.priority.normal,*/}
-        {/*  }}*/}
-        {/*  resizeMode={FastImage.resizeMode.contain}*/}
-        {/*/>*/}
+        {canNavigateBack(1) ? (
+          <IconButton icon="arrow-left" onPress={() => pop()} />
+        ) : (
+          <Image source={Superman} style={styles.logo} />
+        )}
         <Title>react-native-ridge-navigation</Title>
       </View>
       <Paragraph>
