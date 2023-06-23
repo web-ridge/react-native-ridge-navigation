@@ -13,6 +13,7 @@ import {
 import { StateNavigator } from 'navigation';
 import { Text } from 'react-native';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
+import OptimizedRenderScene from './OptimizedRenderScene';
 
 function NavigationNestedProvider({ children }: { children: any }) {
   const id = React.useId();
@@ -86,7 +87,11 @@ function NavigationNestedProvider({ children }: { children: any }) {
                   state={state}
                   data={data}
                 >
-                  {state.key === rootKey ? children : state.renderScene()}
+                  {state.key === rootKey ? (
+                    children
+                  ) : (
+                    <OptimizedRenderScene renderScene={state.renderScene} />
+                  )}
                 </OptimizedContextProvider>
               </>
             );

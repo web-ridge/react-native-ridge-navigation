@@ -20,20 +20,23 @@ import { defaultTheme, ThemeSettings } from './theme';
 import { Platform, useColorScheme } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
+import ReactDOM from 'react-dom';
 
 import BottomTabsStack from './BottomTabsStack';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import NavigationStackWrapper from './NavigationStackWrapper';
 import type { PreloadableComponent } from './lazy';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';
-import getHistoryManager from './navigation/historyManager';
+import historyManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 import useUrl from './useUrl';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
+import OptimizedRenderScene from './OptimizedRenderScene';
+import fixConcurrent from './fixConcurrent';
 
-export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
+function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
   navigationRoot,
   SuspenseContainer,
@@ -48,6 +51,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   children?: any;
   initialRootKey: string;
 }) {
+  const navigationId = React.useId();
+  console.log('navigationId', navigationId);
   const colorScheme = useColorScheme();
   const theme = React.useMemo(
     () => (themeSettings || defaultTheme)[colorScheme || 'light'],
@@ -100,6 +105,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   );
 
   const rootNavigator = React.useMemo(() => {
+    console.log('rootNavigator', navigationId);
     const navigators = Object.entries(navigationRoot)
       .map(([rootKey, root]) => {
         switch (root.type) {
@@ -168,8 +174,22 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         }
       })
       .flat();
-    return new StateNavigator(navigators, getHistoryManager());
-  }, [navigationRoot, preloadRoot, screens]);
+    const stateNavigator = new StateNavigator(navigators, historyManager);
+    // const _navigateLink = stateNavigator.navigateLink;
+    // stateNavigator.navigateLink = (...args) => {
+    //   const history = args[2];
+    //   console.log({ history });
+    //   if (history) {
+    //     ReactDOM.flushSync(() => {
+    //       console.log('flush');
+    //       _navigateLink.apply(stateNavigator, args);
+    //     });
+    //   } else {
+    //     _navigateLink.apply(stateNavigator, args);
+    //   }
+    // };
+    return stateNavigator;
+  }, [navigationId, navigationRoot, preloadRoot, screens]);
 
   const cachedInitialRootKey = React.useRef<string | undefined>(initialRootKey);
   const initialDefaultUrl = React.useMemo(() => {
@@ -375,12 +395,7 @@ function getPathFromRoot(
   return getScreenKey(rootKey, undefined, root.child!.path);
 }
 
-const OptimizedRenderScene = React.memo(
-  ({ renderScene }: { renderScene: () => any }) => {
-    return renderScene();
-  }
-);
-
+export default React.memo(NavigationProvider);
 // fluent(root.HomeScreen).
 // bottomTab(bottomRoots.Post).
 // push().

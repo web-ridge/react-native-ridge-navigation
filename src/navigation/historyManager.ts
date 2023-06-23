@@ -1,3 +1,2 @@
-export default function getHistoryManager() {
-  return undefined;
-}
+const historyManager = undefined;
+export default historyManager;

@@ -3,8 +3,9 @@ import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
 
 import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
-import { generatePath } from './navigationUtils';
+import { generatePath, getScreenKey } from './navigationUtils';
 import useModal from './useModal';
+import { useBottomTabIndex } from './index';
 
 function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -35,7 +36,10 @@ export default function Link<T extends BaseScreen>({
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
-  const href = generatePath('/' + currentRootKey + to.path, params);
+  const { currentTab } = useBottomTabIndex();
+  const href =
+    '/' +
+    generatePath(getScreenKey(currentRootKey, currentTab, to.path), params);
 
   const lastPreloadedAt = React.useRef<number | null>(null);
 

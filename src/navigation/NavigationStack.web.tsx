@@ -4,36 +4,46 @@ import { NavigationMotion } from 'navigation-react-mobile';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from '../contexts/OptimizedContext';
+import OptimizedRenderScene from '../OptimizedRenderScene';
+import { StyleSheet, View } from 'react-native';
 
-function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
+function NavigationStackW({ renderWeb }: { renderWeb?: (key: string) => any }) {
   const { theme } = React.useContext(OptimizedContext);
+  const backgroundColor = theme.layout.backgroundColor as any;
   return (
     <NavigationMotion
       duration={0}
-      renderMotion={(_, scene, key, ___, state, data) => (
-        <div
-          key={key}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            overflow: 'hidden',
-            display: 'flex',
-            flex: 1,
-            flexDirection: 'column',
-            // opacity: 1,
-            backgroundColor: theme.layout.backgroundColor as any,
-          }}
-        >
+      unmountedStyle={{ translate: 100 }}
+      mountedStyle={{ translate: 0 }}
+      crumbStyle={{ translate: 0 }}
+      renderMotion={({ translate }, scene, key) => {
+        return (
+          <View
+            key={key}
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                transform: `translate(${translate}%)` as any,
+                backgroundColor,
+                overflow: 'hidden',
+              },
+            ]}
+          >
+            {scene}
+          </View>
+        );
+      }}
+      renderScene={(state, data) => {
+        return (
           <OptimizedContextProvider state={state} data={data}>
-            {renderWeb?.(state.key) || scene}
+            {renderWeb?.(state.key) || (
+              <OptimizedRenderScene renderScene={state.renderScene} />
+            )}
           </OptimizedContextProvider>
-        </div>
-      )}
+        );
+      }}
     />
   );
 }
 
-export default NavigationStack;
+export default React.memo(NavigationStackW);
