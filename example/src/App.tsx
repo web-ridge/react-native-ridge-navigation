@@ -128,8 +128,6 @@ export default function App() {
   const colorScheme = useColorScheme(); // Can be dark | light | no-preference
   const paperTheme = React.useMemo(() => getTheme(colorScheme), [colorScheme]);
 
-  LogBox.ignoreLogs(['Require cycle: src/Navigator']);
-
   return (
     <QueryClientProvider client={queryClient}>
       {/*<ReactQueryDevtools initialIsOpen={false} />*/}

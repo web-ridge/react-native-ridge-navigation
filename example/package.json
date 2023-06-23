@@ -30,7 +30,7 @@
     "react-native-paper": "https://github.com/web-ridge/react-native-paper",
     "react-native-safe-area-context": "4.5.0",
     "react-native-use-form": "^0.10.4",
-    "react-native-web": "~0.18.11",
+    "react-native-web": "^0.19.5",
     "zustand": "^4.3.7"
   },
   "devDependencies": {

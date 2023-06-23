@@ -9,25 +9,16 @@ import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from './queryKeys';
 import routes from './Routes';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useRenderLog } from './helpers/utils';
 import ListItemLink from './ListItemLink';
+import AsyncBoundary from './helpers/AsyncBoundary';
+import { useRenderLog } from './helpers/utils';
 
 const ITEM_HEIGHT = 79;
 
 function PostsScreen() {
   useRenderLog('PostsScreen');
-  // optional with react-query  but could be used i.c.w. Relay.dev etc.
-  // for now we use this to test if it keeps working
-  const queryReference = usePreloadResult(routes.PostsScreen);
-  const { top, left, right } = useSafeAreaInsets();
-  const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);
 
-  if (queryReference !== 'testQueryReference') {
-    console.log({ queryReference });
-    return (
-      <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
-    );
-  }
+  const { top, left, right } = useSafeAreaInsets();
 
   return (
     <>
@@ -40,15 +31,34 @@ function PostsScreen() {
         value={''}
       />
 
-      <FlashList
-        data={data}
-        renderItem={({ item }) => <Item item={item} />}
-        keyExtractor={(item) => `${item.id}`}
-        estimatedItemSize={ITEM_HEIGHT}
-      />
+      <AsyncBoundary>
+        <List />
+      </AsyncBoundary>
     </>
   );
 }
+
+const List = React.memo(() => {
+  // optional with react-query  but could be used i.c.w. Relay.dev etc.
+  // for now we use this to test if it keeps working
+  const queryReference = usePreloadResult(routes.PostsScreen);
+  const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);
+
+  if (queryReference !== 'testQueryReference') {
+    console.log({ queryReference });
+    return (
+      <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
+    );
+  }
+  return (
+    <FlashList
+      data={data || []}
+      renderItem={({ item }) => <Item item={item} />}
+      keyExtractor={(item) => `${item.id}`}
+      estimatedItemSize={ITEM_HEIGHT}
+    />
+  );
+});
 
 const Item = React.memo(({ item }: { item: any }) => {
   return (

@@ -7,7 +7,7 @@ export interface PostType {
 }
 export const queryKeyPostsScreen = ['QUERY_KEY_POSTS_SCREEN'];
 export const queryKeyPostsScreenPromise = () =>
-  api({ path: 'posts' }) as Promise<PostType[]>;
+  api({ path: 'posts', params: { limit: 1 } }) as Promise<PostType[]>;
 export const queryKeyPostScreen = ({ id }: { id: string }) => [
   'QUERY_KEY_POST_SCREEN',
   id,

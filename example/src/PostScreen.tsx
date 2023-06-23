@@ -6,7 +6,7 @@ import {
   usePreloadResult,
 } from 'react-native-ridge-navigation';
 import { useQuery } from '@tanstack/react-query';
-import { ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Header from './Header';
 import { queryKeyPostScreen, queryKeyPostScreenPromise } from './queryKeys';
 import routes from './Routes';
@@ -15,12 +15,12 @@ import Spacer from './helpers/Spacer';
 import { useRenderLog } from './helpers/utils';
 
 function PostScreen() {
-  useRenderLog('PostScreen');
+  const { id } = useParams(routes.PostScreen);
+  useRenderLog('PostDetail', { id });
   // optional with react-query  but could be used i.c.w. Relay.dev etc.
   // for now we use this to test if it keeps working
   const queryReference = usePreloadResult(routes.PostScreen);
   const { inModal } = useModal();
-  const { id } = useParams(routes.PostScreen);
 
   const { data } = useQuery(
     queryKeyPostScreen({ id }),
@@ -31,6 +31,10 @@ function PostScreen() {
     return (
       <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
     );
+  }
+
+  if (!data) {
+    return null;
   }
 
   return (

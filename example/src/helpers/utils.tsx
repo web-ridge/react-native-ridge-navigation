@@ -46,10 +46,10 @@ export function useBigScreen() {
   return width > 1200;
 }
 
-export function useRenderLog(name: string) {
+export function useRenderLog(name: string, params?: any) {
   const id = React.useRef<number>(getRandomIntInclusive(0, 1000000));
   const currentId = id.current;
-  console.log(`Render ${name} ${currentId}`);
+  console.log(`Render ${name} ${currentId}`, params);
   React.useEffect(() => {
     return () => {
       console.log(`Unmount ${name} ${currentId}`);

@@ -1,6 +1,7 @@
 import { lazy, registerScreen } from 'react-native-ridge-navigation';
 import { RequireAuthHOC } from './Authorization';
-
+import PostScreenDirect from './PostScreen';
+import PostsScreenDirect from './PostsScreen';
 import queryClient from './queryClient';
 import {
   queryKeyPostScreen,
@@ -27,7 +28,7 @@ export const AccountScreen = registerScreen(
 
 export const PostsScreen = registerScreen(
   '/overview',
-  RequireAuthHOC(lazy(() => import('./PostsScreen'))),
+  PostsScreenDirect,
   () => {
     queryClient.prefetchQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise, {
       staleTime: 3000,
@@ -37,8 +38,8 @@ export const PostsScreen = registerScreen(
 );
 
 export const PostScreen = registerScreen(
-  '/post/:id',
-  RequireAuthHOC(lazy(() => import('./PostScreen'))),
+  '/post-detail/:id',
+  PostScreenDirect,
   (params) => {
     const { id } = params;
     queryClient.prefetchQuery(
