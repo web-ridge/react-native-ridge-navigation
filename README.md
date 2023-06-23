@@ -97,13 +97,13 @@ Use Expo with prebuild (Expo Go is not supported since we have native libraries)
 #### 2. Install deps + library
 
 ```
-yarn add react-native-navigation navigation navigation-react navigation-react-mobile navigation-react-native
+yarn add react-native-ridge-navigation navigation navigation-react navigation-react-mobile navigation-react-native
 ```
 
 or with npm
 
 ```
-npm install react-native-navigation navigation navigation-react navigation-react-mobile navigation-react-native
+npm install react-native-ridge-navigation navigation navigation-react navigation-react-mobile navigation-react-native
 ```
 
 
