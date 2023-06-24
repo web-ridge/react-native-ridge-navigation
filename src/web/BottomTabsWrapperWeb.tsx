@@ -126,7 +126,7 @@ const bottomStyles = StyleSheet.create({
     // shadowOpacity: 0.34,
     // shadowRadius: 6.27,
     // elevation: 10,
-    paddingBottom: 'env(safe-area-inset-bottom)',
+    paddingBottom: 'env(safe-area-inset-bottom)' as any,
   },
   horizontal: {
     flexDirection: 'column',
