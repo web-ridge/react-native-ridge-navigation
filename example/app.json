@@ -31,7 +31,9 @@
       "package": "com.webridge.navigation"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Navigation",
+      "description": "Navigation"
     },
     "plugins": [
       "./expo-plugin-android-material-you-bottom-bar",

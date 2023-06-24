@@ -18,6 +18,7 @@ export interface BaseScreen {
   path: string;
   element: ComponentType;
   preload: (params: any) => any;
+  options?: ScreenOptions;
 }
 
 export interface FluentParams {
@@ -101,15 +102,20 @@ export function createNormalRoot(child: BaseScreen): RootChildNormal {
 export type RootValue = RootChildNormal | RootChildBottomTabs;
 export type Root = Record<string, RootValue>;
 
+export type ScreenOptions = {
+  title?: string;
+  description?: string;
+};
 export function registerScreen<
   Path extends string,
   E extends ComponentType,
   Preload extends (params: ExtractRouteParams<Path>) => void
->(path: Path, element: E, preload: Preload) {
+>(path: Path, element: E, preload: Preload, options?: ScreenOptions) {
   return {
     path,
     element,
     preload,
+    options,
   };
 }
 

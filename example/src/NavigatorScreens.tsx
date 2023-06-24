@@ -12,17 +12,29 @@ import {
 export const AuthScreen = registerScreen(
   '/auth',
   lazy(() => import('./AuthScreen')),
-  () => {}
+  () => {},
+  {
+    title: 'Login',
+    description: 'Login to your account',
+  }
 );
 export const HomeScreen = registerScreen(
   '/home',
   lazy(() => import('./HomeScreen')),
-  () => {}
+  () => {},
+  {
+    title: 'Home',
+    description: 'Home is where the heart is',
+  }
 );
 export const AccountScreen = registerScreen(
   '/account',
   RequireAuthHOC(lazy(() => import('./AccountScreen'))),
-  () => {}
+  () => {},
+  {
+    title: 'Account',
+    description: 'Your account',
+  }
 );
 
 export const PostsScreen = registerScreen(
@@ -33,6 +45,10 @@ export const PostsScreen = registerScreen(
       staleTime: 3000,
     });
     return 'testQueryReference';
+  },
+  {
+    title: 'Posts',
+    description: 'All posts',
   }
 );
 
@@ -47,5 +63,9 @@ export const PostScreen = registerScreen(
       { staleTime: 3000 }
     );
     return 'testQueryReference';
+  },
+  {
+    title: 'Post',
+    description: 'A post',
   }
 );
