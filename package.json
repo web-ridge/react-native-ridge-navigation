@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "2.3.19",
+  "version": "2.3.20",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -85,7 +85,7 @@
     "typescript": "^4.9.4"
   },
   "peerDependencies": {
-    "expo-status-bar":  "*",
+    "expo-status-bar": "*",
     "expo-linking": "*",
     "navigation-react-native": "*",
     "react": "*",
