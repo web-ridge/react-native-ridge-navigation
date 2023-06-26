@@ -6,11 +6,15 @@ import OptimizedContext, {
 } from '../contexts/OptimizedContext';
 import { Head } from '../Head';
 import type { BaseScreen } from 'react-native-ridge-navigation';
+import { View, StyleSheet } from 'react-native';
 
 function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
   const { theme } = React.useContext(OptimizedContext);
   return (
     <NavigationMotion
+      unmountedStyle={{}}
+      mountedStyle={{}}
+      crumbStyle={{}}
       duration={0}
       renderMotion={(_, scene, key, active, state, data) => {
         const screen = state.screen as BaseScreen;
@@ -18,21 +22,15 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
         const title = screenOptions?.title;
         const description = screenOptions?.description;
         return (
-          <div
+          <View
             key={key}
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-              overflow: 'hidden',
-              display: 'flex',
-              flex: 1,
-              flexDirection: 'column',
-              // opacity: 1,
-              backgroundColor: theme.layout.backgroundColor as any,
-            }}
+            style={[
+              StyleSheet.absoluteFill,
+              styles.stack,
+              {
+                backgroundColor: theme.layout.backgroundColor,
+              },
+            ]}
           >
             {active && (
               <Head>
@@ -43,11 +41,17 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
             <OptimizedContextProvider state={state} data={data}>
               {renderWeb?.(state.key) || scene}
             </OptimizedContextProvider>
-          </div>
+          </View>
         );
       }}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  stack: {
+    overflow: 'hidden',
+  },
+});
 
 export default NavigationStack;
