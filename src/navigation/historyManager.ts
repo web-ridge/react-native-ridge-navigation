@@ -1,3 +1,3 @@
-export default function getHistoryManager() {
+export default function getHistoryManager(_basePath: string | undefined) {
   return undefined;
 }

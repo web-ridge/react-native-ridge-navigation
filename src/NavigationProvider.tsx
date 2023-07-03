@@ -2,7 +2,6 @@ import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
   BaseScreen,
-  BottomTabType,
   FluentParams,
   FluentScreen,
   generatePath,
@@ -13,7 +12,6 @@ import {
   Root,
   RootChildBottomTabs,
   rootKeyAndPaths,
-  RootValue,
 } from './navigationUtils';
 import { defaultTheme, ThemeSettings } from './theme';
 
@@ -29,9 +27,9 @@ import { OptimizedContextProvider } from './contexts/OptimizedContext';
 import getHistoryManager from './navigation/historyManager';
 import BottomTabBadgeProvider from './contexts/BottomTabBadgeProvider';
 import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
-import useUrl from './useUrl';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
+import { useNavigationUrl } from './useNavigationUrl';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -40,6 +38,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   themeSettings,
   children,
   initialRootKey,
+  basePath,
 }: {
   screens: ScreenItems;
   navigationRoot: Root;
@@ -47,7 +46,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   themeSettings?: ThemeSettings;
   children?: any;
   initialRootKey: string;
+  basePath?: string;
 }) {
+  const { setGoToUrl, goToUrl, initialDefaultUrl } = useNavigationUrl({
+    navigationRoot,
+    initialRootKey,
+    basePath,
+  });
   const colorScheme = useColorScheme();
   const theme = React.useMemo(
     () => (themeSettings || defaultTheme)[colorScheme || 'light'],
@@ -168,21 +173,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         }
       })
       .flat();
-    return new StateNavigator(navigators, getHistoryManager());
-  }, [navigationRoot, preloadRoot, screens]);
-
-  const cachedInitialRootKey = React.useRef<string | undefined>(initialRootKey);
-  const initialDefaultUrl = React.useMemo(() => {
-    const defaultRootKey =
-      cachedInitialRootKey.current || Object.keys(navigationRoot)[0]!;
-    const defaultRoot = navigationRoot[defaultRootKey]!;
-    return '/' + getPathFromRoot(defaultRoot, undefined, defaultRootKey);
-  }, [navigationRoot]);
-  const initialUrl = useUrl() || initialDefaultUrl;
-  const [goToUrl, setGoToUrl] = React.useState<undefined | string>(initialUrl);
-  React.useEffect(() => {
-    setGoToUrl(initialUrl);
-  }, [initialUrl]);
+    return new StateNavigator(navigators, getHistoryManager(basePath));
+  }, [basePath, navigationRoot, preloadRoot, screens]);
 
   const preloadLink = React.useCallback(
     (url: string) => {
@@ -223,11 +215,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           rootNavigator.navigateLink(uri);
         }
       } catch (e) {
-        console.log(
-          `Can't convert deep link to the right stack: ${initialUrl}`,
-          e,
-          { fallback, change }
-        );
+        console.log(`Can't convert deep link to the right stack: ${uri}`, e, {
+          fallback,
+          change,
+        });
         if (!fallback && !change) {
           console.log(
             'there is no app started yet, lets go to the default url}',
@@ -268,7 +259,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       const url = fluentNavigator.url;
       setGoToUrl(url);
     },
-    [navigationRoot, rootNavigator]
+    [navigationRoot, rootNavigator, setGoToUrl]
   );
 
   const [_, setForceRerender] = React.useState(0);
@@ -291,20 +282,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     }
     return undefined;
   }, [goToUrl, openUrl]);
-
-  React.useEffect(() => {
-    if (goToUrl) {
-      // reset goToUrl after it has been handled, so we can handle new deep links
-      // because in the meantime user can navigate away from goToUrl
-      const timerId = setTimeout(() => {
-        setGoToUrl(undefined);
-      }, 1500);
-      return () => {
-        clearTimeout(timerId);
-      };
-    }
-    return undefined;
-  }, [goToUrl]);
 
   if (firstTime.current) {
     return null;
@@ -357,22 +334,6 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       </BottomTabBadgeProvider>
     </RidgeNavigationContext.Provider>
   );
-}
-
-function getPathFromRoot(
-  root: RootValue,
-  tab: BottomTabType | undefined,
-  rootKey: string
-) {
-  if (root.type === 'bottomTabs') {
-    return getScreenKey(
-      rootKey,
-      tab || root.children[0],
-      Platform.OS === 'web' ? root.children[0]!.path : undefined
-    );
-  }
-
-  return getScreenKey(rootKey, undefined, root.child!.path);
 }
 
 const OptimizedRenderScene = React.memo(

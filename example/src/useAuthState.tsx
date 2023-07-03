@@ -38,7 +38,9 @@ export function setAuthState(state: UseAuthState) {
   useAuthState.setState(state);
   storage.set('auth', JSON.stringify(state));
 }
-fetchAndSaveProfileForToken({ token: initialState.token });
+
+fetchAndSaveProfileForToken({ token: initialState?.token });
+
 export function reset() {
   setAuthState(emptyAuthState);
 }

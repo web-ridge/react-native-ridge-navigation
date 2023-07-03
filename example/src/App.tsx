@@ -137,6 +137,7 @@ export default function App() {
         <PaperProvider theme={paperTheme}>
           <AsyncBoundary>
             <NavigationProvider
+              basePath="test"
               screens={screens}
               SuspenseContainer={AsyncBoundaryScreen}
               navigationRoot={navigationRoot}
