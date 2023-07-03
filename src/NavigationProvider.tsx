@@ -128,8 +128,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                   ),
               },
               ...root.children
-                .map((tab) =>
-                  screens.map((screen) => {
+                .map((tab) => {
+                  return screens.map((screen) => {
                     // we don't want the child path segment in the url
                     const isTheSame = tab.child.path === screen.path;
 
@@ -143,8 +143,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                       screen,
                       preloadId: screen.path,
                     };
-                  })
-                )
+                  });
+                })
                 .flat(2),
             ];
 
