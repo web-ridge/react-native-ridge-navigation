@@ -232,13 +232,17 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           rootNavigator.navigateLink(uri);
         }
       } catch (e) {
-        console.log(`Can't convert deep link to the right stack: ${uri}`, e, {
-          fallback,
-          change,
-        });
+        console.log(
+          `[react-native-ridge-navigation] can't convert deep link to the right stack: ${uri}`,
+          e,
+          {
+            fallback,
+            change,
+          }
+        );
         if (!fallback && !change) {
-          console.log(
-            'there is no app started yet, lets go to the default url}',
+          console.debug(
+            '[react-native-ridge-navigation] there is no app started yet, lets go to the default url}',
             { defaultUrl: initialDefaultUrl }
           );
           // setTimeout(() => {
@@ -274,6 +278,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       });
 
       const url = fluentNavigator.url;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[react-native-ridge-navigation] fluent navigation to ${url}`
+        );
+      }
       setGoToUrl(url);
     },
     [navigationRoot, rootNavigator, setGoToUrl]

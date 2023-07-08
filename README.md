@@ -384,15 +384,7 @@ import {
 
 You have to enable url schemes etc in your app and it'll work!
 
-E.g. our example app can open the following urls:
-### crumb
-
-
-### Bottom tabs
-
-navigation://home/post/post-1
-
-## normal stack
+If you want to deep link into a bottom tab or other screen you can use the fluent navigation in development mode and it will log the required url to go to the right screen :)
 
 ## More
 
