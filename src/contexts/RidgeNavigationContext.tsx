@@ -19,6 +19,7 @@ const RidgeNavigationContext = React.createContext<{
     ...fluentScreens: FluentScreen[]
   ) => void;
   goToUrl: string | undefined;
+  basePath: string | undefined;
 }>(undefined as any);
 
 export default RidgeNavigationContext;

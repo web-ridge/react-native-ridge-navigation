@@ -326,6 +326,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         SuspenseContainer,
         fluent,
         goToUrl,
+        basePath,
       }}
     >
       <BottomTabBadgeProvider>

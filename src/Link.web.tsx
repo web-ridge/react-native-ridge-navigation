@@ -1,10 +1,11 @@
 import * as React from 'react';
 import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
 
-import type { GestureResponderEvent } from 'react-native';
+import type { MouseEvent, GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
 import { generatePath } from './navigationUtils';
 import useModal from './useModal';
+import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 
 function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -32,10 +33,14 @@ export default function Link<T extends BaseScreen>({
   refresh: isRefreshInsteadOfPush,
   ...rest
 }: LinkProps<T>) {
+  const { basePath } = React.useContext(RidgeNavigationContext);
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
-  const href = generatePath('/' + currentRootKey + to.path, params);
+  let href = generatePath('/' + currentRootKey + to.path, params);
+  if (basePath) {
+    href = '/' + basePath + href;
+  }
 
   const lastPreloadedAt = React.useRef<number | null>(null);
 
@@ -106,17 +111,39 @@ export default function Link<T extends BaseScreen>({
     preloadElement(to);
   }, [preloadElement, to]);
 
+  const onPressInExternal = rest?.onPressIn;
+  const loadDataOnHover = linkMode === 'sensitive';
+  const onPressIn = React.useCallback(
+    (e: GestureResponderEvent) => {
+      if (!loadDataOnHover) {
+        preloadData();
+      }
+      onPressInExternal?.(e);
+    },
+    [loadDataOnHover, onPressInExternal, preloadData]
+  );
+
+  const onHoverInExternal = rest?.onHoverIn;
+  const onHoverIn = React.useCallback(
+    (e: MouseEvent) => {
+      if (loadDataOnHover) {
+        preloadDataAndElement();
+      } else {
+        preloadElementInner();
+      }
+      onHoverInExternal?.(e);
+    },
+    [
+      loadDataOnHover,
+      onHoverInExternal,
+      preloadDataAndElement,
+      preloadElementInner,
+    ]
+  );
+
   let baseProps: LinkRenderProps = {
-    onPressIn: rest.onPressIn
-      ? rest.onPressIn
-      : linkMode === 'sensitive'
-      ? undefined
-      : preloadData,
-    onHoverIn: rest.onHoverIn
-      ? rest.onHoverIn
-      : linkMode === 'sensitive'
-      ? preloadDataAndElement
-      : preloadElementInner,
+    onPressIn: onPressIn,
+    onHoverIn: onHoverIn,
     onPress: onPress,
   };
   let childrenProps: LinkRenderProps =

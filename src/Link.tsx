@@ -59,13 +59,18 @@ export default function Link<T extends BaseScreen>({
     ]
   );
 
-  const onPressIn = React.useCallback(() => {
-    preloadElementInner();
-    preload(to, params);
-  }, [to, preload, preloadElementInner, params]);
+  const onPressInExternal = rest?.onPressIn;
+  const onPressIn = React.useCallback(
+    (e: GestureResponderEvent) => {
+      preloadElementInner();
+      preload(to, params);
+      onPressInExternal?.(e);
+    },
+    [to, preload, preloadElementInner, params, onPressInExternal]
+  );
 
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
-    return children({ onPress: onCustomPress });
+    return children({ onPress: onCustomPress, onPressIn: onPressInExternal });
   }
   return children({
     onPress: onPress,
