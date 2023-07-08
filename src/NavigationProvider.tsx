@@ -63,16 +63,33 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
 
   const preloadScreen = React.useCallback(
     <T extends BaseScreen>(screen: T, params: any) => {
-      const result = screen.preload(params);
-      const path = generatePath(screen.path, params);
-      preloadedCache.current[path] = result;
+      try {
+        const result = screen.preload(params);
+        const path = generatePath(screen.path, params);
+        preloadedCache.current[path] = result;
+      } catch (error) {
+        console.log(
+          '[react-native-ridge-navigation] error while preloading screen',
+          screen,
+          params,
+          error
+        );
+      }
     },
     []
   );
 
   const preloadElement = React.useCallback(
     async <T extends BaseScreen>(screen: T) => {
-      (screen.element as PreloadableComponent<any>)?.preload?.();
+      try {
+        (screen.element as PreloadableComponent<any>)?.preload?.();
+      } catch (error) {
+        console.log(
+          '[react-native-ridge-navigation] error while preloading element',
+          screen,
+          error
+        );
+      }
     },
     []
   );
