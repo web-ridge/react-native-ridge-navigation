@@ -59,7 +59,7 @@ export default function Link<T extends BaseScreen>({
     ]
   );
 
-  const onPressInExternal = rest?.onPressIn;
+  const onPressInExternal = rest?.onPressIn || undefined;
   const onPressIn = React.useCallback(
     (e: GestureResponderEvent) => {
       preloadElementInner();
