@@ -6,6 +6,7 @@ import useNavigation from './useNavigation';
 import { generatePath } from './navigationUtils';
 import useModal from './useModal';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import useBottomTabIndex from './useBottomTabIndex';
 
 function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -34,10 +35,20 @@ export default function Link<T extends BaseScreen>({
   ...rest
 }: LinkProps<T>) {
   const { basePath } = React.useContext(RidgeNavigationContext);
+  const { currentTab } = useBottomTabIndex();
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
     useNavigation();
-  let href = generatePath('/' + currentRootKey + to.path, params);
+
+  let path = to.path;
+
+  if (toBottomTab?.path) {
+    path = toBottomTab.path;
+  } else if (currentTab?.path) {
+    path = currentTab.path + path;
+  }
+  let href = generatePath('/' + currentRootKey + path, params);
+
   if (basePath) {
     href = '/' + basePath + href;
   }
