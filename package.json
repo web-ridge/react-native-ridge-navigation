@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "2.3.26",
+  "version": "2.3.27",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
