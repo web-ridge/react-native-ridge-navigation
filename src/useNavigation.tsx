@@ -135,7 +135,7 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
-      innerNavigate(screen, params, options);
+      innerNavigate(screen, params, options, 'add');
     },
     [innerNavigate]
   );

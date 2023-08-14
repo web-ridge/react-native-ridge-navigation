@@ -342,9 +342,9 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               </OptimizedContextProvider>
             )}
             <NavigationStack
-              underlayColor={theme.layout.backgroundColor}
+              // underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}
-              unmountStyle={() => ''}
+              // unmountStyle={() => ''}
               renderScene={(state, data) => {
                 return (
                   <>
@@ -368,9 +368,3 @@ const OptimizedRenderScene = React.memo(
     return renderScene();
   }
 );
-
-// fluent(root.HomeScreen).
-// bottomTab(bottomRoots.Post).
-// push().
-// push().
-// push();
