@@ -2390,22 +2390,6 @@
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-native@^0.71.5":
-  version "0.71.5"
-  resolved "https://registry.npmjs.org/@types/react-native/-/react-native-0.71.5.tgz#229bc670433f97fe1e03d62758d4fccf34a07714"
-  integrity sha512-Tp5druh7DGwNDvWYH09PCE++hbH4zYz0OOvGFb3/QFIFKXgfezaT/txJeKlBkbiqs45QJzllp9S0qo0WpWyijA==
-  dependencies:
-    "@types/react" "*"
-
-"@types/react@*":
-  version "18.0.28"
-  resolved "https://registry.npmjs.org/@types/react/-/react-18.0.28.tgz#accaeb8b86f4908057ad629a26635fe641480065"
-  integrity sha512-RD0ivG1kEztNBdoAK7lekI9M+azSnitIn85h4iOiaLjaTrMjzslhaqCGaI4IyCJ1RljWiLCEu4jyrLLgqxBTew==
-  dependencies:
-    "@types/prop-types" "*"
-    "@types/scheduler" "*"
-    csstype "^3.0.2"
-
 "@types/react@~18.2.14":
   version "18.2.20"
   resolved "https://registry.npmjs.org/@types/react/-/react-18.2.20.tgz#1605557a83df5c8a2cc4eeb743b3dfc0eb6aaeb2"
@@ -7292,9 +7276,9 @@ rc@^1.0.1, rc@^1.1.6, rc@~1.2.7:
     strip-json-comments "~2.0.1"
 
 react-devtools-core@^4.27.2:
-  version "4.28.0"
-  resolved "https://registry.npmjs.org/react-devtools-core/-/react-devtools-core-4.28.0.tgz#3fa18709b24414adddadac33b6b9cea96db60f2f"
-  integrity sha512-E3C3X1skWBdBzwpOUbmXG8SgH6BtsluSMe+s6rRcujNKG1DGi8uIfhdhszkgDpAsMoE55hwqRUzeXCmETDBpTg==
+  version "4.28.4"
+  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-4.28.4.tgz#fb8183eada77093f4c2f9830e664bf22255abe27"
+  integrity sha512-IUZKLv3CimeM07G3vX4H4loxVpByrzq3HvfTX7v9migalwvLs9ZY5D3S3pKR33U+GguYfBBdMMZyToFhsSE/iQ==
   dependencies:
     shell-quote "^1.6.1"
     ws "^7"
