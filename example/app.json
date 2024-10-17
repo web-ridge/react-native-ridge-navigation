@@ -15,7 +15,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.webridge.navigation"
@@ -37,7 +39,17 @@
     },
     "plugins": [
       "./expo-plugin-android-material-you-bottom-bar",
-      "./expo-plugin-android-duplicate-classes-fix"
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "newArchEnabled": true
+          },
+          "android": {
+            "newArchEnabled": true
+          }
+        }
+      ]
     ]
   }
 }
