@@ -1,4 +1,3 @@
-import * as React from 'react';
 import BottomTabIndexContext from './BottomTabIndexContext';
 import useDeepLinkingBottomTabsIndex from '../useDeepLinkingBottomTabsIndex';
 

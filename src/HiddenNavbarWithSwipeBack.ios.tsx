@@ -1,5 +1,4 @@
 // history https://github.com/grahammendick/navigation/pull/677
-import * as React from 'react';
 import NavigationBar from './navigation/NavigationBar';
 
 const NON_EMPTY_STRING = 'fix-swipe-back';

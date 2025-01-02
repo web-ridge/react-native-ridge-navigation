@@ -2,7 +2,7 @@ import * as React from 'react';
 import RidgeNavigationContext from './RidgeNavigationContext';
 import { NavigationContext } from 'navigation-react';
 import type { Theme } from '../theme';
-import { BaseScreen, generatePath } from '../navigationUtils';
+import { type BaseScreen, generatePath } from '../navigationUtils';
 import type { StateNavigator } from 'navigation';
 import type { State } from 'navigation';
 

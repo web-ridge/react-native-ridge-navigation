@@ -1,7 +1,7 @@
 import {
-  BottomTabType,
+  type BottomTabType,
   getScreenKey,
-  RootChildBottomTabs,
+  type RootChildBottomTabs,
 } from './navigationUtils';
 
 import * as React from 'react';

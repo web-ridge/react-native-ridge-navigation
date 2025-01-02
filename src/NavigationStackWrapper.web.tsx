@@ -1,4 +1,3 @@
-import * as React from 'react';
 import BottomTabsWrapperWeb from './web/BottomTabsWrapperWeb';
 import useCurrentRoot from './useCurrentRoot';
 import { OptimizedContextProvider } from './contexts/OptimizedContext';

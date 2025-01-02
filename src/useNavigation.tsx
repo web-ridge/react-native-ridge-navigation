@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {
-  BaseScreen,
-  BottomTabType,
-  ExtractRouteParams,
+  type BaseScreen,
+  type BottomTabType,
+  type ExtractRouteParams,
   getScreenKey,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';

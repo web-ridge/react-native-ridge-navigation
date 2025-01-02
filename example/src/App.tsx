@@ -5,7 +5,7 @@ import {
   Provider as PaperProvider,
 } from 'react-native-paper';
 import {
-  ColorSchemeName,
+  type ColorSchemeName,
   Image,
   LogBox,
   useColorScheme,

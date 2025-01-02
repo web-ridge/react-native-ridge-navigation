@@ -1,7 +1,11 @@
 import useUrl from './useUrl';
 import * as React from 'react';
 import type { Root } from './navigationUtils';
-import { BottomTabType, getScreenKey, RootValue } from './navigationUtils';
+import {
+  type BottomTabType,
+  getScreenKey,
+  type RootValue,
+} from './navigationUtils';
 import { Platform } from 'react-native';
 
 function withoutBasePath(

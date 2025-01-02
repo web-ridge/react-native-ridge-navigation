@@ -1,5 +1,4 @@
 import { Image, Linking, StyleSheet, View } from 'react-native';
-import * as React from 'react';
 import { IconButton, Paragraph, Text, Title } from 'react-native-paper';
 import Superman from './img/superman.png';
 import { useNavigation } from 'react-native-ridge-navigation';
