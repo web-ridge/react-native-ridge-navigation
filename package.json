@@ -43,7 +43,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
     "prepare": "bob build",
-    "release": "release-it --ci --github.autoGenerate",
+    "release": "release-it --ci",
     "build-example": "cd example && npx expo export"
   },
   "keywords": [
@@ -127,13 +127,15 @@
   "release-it": {
     "git": {
       "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
+      "tagName": "v${version}",
+      "requireCleanWorkingDir": false
     },
     "npm": {
       "publish": true
     },
     "github": {
-      "release": true
+      "release": true,
+      "autoGenerate": true
     },
     "plugins": {
       "@release-it/conventional-changelog": {
