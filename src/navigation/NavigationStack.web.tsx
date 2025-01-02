@@ -24,6 +24,8 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
         return (
           <View
             key={key}
+            accessible={active}
+            aria-hidden={!active}
             style={[
               StyleSheet.absoluteFill,
               styles.stack,
