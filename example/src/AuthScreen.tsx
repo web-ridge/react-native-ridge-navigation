@@ -8,9 +8,9 @@ import PaddingView from './helpers/PaddingView';
 import Spacer from './helpers/Spacer';
 import ScreenWrapper from './helpers/ScreenWrapper';
 import { SwitchRoot } from 'react-native-ridge-navigation';
-import { NavigationRoots } from './Navigator';
 import { fetchAndSaveProfileForToken } from './useAuthState';
 import Introduction from './Introduction';
+import NavigationRoots from './NavigationRoots';
 
 interface SignInFormState {
   username: string;

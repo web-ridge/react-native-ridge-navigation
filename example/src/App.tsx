@@ -20,14 +20,18 @@ import queryClient from './queryClient';
 import {
   createBottomTabsRoot,
   createNormalRoot,
+  createScreens,
   createSimpleTheme,
   NavigationProvider,
 } from 'react-native-ridge-navigation';
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-import { BottomRoot, NavigationRoots, screens } from './Navigator';
 import routes from './Routes';
+
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
+import NavigationRoots from './NavigationRoots';
+import BottomRoots from './BottomRoots';
+
+const screens = createScreens(routes);
+
 function getTheme(colorScheme: ColorSchemeName): typeof MD3LightTheme {
   const isDark = colorScheme === 'dark';
   const baseTheme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
@@ -88,7 +92,7 @@ let theme = createSimpleTheme({
 
 const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
-    [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
+    [BottomRoots.Home, BottomRoots.Posts, BottomRoots.Account],
     {
       breakingPointWidth: 600,
       components: {
@@ -110,9 +114,9 @@ const navigationRoot = {
             >
               <Image
                 source={{
-                  uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2008px-Google_%22G%22_Logo.svg.png',
+                  uri: 'https://webridge-assets.s3.eu-central-1.amazonaws.com/half5-logo.png',
                 }}
-                style={{ width: 50, height: 50 }}
+                style={{ height: 60, width: 186 }}
               />
             </View>
           );

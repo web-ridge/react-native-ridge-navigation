@@ -13,7 +13,7 @@ control over the navigation!
 
 ## Features
 
-- New architecture (Fabric) ready
+- New architecture
 - Simple api
 - 100% Type safety (routes, params, bottom tabs)
 - Bundle splitting (lazy loading, smart prefetching)
@@ -27,6 +27,23 @@ control over the navigation!
 - A lot of control over the web layout
 - Universal links (already works, but docs need work)
 - PWA documentation (already works, but docs need work)
+- Expo support
+- Metro bundling on web
+
+
+## Expo
+If you use bundling with metro add this to your index.js file
+```tsx
+import '@expo/metro-runtime';
+```
+Customize index.html by pressing space on the web/index.html item + enter
+```shell
+npx expo  customize:web
+
+```
+Change in your index.html in body css
+```overflow-y:hidden``` to ```overflow: hidden```
+Because otherwise scrolling works very bad on iOS safari.
 
 ## Example
 
@@ -137,26 +154,25 @@ module.exports = function androidMaterialYouBottomBarPlugin(config) {
 
 ## Usage
 
+NavigationRoots.tsx
 ```tsx
-import {
-  createNormalRoot,
-  createNavigation,
-  createBottomTabsRoot,
-  createScreens,
-  defaultTheme,
-} from 'react-native-ridge-navigation';
 
-export const NavigationRoots = {
+
+const NavigationRoots = {
   RootHome: 'home',
   RootAuth: 'auth',
 };
+export default NavigationRoots;
+```
 
+BottomRoots.tsx
+```ts
 // svg to png
 // https://webkul.github.io/myscale/
 //
 // tab icon
 // http://nsimage.brosteins.com/Home
-export const BottomRoots = {
+const BottomRoots = {
   Posts: {
     path: '/post',
     title: () => 'Posts',
@@ -172,7 +188,7 @@ export const BottomRoots = {
     child: routes.AccountScreen,
   },
 };
-
+export default BottomRoots;
 ```
 
 ```tsx
@@ -193,12 +209,13 @@ import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
 const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
     [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
-    {
-      breakingPointWidth: 500,
-      components: {
-        override: HeaderWeb,
-      },
-    }
+    // if you want to override web layout
+    // {
+    //   breakingPointWidth: 500,
+    //   components: {
+    //     override: WebLayout,
+    //   },
+    // }
   ),
   [NavigationRoots.RootAuth]: createNormalRoot(routes.AuthScreen),
 };
@@ -217,7 +234,7 @@ export default function App() {
 
 ```
 
-See example code for the asyncboundary stuff :)
+See example code for the async-boundary stuff :)
 
 ## New screen
 

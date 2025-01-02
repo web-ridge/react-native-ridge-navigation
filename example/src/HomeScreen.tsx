@@ -9,8 +9,9 @@ import {
   fluentScreen,
   useNavigation,
 } from 'react-native-ridge-navigation';
-import { BottomRoot, NavigationRoots } from './Navigator';
 import Routes from './Routes';
+import NavigationRoots from './NavigationRoots';
+import BottomRoots from './BottomRoots';
 
 function HomeScreen() {
   useRenderLog('HomeScreen');
@@ -60,7 +61,7 @@ function FluentButton() {
       <Button
         onPress={() => {
           fluent(
-            fluentRootBottomTabs(NavigationRoots.RootHome, BottomRoot.Account),
+            fluentRootBottomTabs(NavigationRoots.RootHome, BottomRoots.Account),
             fluentScreen(Routes.HomeScreen, {}),
             fluentScreen(Routes.PostScreen, { id: '10' }),
             fluentScreen(Routes.PostScreen, { id: '20' }),

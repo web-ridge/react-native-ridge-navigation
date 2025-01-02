@@ -10,11 +10,11 @@ import {
   BottomTabLink,
 } from 'react-native-ridge-navigation';
 import { View, ScrollView, Modal } from 'react-native';
-import { BottomRoot } from './Navigator';
 import Header from './Header';
 import { useRenderLog } from './helpers/utils';
 import routes from './Routes';
 import ButtonLink from './ButtonLink';
+import BottomRoots from './BottomRoots';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');
@@ -42,7 +42,7 @@ function AccountScreen() {
             style={{ marginTop: 12 }}
             mode="outlined"
             onPress={() => {
-              updateBadge(BottomRoot.Posts, 10000);
+              updateBadge(BottomRoots.Posts, 10000);
             }}
           >
             +1 bottom-tab post badge
@@ -51,12 +51,12 @@ function AccountScreen() {
             style={{ marginTop: 12 }}
             mode="outlined"
             onPress={() => {
-              switchToTab(BottomRoot.Posts);
+              switchToTab(BottomRoots.Posts);
             }}
           >
             Go to posts tab
           </Button>
-          <BottomTabLink to={BottomRoot.Posts} params={{}}>
+          <BottomTabLink to={BottomRoots.Posts} params={{}}>
             {(linkProps) => (
               <Button style={{ marginTop: 12 }} mode="outlined" {...linkProps}>
                 Go to posts tab (route)

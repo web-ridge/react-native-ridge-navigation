@@ -1,13 +1,6 @@
 import * as routes from './NavigatorScreens';
-import { createScreens } from 'react-native-ridge-navigation';
 
-export const NavigationRoots = {
-  RootHome: 'app',
-  RootAuth: 'auth',
-  RootExample: 'example',
-};
-
-export const BottomRoot = {
+const BottomRoots = {
   Home: {
     path: '/home',
     title: () => 'Home',
@@ -30,5 +23,4 @@ export const BottomRoot = {
     child: routes.AccountScreen,
   },
 };
-
-export const screens = createScreens(routes);
+export default BottomRoots;

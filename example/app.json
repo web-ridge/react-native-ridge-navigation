@@ -25,7 +25,9 @@
       "package": "ridgenavigation.example"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+
     },
     "plugins": [
       "./expo-plugin-android-material-you-bottom-bar"
