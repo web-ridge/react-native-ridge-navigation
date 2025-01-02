@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Cross platform react native router with support for render as you fetch",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -44,7 +44,7 @@
     "clean": "del-cli lib",
     "prepare": "bob build",
     "release": "release-it --ci",
-    "build-example": "cd example && npx expo export -p example/web"
+    "build-example": "cd example && yarn web:before && yarn web:build"
   },
   "keywords": [
     "react-native",

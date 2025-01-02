@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Text, Searchbar } from 'react-native-paper';
 import { usePreloadResult } from 'react-native-ridge-navigation';
-import { FlashList } from '@shopify/flash-list';
+import { LegendList } from '@legendapp/list';
 import { useQuery } from '@tanstack/react-query';
 
 import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from './queryKeys';
@@ -40,11 +40,12 @@ function PostsScreen() {
         value={''}
       />
 
-      <FlashList
-        data={data}
+      <LegendList
+        data={data || []}
         renderItem={({ item }) => <Item item={item} />}
         keyExtractor={(item) => `${item.id}`}
         estimatedItemSize={ITEM_HEIGHT}
+        recycleItems
       />
     </>
   );

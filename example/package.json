@@ -6,19 +6,19 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web",
-    "postinstall": "rm -rf node_modules/@expo/vector-icons && rm -rf node_modules/react-native-vector-icons"
+    "web": "run pre-web && expo start --web",
+    "web:build": "expo export -p web",
+    "web:before": "rm -rf ./node_modules/@expo/vector-icons && rm -rf node_modules/react-native-vector-icons"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",
-    "@shopify/flash-list": "1.7.1",
+    "@legendapp/list": "^0.5.9",
     "@tanstack/react-query": "^4.29.1",
     "expo": "~52.0.23",
     "expo-linking": "^7.0.3",
     "expo-status-bar": "~2.0.0",
     "expo-system-ui": "~4.0.6",
     "navigation-react-native": "9.26.0",
-    "postinstall-postinstall": "^2.1.0",
     "qs": "^6.13.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
