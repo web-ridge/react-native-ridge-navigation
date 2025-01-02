@@ -1,2 +1,5 @@
 /android
 /ios
+/dist
+/node_modules
+.expo

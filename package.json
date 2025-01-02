@@ -44,7 +44,7 @@
     "clean": "del-cli lib",
     "prepare": "bob build",
     "release": "release-it --ci --github.autoGenerate",
-    "build-example": "cd example && npx expo export:web"
+    "build-example": "cd example && npx expo export"
   },
   "keywords": [
     "react-native",
