@@ -1,6 +1,5 @@
-import * as React from 'react';
 import { useBigScreen } from './utils';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 export default function PaddingView({
   children,

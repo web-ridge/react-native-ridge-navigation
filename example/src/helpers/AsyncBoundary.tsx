@@ -1,4 +1,3 @@
-import React from 'react';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
 import SuspenseWithFallback from './SuspenseWithSpinner';
 

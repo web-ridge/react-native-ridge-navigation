@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { defaultStyles, useBigScreen } from './utils';
 import { useTheme } from 'react-native-paper';
@@ -44,7 +43,7 @@ const styles = StyleSheet.create({
     maxWidth: 1200,
     width: '100%',
 
-    boxSizing: 'border-box',
+    // boxSizing: 'border-box',
     backgroundColor: '#fff',
     borderRadius: 5,
     overflow: 'hidden',

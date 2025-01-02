@@ -1,4 +1,3 @@
-import * as React from 'react';
 import type { BottomTabOverrideProps } from 'react-native-ridge-navigation';
 import { Button, Text, IconButton, useTheme } from 'react-native-paper';
 import { View } from 'react-native';

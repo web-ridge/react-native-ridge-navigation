@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, ScrollView as NativeScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

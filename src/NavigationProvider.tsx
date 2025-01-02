@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
-  BaseScreen,
-  FluentParams,
-  FluentScreen,
+  type BaseScreen,
+  type FluentParams,
+  type FluentScreen,
   generatePath,
   getPathFromUrl,
   getRootKeyFromPath,
   getScreenKey,
   makeVariablesNavigationFriendly,
-  Root,
-  RootChildBottomTabs,
+  type Root,
+  type RootChildBottomTabs,
   rootKeyAndPaths,
 } from './navigationUtils';
-import { defaultTheme, ThemeSettings } from './theme';
+import { defaultTheme, type ThemeSettings } from './theme';
 
 import { Platform, useColorScheme } from 'react-native';
 import { NavigationHandler } from 'navigation-react';

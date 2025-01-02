@@ -1,7 +1,6 @@
-import * as React from 'react';
 import {
   ModalBackHandler,
-  ModalBackHandlerProps,
+  type ModalBackHandlerProps,
 } from 'navigation-react-native';
 import { ModalContext } from './contexts/ModalContext';
 
