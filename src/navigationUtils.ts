@@ -5,14 +5,14 @@ import { useWindowDimensions } from 'react-native';
 export type ExtractRouteParams<T extends string> = string extends T
   ? Record<string, string>
   : // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  T extends `${infer Start}:${infer Param}/${infer Rest}`
-  ? { [k in Param | keyof ExtractRouteParams<Rest>]: string }
-  : // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  T extends `${infer Start}:${infer Param}`
-  ? { [k in Param]: string }
-  : {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    T extends `${infer Start}:${infer Param}/${infer Rest}`
+    ? { [k in Param | keyof ExtractRouteParams<Rest>]: string }
+    : // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      T extends `${infer Start}:${infer Param}`
+      ? { [k in Param]: string }
+      : {};
 
 export interface BaseScreen {
   path: string;
@@ -109,7 +109,7 @@ export type ScreenOptions = {
 export function registerScreen<
   Path extends string,
   E extends ComponentType,
-  Preload extends (params: ExtractRouteParams<Path>) => void
+  Preload extends (params: ExtractRouteParams<Path>) => void,
 >(path: Path, element: E, preload: Preload, options?: ScreenOptions) {
   return {
     path,
