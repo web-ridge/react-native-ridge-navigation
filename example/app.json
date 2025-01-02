@@ -37,19 +37,9 @@
       "name": "Navigation",
       "description": "Navigation"
     },
+    "newArchEnabled": true,
     "plugins": [
-      "./expo-plugin-android-material-you-bottom-bar",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "newArchEnabled": true
-          },
-          "android": {
-            "newArchEnabled": true
-          }
-        }
-      ]
+      "./expo-plugin-android-material-you-bottom-bar"
     ]
   }
 }
