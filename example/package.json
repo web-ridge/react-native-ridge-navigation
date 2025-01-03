@@ -6,9 +6,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "run pre-web && expo start --web",
-    "web:build": "expo export -p web",
-    "web:before": "rm -rf ./node_modules/@expo/vector-icons && rm -rf node_modules/react-native-vector-icons"
+    "web": "expo start --web",
+    "web:build": "expo export -p web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",

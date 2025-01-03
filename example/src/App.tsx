@@ -29,6 +29,7 @@ import routes from './Routes';
 import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
 import NavigationRoots from './NavigationRoots';
 import BottomRoots from './BottomRoots';
+import AppWebLayout from './AppWebLayout';
 
 const screens = createScreens(routes);
 
@@ -96,7 +97,7 @@ const navigationRoot = {
     {
       breakingPointWidth: 600,
       components: {
-        // override: HeaderWeb,
+        override: AppWebLayout,
         start: ({ orientation }) => {
           if (orientation === 'vertical') {
             return null;

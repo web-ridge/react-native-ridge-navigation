@@ -2,10 +2,9 @@ import type { BottomTabOverrideProps } from 'react-native-ridge-navigation';
 import { Button, Text, IconButton, useTheme } from 'react-native-paper';
 import { View } from 'react-native';
 import { BottomTabLink } from 'react-native-ridge-navigation';
+import BottomRoots from './BottomRoots';
 
-import { BottomRoot } from './Navigator';
-
-export default function HeaderWeb({
+export default function AppWebLayout({
   orientation,
   originalBottomTabs,
   children,
@@ -29,7 +28,7 @@ export default function HeaderWeb({
           <Text style={{ color: theme.colors.onBackground, fontSize: 22 }}>
             Logo
           </Text>
-          <BottomTabLink to={BottomRoot.Home} params={{}}>
+          <BottomTabLink to={BottomRoots.Home} params={{}}>
             {({ isSelected, ...linkProps }) => (
               <Button {...linkProps}>
                 <Text
@@ -40,7 +39,7 @@ export default function HeaderWeb({
               </Button>
             )}
           </BottomTabLink>
-          <BottomTabLink to={BottomRoot.Posts} params={{}}>
+          <BottomTabLink to={BottomRoots.Posts} params={{}}>
             {({ isSelected, ...linkProps }) => (
               <Button {...linkProps}>
                 <Text
@@ -52,7 +51,7 @@ export default function HeaderWeb({
             )}
           </BottomTabLink>
           <View>
-            <BottomTabLink to={BottomRoot.Account} params={{}}>
+            <BottomTabLink to={BottomRoots.Account} params={{}}>
               {({ isSelected, ...linkProps }) => (
                 <IconButton
                   {...linkProps}

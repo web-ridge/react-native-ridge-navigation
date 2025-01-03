@@ -44,7 +44,7 @@
     "clean": "del-cli lib",
     "prepare": "bob build",
     "release": "release-it --ci",
-    "build-example": "cd example && yarn web:before && yarn web:build"
+    "build-example": "cd example && yarn web:build"
   },
   "keywords": [
     "react-native",
