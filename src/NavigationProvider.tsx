@@ -342,7 +342,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               </OptimizedContextProvider>
             )}
             <NavigationStack
-              // underlayColor={theme.layout.backgroundColor}
+              underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}
               // unmountStyle={() => ''}
               renderScene={(state, data) => {
