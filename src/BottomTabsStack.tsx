@@ -9,7 +9,7 @@ import TabBar from './navigation/TabBar';
 import TabBarItem from './navigation/TabBarItem';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
-import { useBottomTabsStateNavigator } from './navigation/useBottomTabsStateNavigator';
+import { useBottomTabsStateNavigator } from './navigation/useBottomTacbsStateNavigator';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import OptimizedContext, {
   OptimizedContextProvider,
@@ -52,6 +52,7 @@ export default function BottomTabsStack() {
         selectedTintColor={bottomTheme.selectedTextColor}
         activeIndicatorColor={bottomTheme.activeIndicatorColor}
         scrollsToTop={bottomTheme.scrollsToTop}
+        preventFouc={true}
       >
         {root.children.map((tab, index) => {
           return (
