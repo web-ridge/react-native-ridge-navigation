@@ -155,7 +155,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                       route: makeVariablesNavigationFriendly(
                         getScreenKey(rootKey, tab, screen.path)
                       ),
-                      renderScene: () => <screen.element />,
+                      renderScene: () => (
+                        <SuspenseContainer>
+                          <screen.element />
+                        </SuspenseContainer>
+                      ),
                       trackCrumbTrail: !isTheSame,
                       screen,
                       preloadId: screen.path,
@@ -171,7 +175,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 key: rootKey,
                 route: rootKey,
                 trackCrumbTrail: false,
-                renderScene: () => <root.child.element />,
+                renderScene: () => (
+                  <SuspenseContainer>
+                    <root.child.element />
+                  </SuspenseContainer>
+                ),
                 screen: root.child,
                 preload: () => preloadRoot(rootKey),
                 preloadId: root.child.path,
@@ -181,7 +189,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
                 route: makeVariablesNavigationFriendly(
                   rootKeyAndPaths(rootKey, screen.path)
                 ),
-                renderScene: () => <screen.element />,
+                renderScene: () => (
+                  <SuspenseContainer>
+                    <screen.element />
+                  </SuspenseContainer>
+                ),
                 trackCrumbTrail: true,
                 screen,
                 preloadId: screen.path,
@@ -191,7 +203,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       })
       .flat();
     return new StateNavigator(navigators, getHistoryManager(basePath));
-  }, [basePath, navigationRoot, preloadRoot, screens]);
+  }, [SuspenseContainer, basePath, navigationRoot, preloadRoot, screens]);
 
   const preloadLink = React.useCallback(
     (url: string) => {
@@ -333,11 +345,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         <NavigationHandler stateNavigator={rootNavigator}>
           <NavigationStackWrapper>
             {children && (
-              <OptimizedContextProvider
-                state={null}
-                data={undefined}
-                withSuspenseContainer={false}
-              >
+              <OptimizedContextProvider state={null} data={undefined}>
                 {children}
               </OptimizedContextProvider>
             )}

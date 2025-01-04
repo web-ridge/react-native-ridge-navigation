@@ -18,9 +18,8 @@ function NavigationNestedProvider({ children }: { children: any }) {
   const id = React.useId();
   const rootKey = 'navigationModalProvider_' + id.replace(':', '--');
   const { theme } = React.useContext(OptimizedContext);
-  const { screens, navigationRoot, ...rest } = React.useContext(
-    RidgeNavigationContext
-  );
+  const { screens, navigationRoot, SuspenseContainer, ...rest } =
+    React.useContext(RidgeNavigationContext);
 
   const rootNavigator = React.useMemo(() => {
     const stateInfos = [
@@ -36,7 +35,11 @@ function NavigationNestedProvider({ children }: { children: any }) {
         route: makeVariablesNavigationFriendly(
           rootKeyAndPaths(rootKey, screen.path)
         ),
-        renderScene: () => <screen.element />,
+        renderScene: () => (
+          <SuspenseContainer>
+            <screen.element />
+          </SuspenseContainer>
+        ),
         trackCrumbTrail: true,
         preloadId: screen.path,
       })),
@@ -48,7 +51,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
     navigator.navigate(rootKey);
 
     return navigator;
-  }, [rootKey, screens]);
+  }, [SuspenseContainer, rootKey, screens]);
 
   const navigationRootWithModal = React.useMemo(
     () => ({
@@ -67,6 +70,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
       value={{
         screens,
         ...rest,
+        SuspenseContainer,
         rootNavigator,
         navigationRoot: navigationRootWithModal,
       }}
@@ -81,11 +85,7 @@ function NavigationNestedProvider({ children }: { children: any }) {
             return (
               <>
                 <HiddenNavbarWithSwipeBack />
-                <OptimizedContextProvider
-                  withSuspenseContainer={false}
-                  state={state}
-                  data={data}
-                >
+                <OptimizedContextProvider state={state} data={data}>
                   {state.key === rootKey ? children : state.renderScene()}
                 </OptimizedContextProvider>
               </>

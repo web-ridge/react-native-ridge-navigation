@@ -23,12 +23,10 @@ export function OptimizedContextProvider({
   data,
   state,
   children,
-  withSuspenseContainer = true,
 }: {
   data: any;
   state: State | null;
   children: any;
-  withSuspenseContainer?: boolean;
 }) {
   const {
     preloadedCache,
@@ -37,7 +35,6 @@ export function OptimizedContextProvider({
     preloadScreen,
     preloadElement,
     theme,
-    SuspenseContainer,
   } = React.useContext(RidgeNavigationContext);
   const {
     stateNavigator,
@@ -73,11 +70,7 @@ export function OptimizedContextProvider({
   );
   return (
     <OptimizedContext.Provider value={value}>
-      {withSuspenseContainer ? (
-        <SuspenseContainer>{children}</SuspenseContainer>
-      ) : (
-        <React.Suspense fallback={null}>{children}</React.Suspense>
-      )}
+      <React.Suspense fallback={null}>{children}</React.Suspense>
     </OptimizedContext.Provider>
   );
 }
