@@ -414,8 +414,6 @@ If you want to deep link into a bottom tab or other screen you can use the fluen
   BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
   lazyWithPreload // only available on the web: see example app
   Redirect,
-  StatusBar,
-  FocusAwareStatusBar,
   NavigationRoot,
   createNavigation,
   createBottomTabsRoot,
