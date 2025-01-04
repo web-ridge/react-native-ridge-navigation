@@ -9,7 +9,7 @@ import TabBar from './navigation/TabBar';
 import TabBarItem from './navigation/TabBarItem';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
-import { useBottomTabsStateNavigator } from './navigation/useBottomTacbsStateNavigator';
+import { useBottomTabsStateNavigator } from './navigation/useBottomTabsStateNavigator';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import OptimizedContext, {
   OptimizedContextProvider,
