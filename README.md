@@ -9,8 +9,6 @@ Simple and performant navigation on iOS, Android and the web with simple and typ
 Build on top of [grahammendick/navigation](https://github.com/grahammendick/navigation). Check it out if you want more
 control over the navigation!
 
-
-
 ## Features
 
 - New architecture
@@ -30,19 +28,23 @@ control over the navigation!
 - Expo support
 - Metro bundling on web
 
-
 ## Expo
+
 If you use bundling with metro add this to your index.js file
+
 ```tsx
 import '@expo/metro-runtime';
 ```
+
 Customize index.html by pressing space on the web/index.html item + enter
+
 ```shell
 npx expo  customize:web
 
 ```
+
 Change in your index.html in body css
-```overflow-y:hidden``` to ```overflow: hidden```
+`overflow-y:hidden` to `overflow: hidden`
 Because otherwise scrolling works very bad on iOS safari.
 
 ## Example
@@ -114,7 +116,7 @@ Use Expo with prebuild (Expo Go is not supported since we have native libraries)
 #### 2. Install deps + library
 
 ```
-yarn add react-native-ridge-navigation navigation-react-native
+bun add react-native-ridge-navigation navigation-react-native
 ```
 
 or with npm
@@ -123,19 +125,18 @@ or with npm
 npm install react-native-ridge-navigation navigation-react-native
 ```
 
-
 Support for Material You bottom bar in Android
 
 #### 1. add file `expo-plugin-android-material-you-bottom-bar.js` to your root folder
 
 ```js
-const { withAndroidStyles } = require("@expo/config-plugins");
+const { withAndroidStyles } = require('@expo/config-plugins');
 
 module.exports = function androidMaterialYouBottomBarPlugin(config) {
   return withAndroidStyles(config, async (config) => {
     const styleFile = config.modResults;
     const appTheme = styleFile.resources.style.find(
-      (style) => style.$.name === 'AppTheme',
+      (style) => style.$.name === 'AppTheme'
     );
     appTheme.$.parent = 'Theme.Material3.DayNight.NoActionBar';
 
@@ -155,9 +156,8 @@ module.exports = function androidMaterialYouBottomBarPlugin(config) {
 ## Usage
 
 NavigationRoots.tsx
+
 ```tsx
-
-
 const NavigationRoots = {
   RootHome: 'home',
   RootAuth: 'auth',
@@ -166,6 +166,7 @@ export default NavigationRoots;
 ```
 
 BottomRoots.tsx
+
 ```ts
 // svg to png
 // https://webkul.github.io/myscale/
@@ -208,7 +209,7 @@ import AsyncBoundaryScreen from './helpers/AsyncBoundaryScreen';
 
 const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
-    [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account],
+    [BottomRoot.Home, BottomRoot.Posts, BottomRoot.Account]
     // if you want to override web layout
     // {
     //   breakingPointWidth: 500,
@@ -231,7 +232,6 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
 ```
 
 See example code for the async-boundary stuff :)
@@ -247,14 +247,13 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
   // linkMode="default" // optional if sensitive the preload will be called on hover instead of mouseDown
 >
   {(linkProps) => (
-    <Pressable  {...linkProps}> // or other touchables/buttons
+    <Pressable {...linkProps}>
+      {' '}
+      // or other touchables/buttons
       <Text>go to post</Text>
     </Pressable>
   )}
 </Link>
-
-
-
 ```
 
 ## createLinkComponent
@@ -290,18 +289,18 @@ const { push, replace, refresh, fluent } = useNavigation();
 
 // call this where if you can't use <Link />
 push(routes.PostScreen, {
-  id: `${item.id}`
+  id: `${item.id}`,
 });
 
 // call this if e.g. after a create you want to go to edit screen
 // but without pushing history to the url-stack or app-stack :)
 replace(routes.PostScreen, {
-  id: `${item.id}`
+  id: `${item.id}`,
 });
 
 // call this if you want to refresh the screen with new params
 refresh(routes.PostScreen, {
-  id: `${item.id}`
+  id: `${item.id}`,
 });
 
 // normal root, replace full history
@@ -346,13 +345,13 @@ const {
   push, // calls preload + pushes screen
   replace, // calls preload + replaces screen
   refresh, // calls preload + replaces params of screen
-} = useNavigation()
+} = useNavigation();
 ```
 
 ## Control bottom tabs
 
 ```tsx
-  const { switchToTab, currentTab } = useBottomTabIndex();
+const { switchToTab, currentTab } = useBottomTabIndex();
 const { updateBadge, badges } = useBottomTabBadges();
 // updateBadge(BottomRoots.Projects, '10');
 // switchToTab(BottomRoot.Posts);
@@ -394,7 +393,7 @@ import {
       </NavigationNestedProvider>
     </Modal>
   )}
-</ModalBackHandler>
+</ModalBackHandler>;
 ```
 
 ## Deep linking
@@ -406,14 +405,11 @@ If you want to deep link into a bottom tab or other screen you can use the fluen
 ## More
 
 ```ts
-  // global
-  createLinkComponent,
-  SwitchRoot,
-  BottomTabLink,
-  Link
-  BackLink // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
-  lazyWithPreload // only available on the web: see example app
-  Redirect,
+// global
+createLinkComponent, SwitchRoot, BottomTabLink, Link;
+BackLink; // for now .pop() but we'll update this according to Android guidelines later on (to always go back in hierarchy)
+lazyWithPreload; // only available on the web: see example app
+Redirect,
   NavigationRoot,
   createNavigation,
   createBottomTabsRoot,
@@ -425,23 +421,20 @@ If you want to deep link into a bottom tab or other screen you can use the fluen
   getTheme,
   createSimpleTheme,
   setPreloadResult, // should not need this as it is done automatically
-
   // common hooks
   useParams,
   useNavigation,
-
-
   // extra
   useBottomTabIndex,
   useBottomTabBadges,
   useBottomTabRefresh,
   useTheme,
   useIsFocused,
-  useFocus,// same as useNavigating
+  useFocus, // same as useNavigating
   useNavigating,
   useNavigated,
   useUnloaded,
-  usePreloadResult // e.g. usePreloadResult(routes.PostScreen)
+  usePreloadResult; // e.g. usePreloadResult(routes.PostScreen)
 ```
 
 ## Do global stuff like updating badge
@@ -485,4 +478,3 @@ MIT
 - Simple translations in React (
   Native): [react-ridge-translations](https://github.com/web-ridge/react-ridge-translations)
 - Simple global state management in React (Native): [react-ridge-state](https://github.com/web-ridge/react-ridge-state)
-

@@ -38,14 +38,14 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-ridge-navigation-example",
+    "example": "bun workspace react-native-ridge-navigation-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
     "prepare": "bob build",
     "release": "release-it --ci",
-    "build-example": "cd example && yarn web:build"
+    "build-example": "cd example && bun web:build"
   },
   "keywords": [
     "react-native",
@@ -109,7 +109,6 @@
   "workspaces": [
     "example"
   ],
-  "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [

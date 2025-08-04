@@ -36,9 +36,9 @@ call_lefthook()
     elif bundle exec lefthook -h >/dev/null 2>&1
     then
       bundle exec lefthook "$@"
-    elif yarn lefthook -h >/dev/null 2>&1
+    elif bun lefthook -h >/dev/null 2>&1
     then
-      yarn lefthook "$@"
+      bun lefthook "$@"
     elif pnpm lefthook -h >/dev/null 2>&1
     then
       pnpm lefthook "$@"

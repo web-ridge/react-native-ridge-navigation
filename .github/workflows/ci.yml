@@ -18,22 +18,22 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint files
-        run: yarn lint
+        run: bun lint
 
       - name: Typecheck files
-        run: yarn typecheck
+        run: bun typecheck
 
-#  test:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#
-#      - name: Setup
-#        uses: ./.github/actions/setup
-#
-#      - name: Run unit tests
-#        run: yarn test --maxWorkers=2 --coverage
+  #  test:
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Checkout
+  #        uses: actions/checkout@v3
+  #
+  #      - name: Setup
+  #        uses: ./.github/actions/setup
+  #
+  #      - name: Run unit tests
+  #        run: bun test --maxWorkers=2 --coverage
 
   build:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build package
-        run: yarn prepare
+        run: bun prepare
   release:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -61,7 +61,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-      - run: yarn release
+      - run: bun release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   deploy-example:
@@ -74,7 +74,7 @@ jobs:
           fetch-depth: 0
       - name: Setup
         uses: ./.github/actions/setup
-      - run: yarn build-example
+      - run: bun build-example
       - name: Deploy example
         uses: jakejarvis/s3-sync-action@master
         with:
