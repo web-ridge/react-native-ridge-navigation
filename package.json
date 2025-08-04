@@ -70,8 +70,7 @@
     "navigation": "^6.3.0",
     "navigation-react": "^4.13.0",
     "navigation-react-mobile": "^3.15.1",
-    "navigation-react-native-web": "^1.6.0",
-    "react-helmet": "^6.1.0"
+    "navigation-react-native-web": "^1.6.0"
   },
   "devDependencies": {
     "@arkweid/lefthook": "^0.7.7",
@@ -81,7 +80,6 @@
     "@types/color": "^3.0.3",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
-    "@types/react-helmet": "^6.1.11",
     "commitlint": "^17.0.2",
     "del-cli": "^5.1.0",
     "eslint": "^8.51.0",
