@@ -1,6 +1,6 @@
 {
   "name": "react-native-ridge-navigation",
-  "version": "3.0.9",
+  "version": "3.0.15",
   "description": "Cross platform react native router with support for render as you fetch",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
