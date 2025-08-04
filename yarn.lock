@@ -10799,7 +10799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"navigation-react-mobile@npm:*, navigation-react-mobile@npm:^3.13.0":
+"navigation-react-mobile@npm:*":
   version: 3.13.0
   resolution: "navigation-react-mobile@npm:3.13.0"
   peerDependencies:
@@ -10807,6 +10807,17 @@ __metadata:
     navigation-react: "*"
     react: "*"
   checksum: 1c8327484f5a6def5ceaf7f6201a4b9835084b7b7a0e3ffb9342afc445bfd727c63e920794c90d90eb84347025f1255c0e1c572d4d9c93bf808137d3a25a3494
+  languageName: node
+  linkType: hard
+
+"navigation-react-mobile@npm:^3.15.1":
+  version: 3.15.1
+  resolution: "navigation-react-mobile@npm:3.15.1"
+  peerDependencies:
+    navigation: "*"
+    navigation-react: "*"
+    react: "*"
+  checksum: fca5572991ee987d93cecf33c50f68001b3353334923664a4bf9b559f4a1126badd43fbf1abfee1317ed88a701b1b9cebf9794b812a78bee24a199b14b9f74f4
   languageName: node
   linkType: hard
 
@@ -10835,32 +10846,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"navigation-react-native@npm:^9.28.0":
-  version: 9.28.0
-  resolution: "navigation-react-native@npm:9.28.0"
+"navigation-react-native@npm:^9.31.3":
+  version: 9.31.3
+  resolution: "navigation-react-native@npm:9.31.3"
   peerDependencies:
     navigation: "*"
     navigation-react: "*"
     react: "*"
     react-native: "*"
-  checksum: c4d06fad568d1d8e71c60dec1f1bf1c886b441b709b5ebe15078ddbba4627624addc6bfca5d7cfe354a2cdadc7d4425aa4a6ac6732ff7318eefa95a56974d133
+  checksum: cf903cb0328075a2ffad8053a4102beda0deb40d91dc8ddd24cae1939304edbeebf35767094537cf4663fbb10d643806353081970b3522fc22bafd255959704d
   languageName: node
   linkType: hard
 
-"navigation-react@npm:^4.5.1":
-  version: 4.5.1
-  resolution: "navigation-react@npm:4.5.1"
+"navigation-react@npm:^4.13.0":
+  version: 4.13.0
+  resolution: "navigation-react@npm:4.13.0"
   peerDependencies:
     navigation: "*"
     react: "*"
-  checksum: f4aca6bc40eedfb48ea8c80797f6613448a0447fb688156158344cbca0a11e6d1bb49c782873e58f07baa60baa473b2bbafa783fab101e0d020d40594cdb414a
+  checksum: eebaed523b4a83b2bc3d1d62d96cebcb0af8a3d9d80da11530a6af80cb3958458983d5aa56d4eaccf204c58e22c1edd61abdc53279043a538d12ff8091d76daf
   languageName: node
   linkType: hard
 
-"navigation@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "navigation@npm:6.2.0"
-  checksum: 5283b52529d1b57fe3f02d3f167bc7e0654aeb081aa9b46214fe34f9b4935d5730f3b005f6f8dcbaef20a215dde441f0fbd02c6d8d8d9001023ea83b0e3e53ab
+"navigation@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "navigation@npm:6.3.0"
+  checksum: cb357bf23d648cde876498c188595b25ffe5407b604d067e89cad5c15cbfbb77c1a871905433c9b947dedf57342ad140ae95c074835d9fc0ea73ffeaa8dc1716
   languageName: node
   linkType: hard
 
@@ -12205,10 +12216,10 @@ __metadata:
     expo-linking: ^7.0.3
     expo-status-bar: ^2.0.0
     jest: ^29.7.0
-    navigation: ^6.2.0
-    navigation-react: ^4.5.1
-    navigation-react-mobile: ^3.13.0
-    navigation-react-native: ^9.28.0
+    navigation: ^6.3.0
+    navigation-react: ^4.13.0
+    navigation-react-mobile: ^3.15.1
+    navigation-react-native: ^9.31.3
     navigation-react-native-web: ^1.6.0
     prettier: ^3.0.3
     react: 18.3.1
