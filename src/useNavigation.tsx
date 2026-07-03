@@ -34,7 +34,7 @@ export default function useNavigation() {
       screen: T,
       params: ExtractRouteParams<T['path']>
     ) => {
-      preloadScreen(screen, params);
+      return preloadScreen(screen, params);
     },
     [preloadScreen]
   );
@@ -114,17 +114,17 @@ export default function useNavigation() {
         preload(screen, params);
       }
 
-      // on web, it works based on url but on mobile it works based on bottom tab index
+      // on web, it works based on url but on mobile it also updates the
+      // selected bottom tab index.
       if (options?.toBottomTab && Platform.OS !== 'web') {
         switchToTab(options.toBottomTab);
-      } else {
-        const screenKey = getScreenKey(
-          currentRootKey!,
-          options?.toBottomTab || currentTab,
-          screen.path
-        );
-        stateNavigator.navigate(screenKey, params, historyAction);
       }
+      const screenKey = getScreenKey(
+        currentRootKey!,
+        options?.toBottomTab || currentTab,
+        screen.path
+      );
+      stateNavigator.navigate(screenKey, params, historyAction);
     },
     [currentRootKey, currentTab, stateNavigator, preload, switchToTab]
   );
@@ -150,29 +150,29 @@ export default function useNavigation() {
         preload(screen, params);
       }
 
-      // on web, it works based on url but on mobile it works based on bottom tab index
+      // on web, it works based on url but on mobile it also updates the
+      // selected bottom tab index.
       if (options?.toBottomTab && Platform.OS !== 'web') {
         switchToTab(options.toBottomTab);
+      }
+      const screenKey = getScreenKey(
+        currentRootKey!,
+        options?.toBottomTab || currentTab,
+        screen.path
+      );
+      const { crumbs } = stateNavigator.stateContext;
+      if (crumbs.length > 0) {
+        // Use fluent API to build URL that replaces current screen in the
+        // crumb stack (navigateBack(1) + navigate), then apply with 'replace'
+        // historyAction so the browser history entry is also replaced.
+        const url = stateNavigator
+          .fluent(true)
+          .navigateBack(1)
+          .navigate(screenKey, params).url;
+        stateNavigator.navigateLink(url, 'replace');
       } else {
-        const screenKey = getScreenKey(
-          currentRootKey!,
-          options?.toBottomTab || currentTab,
-          screen.path
-        );
-        const { crumbs } = stateNavigator.stateContext;
-        if (crumbs.length > 0) {
-          // Use fluent API to build URL that replaces current screen in the
-          // crumb stack (navigateBack(1) + navigate), then apply with 'replace'
-          // historyAction so the browser history entry is also replaced.
-          const url = stateNavigator
-            .fluent(true)
-            .navigateBack(1)
-            .navigate(screenKey, params).url;
-          stateNavigator.navigateLink(url, 'replace');
-        } else {
-          // No crumbs (at root of stack) — just navigate with replace
-          stateNavigator.navigate(screenKey, params, 'replace');
-        }
+        // No crumbs (at root of stack) — just navigate with replace.
+        stateNavigator.navigate(screenKey, params, 'replace');
       }
     },
     [currentRootKey, currentTab, preload, stateNavigator, switchToTab]

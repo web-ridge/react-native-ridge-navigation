@@ -90,6 +90,7 @@ const TabBarItemStack = React.memo(
         <NavigationStack
           underlayColor={layout.backgroundColor}
           backgroundColor={() => layout.backgroundColor}
+          hidesTabBar={(state: any) => !!state?.screen?.options?.hidesTabBar}
           renderScene={(state, data) => {
             return (
               <>

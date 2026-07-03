@@ -67,6 +67,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         const result = screen.preload(params);
         const path = generatePath(screen.path, params);
         preloadedCache.current[path] = result;
+        return result;
       } catch (error) {
         console.log(
           '[react-native-ridge-navigation] error while preloading screen',
@@ -75,6 +76,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           error
         );
       }
+      return undefined;
     },
     []
   );

@@ -4,6 +4,8 @@ import type { BaseScreen } from './navigationUtils';
 import type { LinkProps } from './navigationUtils';
 import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
+import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import { generatePath } from './navigationUtils';
 
 export default function Link<T extends BaseScreen>({
   to,
@@ -18,6 +20,11 @@ export default function Link<T extends BaseScreen>({
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
   const { push, replace, refresh, preload, preloadElement } = useNavigation();
+  const { preloadedCache } = React.useContext(RidgeNavigationContext);
+  const preloadPath = generatePath(to.path, params);
+  const hasPreloadedData = React.useCallback(() => {
+    return Boolean(preloadedCache[preloadPath]);
+  }, [preloadedCache, preloadPath]);
   const preloadElementInner = React.useCallback(() => {
     preloadElement(to);
   }, [preloadElement, to]);
@@ -35,7 +42,7 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
-      const options = { preload: false, toBottomTab };
+      const options = { preload: !hasPreloadedData(), toBottomTab };
 
       if (isRefreshInsteadOfPush) {
         refresh(to, params, options);
@@ -54,6 +61,7 @@ export default function Link<T extends BaseScreen>({
       refresh,
       to,
       params,
+      hasPreloadedData,
       replace,
       push,
     ]

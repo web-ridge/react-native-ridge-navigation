@@ -13,7 +13,7 @@ const OptimizedContext = React.createContext<{
   rootNavigator: StateNavigator;
   stateNavigator: StateNavigator;
   preloadRoot: (rootKey: string) => void;
-  preloadScreen: (screen: BaseScreen, params: any) => void;
+  preloadScreen: (screen: BaseScreen, params: any) => any;
   preloadElement: (screen: BaseScreen) => void;
   theme: Theme;
   preloaded: any;

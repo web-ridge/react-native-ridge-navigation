@@ -105,6 +105,7 @@ export type Root = Record<string, RootValue>;
 export type ScreenOptions = {
   title?: string;
   description?: string;
+  hidesTabBar?: boolean;
 };
 export function registerScreen<
   Path extends string,

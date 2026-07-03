@@ -34,7 +34,7 @@ export default function Link<T extends BaseScreen>({
   refresh: isRefreshInsteadOfPush,
   ...rest
 }: LinkProps<T>) {
-  const { basePath } = React.useContext(RidgeNavigationContext);
+  const { basePath, preloadedCache } = React.useContext(RidgeNavigationContext);
   const { currentTab } = useBottomTabIndex();
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
@@ -53,20 +53,25 @@ export default function Link<T extends BaseScreen>({
     href = '/' + basePath + href;
   }
 
+  const preloadPath = generatePath(to.path, params);
   const lastPreloadedAt = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     lastPreloadedAt.current = null;
   }, [href]);
 
+  const hasPreloadedData = React.useCallback(() => {
+    return Boolean(preloadedCache[preloadPath]);
+  }, [preloadedCache, preloadPath]);
+
   const preloadData = React.useCallback(() => {
-    if (!isStale(lastPreloadedAt.current)) {
+    if (!isStale(lastPreloadedAt.current) && hasPreloadedData()) {
       return;
     }
 
     lastPreloadedAt.current = new Date().getTime();
     preload(to, params);
-  }, [preload, to, params]);
+  }, [hasPreloadedData, preload, to, params]);
 
   const preloadDataAndElement = React.useCallback(() => {
     preloadElement(to);
@@ -93,7 +98,7 @@ export default function Link<T extends BaseScreen>({
       ) {
         event.preventDefault();
         const options = {
-          preload: isStale(lastPreloadedAt.current),
+          preload: isStale(lastPreloadedAt.current) || !hasPreloadedData(),
           toBottomTab,
         };
         if (isRefreshInsteadOfPush) {
@@ -113,6 +118,7 @@ export default function Link<T extends BaseScreen>({
       refresh,
       to,
       params,
+      hasPreloadedData,
       replace,
       push,
     ]
