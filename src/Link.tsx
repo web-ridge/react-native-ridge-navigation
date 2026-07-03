@@ -6,6 +6,7 @@ import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import { generatePath } from './navigationUtils';
+import { isStalePreload } from './Link.shared';
 
 export default function Link<T extends BaseScreen>({
   to,
@@ -22,9 +23,20 @@ export default function Link<T extends BaseScreen>({
   const { push, replace, refresh, preload, preloadElement } = useNavigation();
   const { preloadedCache } = React.useContext(RidgeNavigationContext);
   const preloadPath = generatePath(to.path, params);
+  const lastPreloadedAt = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    lastPreloadedAt.current = null;
+  }, [preloadPath]);
   const hasPreloadedData = React.useCallback(() => {
     return Boolean(preloadedCache[preloadPath]);
   }, [preloadedCache, preloadPath]);
+  const preloadData = React.useCallback(() => {
+    if (!isStalePreload(lastPreloadedAt.current) && hasPreloadedData()) {
+      return;
+    }
+    lastPreloadedAt.current = Date.now();
+    preload(to, params);
+  }, [hasPreloadedData, preload, to, params]);
   const preloadElementInner = React.useCallback(() => {
     preloadElement(to);
   }, [preloadElement, to]);
@@ -42,7 +54,10 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
-      const options = { preload: !hasPreloadedData(), toBottomTab };
+      const options = {
+        preload: isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
+        toBottomTab,
+      };
 
       if (isRefreshInsteadOfPush) {
         refresh(to, params, options);
@@ -71,10 +86,10 @@ export default function Link<T extends BaseScreen>({
   const onPressIn = React.useCallback(
     (e: GestureResponderEvent) => {
       preloadElementInner();
-      preload(to, params);
+      preloadData();
       onPressInExternal?.(e);
     },
-    [to, preload, preloadElementInner, params, onPressInExternal]
+    [preloadData, preloadElementInner, onPressInExternal]
   );
 
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {

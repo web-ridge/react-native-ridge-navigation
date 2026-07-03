@@ -3,6 +3,7 @@ import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
 
 import type { MouseEvent, GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
+import { isStalePreload } from './Link.shared';
 import { generatePath } from './navigationUtils';
 import useModal from './useModal';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
@@ -12,16 +13,6 @@ function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-const staleTimeInSeconds = 5;
-function isStale(lastPreloadedAt: number | null | undefined) {
-  if (!lastPreloadedAt) {
-    return true;
-  }
-  if (Date.now() - lastPreloadedAt > staleTimeInSeconds * 1000) {
-    return true;
-  }
-  return false;
-}
 export default function Link<T extends BaseScreen>({
   to,
   toBottomTab,
@@ -65,7 +56,7 @@ export default function Link<T extends BaseScreen>({
   }, [preloadedCache, preloadPath]);
 
   const preloadData = React.useCallback(() => {
-    if (!isStale(lastPreloadedAt.current) && hasPreloadedData()) {
+    if (!isStalePreload(lastPreloadedAt.current) && hasPreloadedData()) {
       return;
     }
 
@@ -98,7 +89,8 @@ export default function Link<T extends BaseScreen>({
       ) {
         event.preventDefault();
         const options = {
-          preload: isStale(lastPreloadedAt.current) || !hasPreloadedData(),
+          preload:
+            isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
           toBottomTab,
         };
         if (isRefreshInsteadOfPush) {
