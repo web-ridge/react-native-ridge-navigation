@@ -3,6 +3,10 @@ export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
 export { default as BottomTabLink } from './BottomTabLink';
 export { default as Head } from './Head';
+export {
+  default as NativeNavigationBar,
+  type NativeNavigationSearch,
+} from './NativeNavigationBar';
 export { usePreloadResult } from './Preloader';
 export { default as lazy } from './lazy';
 export { default as useBottomTabRefresh } from './useBottomTabRefresh';
