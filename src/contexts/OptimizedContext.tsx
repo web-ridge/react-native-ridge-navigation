@@ -45,6 +45,13 @@ export function OptimizedContextProvider({
 
   const params = data || fallbackData;
 
+  // Scenes without a preloadId (e.g. synthetic roots) must not crash
+  // generatePath and have nothing meaningful to render yet.
+  const preloaded =
+    typeof preloadId === 'string'
+      ? preloadedCache[generatePath(preloadId, params ?? {})]
+      : undefined;
+
   const value = React.useMemo(
     () => ({
       data: params,
@@ -54,7 +61,7 @@ export function OptimizedContextProvider({
       preloadScreen,
       preloadElement,
       theme,
-      preloaded: preloadedCache[generatePath(preloadId, params)],
+      preloaded,
     }),
     [
       params,
@@ -64,10 +71,12 @@ export function OptimizedContextProvider({
       preloadScreen,
       preloadElement,
       theme,
-      preloadedCache,
-      preloadId,
+      preloaded,
     ]
   );
+  if (!preloadId) {
+    return null;
+  }
   return (
     <OptimizedContext.Provider value={value}>
       <React.Suspense fallback={null}>{children}</React.Suspense>

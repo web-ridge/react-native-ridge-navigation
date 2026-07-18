@@ -70,7 +70,7 @@ const navigationRoot = {
 // back to the sign-in screen, and signing in remounts the provider with the
 // full root map (same pattern as production apps using this library).
 const anonymousNavigationRoot = {
-  [NavigationRoots.RootAuth]: navigationRoot[NavigationRoots.RootAuth],
+  [NavigationRoots.RootAuth]: navigationRoot[NavigationRoots.RootAuth]!,
 };
 
 export default function App() {

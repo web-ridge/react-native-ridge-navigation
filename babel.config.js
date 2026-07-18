@@ -8,12 +8,5 @@
 // own babel.config.js (babel-preset-expo with the reactCompiler experiment).
 module.exports = {
   presets: ['module:react-native-builder-bob/babel-preset'],
-  plugins: [
-    [
-      'babel-plugin-react-compiler',
-      {
-        target: '18',
-      },
-    ],
-  ],
+  plugins: [],
 };
