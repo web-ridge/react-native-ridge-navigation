@@ -8,7 +8,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Text from './Text';
 import RouteChip from './RouteChip';
-import { radii, useTheme } from './theme';
+import { interactiveText, radii, useTheme } from './theme';
 
 export type CardProps = {
   title: string;
@@ -56,16 +56,16 @@ export default function Card({
         </View>
         {badge ? (
           <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-            <Text variant="caption" color="#FFFFFF">
+            <Text variant="caption" color="#FFFFFF" style={interactiveText}>
               {badge}
             </Text>
           </View>
         ) : null}
       </View>
-      <Text variant="subtitle" style={styles.title}>
+      <Text variant="subtitle" style={[styles.title, interactiveText]}>
         {title}
       </Text>
-      <Text muted style={styles.description}>
+      <Text muted style={[styles.description, interactiveText]}>
         {description}
       </Text>
       {path ? (

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SwitchRoot } from 'react-native-ridge-navigation';
 import ScreenWrapper from './helpers/ScreenWrapper';
-import { fetchAndSaveProfileForToken } from './useAuthState';
+import useAuthState, { fetchAndSaveProfileForToken } from './useAuthState';
 import Introduction from './Introduction';
 import NavigationRoots from './NavigationRoots';
 import Button from './ui/Button';
@@ -13,17 +13,17 @@ import RouteChip from './ui/RouteChip';
 export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [done, setDone] = useState(false);
   const [username, setUsername] = useState('demo');
   const [password, setPassword] = useState('demo');
+  const { user, token } = useAuthState();
 
   async function login() {
     try {
-      const token = `${username}_SHOULD_BE_TOKEN_FROM_OAUTH`;
-      await fetchAndSaveProfileForToken({ token });
+      await fetchAndSaveProfileForToken({
+        token: `${username}_SHOULD_BE_TOKEN_FROM_OAUTH`,
+      });
       setError(undefined);
       setLoading(false);
-      setDone(true);
     } catch (e) {
       setError((e as any).message || 'Unknown error');
       setLoading(false);
@@ -36,7 +36,9 @@ export default function AuthScreen() {
     login();
   };
 
-  if (done) {
+  // Signed in (now or already): leave the auth root. On native the keyed
+  // NavigationProvider remount handles this before we ever get here.
+  if (user && token) {
     return <SwitchRoot rootKey={NavigationRoots.RootHome} />;
   }
 

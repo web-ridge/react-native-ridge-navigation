@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Text from './Text';
-import { radii, useTheme } from './theme';
+import { interactiveText, radii, useTheme } from './theme';
 
 export type ButtonProps = {
   children: React.ReactNode;
@@ -69,7 +69,11 @@ export default function Button({
               style={styles.icon}
             />
           ) : null}
-          <Text variant="subtitle" color={contentColor} style={styles.label}>
+          <Text
+            variant="subtitle"
+            color={contentColor}
+            style={[styles.label, interactiveText]}
+          >
             {children}
           </Text>
         </View>

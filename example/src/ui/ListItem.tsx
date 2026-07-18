@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Text from './Text';
-import { useTheme } from './theme';
+import { interactiveText, useTheme } from './theme';
 
 export type ListItemProps = {
   title: string;
@@ -37,11 +37,15 @@ export default function ListItem({
       ]}
     >
       <View style={styles.texts}>
-        <Text variant="subtitle" numberOfLines={1}>
+        <Text variant="subtitle" numberOfLines={1} style={interactiveText}>
           {title}
         </Text>
         {description ? (
-          <Text muted numberOfLines={2} style={styles.description}>
+          <Text
+            muted
+            numberOfLines={2}
+            style={[styles.description, interactiveText]}
+          >
             {description}
           </Text>
         ) : null}

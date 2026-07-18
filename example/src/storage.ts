@@ -5,27 +5,6 @@ import { Platform } from 'react-native';
 // the app free of extra native dependencies.
 const memory = new Map<string, string>();
 
-// Native starts signed in: auth here is in-memory only, and the sign-in flow
-// (SwitchRoot from an unauthenticated tab) is demonstrated on web. Remove
-// this seed to exercise the native auth redirect instead.
-if (Platform.OS !== 'web') {
-  memory.set(
-    'auth',
-    JSON.stringify({
-      resolving: false,
-      token: 'demo_SHOULD_BE_TOKEN_FROM_OAUTH',
-      user: {
-        id: 1,
-        name: 'Demo',
-        username: 'demo',
-        email: 'demo@example.com',
-        phone: '',
-        website: '',
-      },
-    })
-  );
-}
-
 export const storage = {
   getString(key: string): string | undefined {
     if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {

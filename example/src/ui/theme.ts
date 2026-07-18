@@ -71,6 +71,9 @@ export const monoFontFamily = Platform.select({
   default: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
 });
 
+export const interactiveText =
+  Platform.OS === 'web' ? ({ userSelect: 'none' } as const) : null;
+
 export const radii = {
   control: 12,
   card: 16,

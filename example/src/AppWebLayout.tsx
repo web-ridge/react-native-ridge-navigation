@@ -5,7 +5,7 @@ import { BottomTabLink } from 'react-native-ridge-navigation';
 import Superman from './img/superman.png';
 import BottomRoots from './BottomRoots';
 import Text from './ui/Text';
-import { useTheme } from './ui/theme';
+import { interactiveText, useTheme } from './ui/theme';
 
 function TopTab({
   root,
@@ -29,7 +29,7 @@ function TopTab({
           <Text
             variant="subtitle"
             color={isSelected ? theme.primary : theme.muted}
-            style={styles.tabLabel}
+            style={[styles.tabLabel, interactiveText]}
           >
             {label}
           </Text>
@@ -59,7 +59,9 @@ export default function AppWebLayout({
         >
           <View style={styles.brand}>
             <Image source={Superman} style={styles.logo} />
-            <Text variant="subtitle">ridge navigation</Text>
+            <Text variant="subtitle" style={interactiveText}>
+              ridge navigation
+            </Text>
           </View>
           <View style={styles.tabs}>
             <TopTab root={BottomRoots.Home} label="Home" />
