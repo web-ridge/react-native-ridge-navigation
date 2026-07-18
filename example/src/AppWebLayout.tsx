@@ -1,8 +1,43 @@
+import { Image, StyleSheet, Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabOverrideProps } from 'react-native-ridge-navigation';
-import { Button, Text, IconButton, useTheme } from 'react-native-paper';
-import { View } from 'react-native';
 import { BottomTabLink } from 'react-native-ridge-navigation';
+import Superman from './img/superman.png';
 import BottomRoots from './BottomRoots';
+import Text from './ui/Text';
+import { useTheme } from './ui/theme';
+
+function TopTab({
+  root,
+  label,
+}: {
+  root: (typeof BottomRoots)[keyof typeof BottomRoots];
+  label: string;
+}) {
+  const theme = useTheme();
+  return (
+    <BottomTabLink to={root} params={{}}>
+      {({ isSelected, ...linkProps }) => (
+        <Pressable
+          {...linkProps}
+          style={({ pressed }) => [
+            styles.tab,
+            isSelected && { backgroundColor: theme.chip },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text
+            variant="subtitle"
+            color={isSelected ? theme.primary : theme.muted}
+            style={styles.tabLabel}
+          >
+            {label}
+          </Text>
+        </Pressable>
+      )}
+    </BottomTabLink>
+  );
+}
 
 export default function AppWebLayout({
   orientation,
@@ -14,58 +49,90 @@ export default function AppWebLayout({
     return (
       <>
         <View
-          style={{
-            backgroundColor: theme.colors.background,
-            alignItems: 'center',
-            flexDirection: 'row',
-            paddingTop: 12,
-            paddingBottom: 12,
-            elevation: 4,
-            justifyContent: 'space-between',
-            paddingHorizontal: 24,
-          }}
+          style={[
+            styles.bar,
+            {
+              backgroundColor: theme.background,
+              borderBottomColor: theme.border,
+            },
+          ]}
         >
-          <Text style={{ color: theme.colors.onBackground, fontSize: 22 }}>
-            Logo
-          </Text>
-          <BottomTabLink to={BottomRoots.Home} params={{}}>
-            {({ isSelected, ...linkProps }) => (
-              <Button {...linkProps}>
-                <Text
-                  style={{ color: isSelected ? theme.colors.primary : '#ccc' }}
-                >
-                  Home
-                </Text>
-              </Button>
-            )}
-          </BottomTabLink>
-          <BottomTabLink to={BottomRoots.Posts} params={{}}>
-            {({ isSelected, ...linkProps }) => (
-              <Button {...linkProps}>
-                <Text
-                  style={{ color: isSelected ? theme.colors.primary : '#ccc' }}
-                >
-                  Posts
-                </Text>
-              </Button>
-            )}
-          </BottomTabLink>
-          <View>
-            <BottomTabLink to={BottomRoots.Account} params={{}}>
-              {({ isSelected, ...linkProps }) => (
-                <IconButton
-                  {...linkProps}
-                  icon="account"
-                  iconColor={isSelected ? theme.colors.primary : '#000'}
-                />
-              )}
-            </BottomTabLink>
+          <View style={styles.brand}>
+            <Image source={Superman} style={styles.logo} />
+            <Text variant="subtitle">ridge navigation</Text>
           </View>
+          <View style={styles.tabs}>
+            <TopTab root={BottomRoots.Home} label="Home" />
+            <TopTab root={BottomRoots.Posts} label="Posts" />
+          </View>
+          <BottomTabLink to={BottomRoots.Account} params={{}}>
+            {({ isSelected, ...linkProps }) => (
+              <Pressable
+                {...linkProps}
+                style={({ pressed }) => [
+                  styles.accountButton,
+                  isSelected && { backgroundColor: theme.chip },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Ionicons
+                  name="person-circle-outline"
+                  size={26}
+                  color={isSelected ? theme.primary : theme.muted}
+                />
+              </Pressable>
+            )}
+          </BottomTabLink>
         </View>
 
-        <View style={{ flex: 1 }}>{children}</View>
+        <View style={styles.content}>{children}</View>
       </>
     );
   }
   return <>{originalBottomTabs}</>;
 }
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logo: {
+    width: 30,
+    height: 30,
+  },
+  tabs: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  tab: {
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  tabLabel: {
+    fontSize: 15,
+  },
+  accountButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  content: {
+    flex: 1,
+  },
+});

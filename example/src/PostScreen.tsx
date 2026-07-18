@@ -1,75 +1,95 @@
 import * as React from 'react';
-import { Paragraph, Text } from 'react-native-paper';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import {
   useModal,
   useParams,
   usePreloadResult,
 } from 'react-native-ridge-navigation';
-import { useQuery } from '@tanstack/react-query';
-import { ScrollView } from 'react-native';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import Header from './Header';
 import { queryKeyPostScreen, queryKeyPostScreenPromise } from './queryKeys';
 import routes from './Routes';
 import ButtonLink from './ButtonLink';
-import Spacer from './helpers/Spacer';
 import { useRenderLog } from './helpers/utils';
+import Text from './ui/Text';
+import RouteChip from './ui/RouteChip';
 
 function PostScreen() {
   useRenderLog('PostScreen');
-  // optional with react-query  but could be used i.c.w. Relay.dev etc.
-  // for now we use this to test if it keeps working
   const queryReference = usePreloadResult(routes.PostScreen);
   const { inModal } = useModal();
   const { id } = useParams(routes.PostScreen);
 
-  const { data } = useQuery(
-    queryKeyPostScreen({ id }),
-    queryKeyPostScreenPromise({ id })
-  );
+  const { data } = useSuspenseQuery({
+    queryKey: queryKeyPostScreen({ id }),
+    queryFn: queryKeyPostScreenPromise({ id }),
+  });
   if (queryReference !== 'testQueryReference') {
     console.log({ queryReference });
-    return (
-      <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
-    );
+    return <Text style={styles.preloadError}>No preloaded result</Text>;
   }
 
   return (
     <>
       <Header title={data!.title} />
-      <ScrollView style={{ padding: 12 }}>
-        <ButtonLink
-          to={routes.PostScreen}
-          params={{ id: `${Number(id) + 1}` }}
-          mode="contained"
-        >
-          Go further
-        </ButtonLink>
-        <Spacer />
-        <ButtonLink
-          to={routes.PostScreen}
-          params={{ id: '3' }}
-          mode="contained-tonal"
-          refresh
-        >
-          Refresh current screen with new data
-        </ButtonLink>
-        <Spacer />
-
-        {inModal && (
+      <ScrollView contentContainerStyle={styles.content}>
+        <RouteChip path={`/post/${id}`} accent />
+        <Text muted style={styles.body}>
+          {data!.body}
+        </Text>
+        <View style={styles.actions}>
           <ButtonLink
-            to={routes.AccountScreen}
-            params={{}}
-            mode="contained-tonal"
-            replace
+            to={routes.PostScreen}
+            params={{ id: `${Number(id) + 1}` }}
+            icon="arrow-forward"
           >
-            replace current with account screen
+            Push the next post
           </ButtonLink>
-        )}
-        <Paragraph>
-          Post {id} {data!.body}
-        </Paragraph>
+          <ButtonLink
+            to={routes.PostScreen}
+            params={{ id: '3' }}
+            variant="outline"
+            refresh
+          >
+            Refresh with post 3
+          </ButtonLink>
+          {inModal && (
+            <ButtonLink
+              to={routes.AccountScreen}
+              params={{}}
+              variant="outline"
+              replace
+            >
+              Replace with account screen
+            </ButtonLink>
+          )}
+        </View>
       </ScrollView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  preloadError: {
+    marginTop: 56,
+    color: '#D64545',
+  },
+  content: {
+    padding: 20,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  body: {
+    fontSize: 16,
+    lineHeight: 26,
+    marginTop: 14,
+  },
+  actions: {
+    marginTop: 24,
+    gap: 10,
+    alignItems: 'stretch',
+  },
+});
+
 export default React.memo(PostScreen);

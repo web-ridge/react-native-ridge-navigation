@@ -36,6 +36,9 @@ export interface BottomTabType {
 
   icon?: any;
   selectedIcon?: any;
+
+  /** Uses Apple's native UISearchTab when the platform supports it. */
+  searchTab?: boolean;
 }
 
 export type BottomTabComponent = FC<{ orientation: Orientation }>;
@@ -51,6 +54,12 @@ export interface BottomTabComponents {
   start?: BottomTabComponent;
   // you can specify a end component which will be included in the bottom tabs
   end?: BottomTabComponent;
+
+  /**
+   * Native-only chrome rendered inside every tab stack scene. This is useful
+   * for platform-owned tab accessories that must survive pushed screens.
+   */
+  nativeAccessory?: ComponentType;
 
   // you can specify an override component to replace the default bottom tab (only on web)
   override?: BottomTabOverrideComponent;
@@ -106,11 +115,39 @@ export type ScreenOptions = {
   title?: string;
   description?: string;
   hidesTabBar?: boolean;
+  /** Keep UINavigationBar visible for screens that render native chrome. */
+  nativeHeader?: boolean;
+  sharedElements?:
+    | string
+    | string[]
+    | ((
+        state: any,
+        data: any,
+        crumbs: any[]
+      ) => string | string[] | null | undefined);
 };
+
+export function getSharedElementsForState(
+  state: any,
+  data: any,
+  crumbs: any[]
+): string | string[] {
+  const sharedElements = state?.screen?.options?.sharedElements;
+  if (!sharedElements) {
+    return [];
+  }
+
+  const resolved =
+    typeof sharedElements === 'function'
+      ? sharedElements(state, data, crumbs)
+      : sharedElements;
+
+  return resolved ?? [];
+}
 export function registerScreen<
   Path extends string,
   E extends ComponentType,
-  Preload extends (params: ExtractRouteParams<Path>) => void,
+  Preload extends (params: ExtractRouteParams<Path>) => any,
 >(path: Path, element: E, preload: Preload, options?: ScreenOptions) {
   return {
     path,

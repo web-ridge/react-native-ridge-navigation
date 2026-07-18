@@ -1,2 +1,43 @@
-import { MMKV } from 'react-native-mmkv';
-export const storage = new MMKV();
+import { Platform } from 'react-native';
+
+// Tiny key-value store for the demo login. localStorage on web, in-memory on
+// native — this example is about navigation, not persistence, and it keeps
+// the app free of extra native dependencies.
+const memory = new Map<string, string>();
+
+// Native starts signed in: auth here is in-memory only, and the sign-in flow
+// (SwitchRoot from an unauthenticated tab) is demonstrated on web. Remove
+// this seed to exercise the native auth redirect instead.
+if (Platform.OS !== 'web') {
+  memory.set(
+    'auth',
+    JSON.stringify({
+      resolving: false,
+      token: 'demo_SHOULD_BE_TOKEN_FROM_OAUTH',
+      user: {
+        id: 1,
+        name: 'Demo',
+        username: 'demo',
+        email: 'demo@example.com',
+        phone: '',
+        website: '',
+      },
+    })
+  );
+}
+
+export const storage = {
+  getString(key: string): string | undefined {
+    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+      return localStorage.getItem(key) ?? undefined;
+    }
+    return memory.get(key);
+  },
+  set(key: string, value: string) {
+    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, value);
+      return;
+    }
+    memory.set(key, value);
+  },
+};

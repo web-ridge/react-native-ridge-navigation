@@ -2,6 +2,7 @@ import {
   type BottomTabType,
   getScreenKey,
   type RootChildBottomTabs,
+  getSharedElementsForState,
 } from './navigationUtils';
 
 import * as React from 'react';
@@ -20,6 +21,10 @@ import useCurrentRoot from './useCurrentRoot';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshContext from './contexts/BottomTabRefreshContext';
 
+// The app patches navigation-react-native with the iOS 26 UISearchTab prop;
+// keep Ridge buildable against the upstream package types as well.
+const NativeTabBarItem = TabBarItem as React.ComponentType<any>;
+
 export default function BottomTabsStack() {
   const { currentRoot, currentRootKey } = useCurrentRoot();
   const root = currentRoot as RootChildBottomTabs;
@@ -37,9 +42,10 @@ export default function BottomTabsStack() {
     return null;
   }
 
+  const NativeAccessory = root.components?.nativeAccessory;
+
   return (
     <>
-      <HiddenNavbarWithSwipeBack />
       <TabBar
         primary={true}
         bottomTabs={true}
@@ -56,7 +62,7 @@ export default function BottomTabsStack() {
       >
         {root.children.map((tab, index) => {
           return (
-            <TabBarItem
+            <NativeTabBarItem
               key={tab.path}
               title={tab.title()}
               image={bottomTabIndex === index ? tab.selectedIcon : tab.icon}
@@ -66,10 +72,15 @@ export default function BottomTabsStack() {
               fontSize={bottomTheme.fontSize}
               fontWeight={bottomTheme.fontWeight}
               fontStyle={bottomTheme.fontStyle}
+              searchTab={tab.searchTab}
               testID={`bottomTab-${tab.child.path}`}
             >
-              <TabBarItemStack tab={tab} rootKey={currentRootKey} />
-            </TabBarItem>
+              <TabBarItemStack
+                tab={tab}
+                rootKey={currentRootKey}
+                nativeAccessory={NativeAccessory}
+              />
+            </NativeTabBarItem>
           );
         })}
       </TabBar>
@@ -78,7 +89,15 @@ export default function BottomTabsStack() {
 }
 
 const TabBarItemStack = React.memo(
-  ({ tab, rootKey }: { tab: BottomTabType; rootKey: string }) => {
+  ({
+    tab,
+    rootKey,
+    nativeAccessory: NativeAccessory,
+  }: {
+    tab: BottomTabType;
+    rootKey: string;
+    nativeAccessory?: React.ComponentType;
+  }) => {
     const start = getScreenKey(rootKey, tab);
     const navigator = useBottomTabsStateNavigator(start);
     const {
@@ -91,10 +110,14 @@ const TabBarItemStack = React.memo(
           underlayColor={layout.backgroundColor}
           backgroundColor={() => layout.backgroundColor}
           hidesTabBar={(state: any) => !!state?.screen?.options?.hidesTabBar}
+          sharedElements={getSharedElementsForState}
           renderScene={(state, data) => {
             return (
               <>
-                <HiddenNavbarWithSwipeBack />
+                <HiddenNavbarWithSwipeBack
+                  nativeHeader={state?.screen?.options?.nativeHeader}
+                />
+                {NativeAccessory ? <NativeAccessory /> : null}
                 <OptimizedContextProvider state={state} data={data}>
                   {state.renderScene()}
                 </OptimizedContextProvider>

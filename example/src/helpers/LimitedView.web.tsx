@@ -1,25 +1,24 @@
 import { StyleSheet, View } from 'react-native';
 import { defaultStyles, useBigScreen } from './utils';
-import { useTheme } from 'react-native-paper';
+import { useTheme } from '../ui/theme';
 
 export default function LimitedView({ children }: { children: any }) {
   const bigScreen = useBigScreen();
-  const isDark = useTheme().dark;
+  const theme = useTheme();
 
+  if (!bigScreen) {
+    return <View style={defaultStyles.full}>{children}</View>;
+  }
   return (
-    <View
-      style={
-        bigScreen
-          ? [styles.root, isDark && styles.rootDark]
-          : defaultStyles.full
-      }
-    >
+    <View style={[styles.root, { backgroundColor: theme.background }]}>
       <View
-        style={
-          bigScreen
-            ? [styles.content, isDark && styles.contentDark]
-            : defaultStyles.full
-        }
+        style={[
+          styles.content,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+          },
+        ]}
       >
         {children}
       </View>
@@ -29,42 +28,17 @@ export default function LimitedView({ children }: { children: any }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#EDEDED',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-  },
-  rootDark: {
-    backgroundColor: '#000000',
   },
   content: {
     position: 'relative',
     flex: 1,
     maxWidth: 1200,
     width: '100%',
-
-    // boxSizing: 'border-box',
-    backgroundColor: '#fff',
-    borderRadius: 5,
+    borderRadius: 12,
+    borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#525252',
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.27,
-    shadowRadius: 7.49,
-
-    elevation: 12,
-  },
-  contentDark: {
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    backgroundColor: '#121212',
-    shadowColor: '#000',
-    shadowOpacity: 0.67,
-    shadowRadius: 20.49,
   },
 });

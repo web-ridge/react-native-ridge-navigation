@@ -1,57 +1,93 @@
 import * as React from 'react';
-import { Text, Searchbar } from 'react-native-paper';
-import { usePreloadResult } from 'react-native-ridge-navigation';
-import { LegendList } from '@legendapp/list';
-import { useQuery } from '@tanstack/react-query';
-
-import { queryKeyPostsScreen, queryKeyPostsScreenPromise } from './queryKeys';
-
-import routes from './Routes';
+import { StyleSheet, TextInput as NativeTextInput, View } from 'react-native';
+import { SplitView, usePreloadResult } from 'react-native-ridge-navigation';
+import { LegendList } from '@legendapp/list/react-native';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import {
+  queryKeyPostsScreen,
+  queryKeyPostsScreenPromise,
+  type PostType,
+} from './queryKeys';
+
+import routes from './Routes';
 import { useRenderLog } from './helpers/utils';
 import ListItemLink from './ListItemLink';
+import Text from './ui/Text';
+import { radii, useTheme } from './ui/theme';
 
-const ITEM_HEIGHT = 79;
+const ITEM_HEIGHT = 72;
 
 function PostsScreen() {
   useRenderLog('PostsScreen');
-  // optional with react-query  but could be used i.c.w. Relay.dev etc.
-  // for now we use this to test if it keeps working
+  const theme = useTheme();
   const queryReference = usePreloadResult(routes.PostsScreen);
   const { top, left, right } = useSafeAreaInsets();
-  const { data } = useQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise);
+  const [search, setSearch] = React.useState('');
+  const { data } = useSuspenseQuery({
+    queryKey: queryKeyPostsScreen,
+    queryFn: queryKeyPostsScreenPromise,
+  });
 
   if (queryReference !== 'testQueryReference') {
     console.log({ queryReference });
-    return (
-      <Text style={{ marginTop: 56, color: 'red' }}>No preloaded result</Text>
-    );
+    return <Text style={styles.preloadError}>No preloaded result</Text>;
   }
 
+  const posts = search
+    ? (data || []).filter((post) =>
+        post.title.toLowerCase().includes(search.toLowerCase())
+      )
+    : data || [];
+
   return (
-    <>
-      <Searchbar
-        style={{
-          marginTop: top,
-          marginLeft: left + 12,
-          marginRight: right + 12,
-        }}
-        value={''}
-      />
+    <SplitView
+      detailPlaceholder={
+        <View style={styles.placeholder}>
+          <Ionicons name="reader-outline" size={40} color={theme.muted} />
+          <Text muted style={styles.placeholderText}>
+            Select a post to read it here
+          </Text>
+        </View>
+      }
+      masterStyle={{ borderRightColor: theme.border }}
+    >
+      <View
+        style={[
+          styles.searchWrap,
+          {
+            marginTop: top + 12,
+            marginLeft: left + 12,
+            marginRight: right + 12,
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Ionicons name="search" size={17} color={theme.muted} />
+        <NativeTextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search posts"
+          placeholderTextColor={theme.muted}
+          style={[styles.searchInput, { color: theme.text }]}
+        />
+      </View>
 
       <LegendList
-        data={data || []}
+        data={posts}
         renderItem={({ item }) => <Item item={item} />}
         keyExtractor={(item) => `${item.id}`}
         estimatedItemSize={ITEM_HEIGHT}
         recycleItems
       />
-    </>
+    </SplitView>
   );
 }
 
-const Item = React.memo(({ item }: { item: any }) => {
+const Item = React.memo(({ item }: { item: PostType }) => {
   return (
     <ListItemLink
       to={routes.PostScreen}
@@ -62,3 +98,34 @@ const Item = React.memo(({ item }: { item: any }) => {
   );
 });
 export default React.memo(PostsScreen);
+
+const styles = StyleSheet.create({
+  preloadError: {
+    marginTop: 56,
+    color: '#D64545',
+  },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: radii.control,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    minHeight: 44,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    paddingVertical: 0,
+  },
+  placeholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  placeholderText: {
+    fontSize: 15,
+  },
+});
