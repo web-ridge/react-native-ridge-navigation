@@ -7,7 +7,11 @@ export {
   default as NativeNavigationBar,
   type NativeNavigationSearch,
 } from './NativeNavigationBar';
-export { usePreloadResult } from './Preloader';
+export {
+  usePreloadResult,
+  setPreloadResultTransformHook,
+  type PreloadResultTransformHook,
+} from './Preloader';
 export { default as lazy } from './lazy';
 export { default as useBottomTabRefresh } from './useBottomTabRefresh';
 export {
