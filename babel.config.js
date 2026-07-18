@@ -1,12 +1,13 @@
 // Used by jest and by react-native-builder-bob (configFile: true on the
-// commonjs/module targets): bob's own preset plus React Compiler, so the
-// published lib/ is compiler-optimized. `target: '18'` + the
-// react-compiler-runtime dependency keeps the output working on React
-// 17/18/19.
+// commonjs/module targets).
 //
-// Metro does NOT read this file — the example app compiles src/ through its
-// own babel.config.js (babel-preset-expo with the reactCompiler experiment).
+// The published lib intentionally ships WITHOUT React Compiler output:
+// compiled output pins a compiler-runtime strategy, and consuming apps that
+// run the compiler themselves (with a different React target) end up with
+// mismatched hook orders inside library components. Apps get compiler
+// coverage of the library by compiling from source (see the example, which
+// runs Expo's reactCompiler experiment), and CI still enforces the
+// react-hooks compiler diagnostics via eslint.
 module.exports = {
   presets: ['module:react-native-builder-bob/babel-preset'],
-  plugins: [],
 };
