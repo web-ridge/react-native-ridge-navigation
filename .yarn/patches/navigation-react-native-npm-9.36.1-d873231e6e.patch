@@ -1,0 +1,2391 @@
+diff --git a/SearchBarNativeComponent.js b/SearchBarNativeComponent.js
+index 584f0e3d417b30d8c5ad44b8522e24708a508cee..f8aeb61eb25b3572bf4a3ab6cdcdd7699d83695a 100644
+--- a/SearchBarNativeComponent.js
++++ b/SearchBarNativeComponent.js
+@@ -22,6 +22,7 @@ type NativeProps = $ReadOnly<{|
+   mostRecentButtonEventCount: Int32,
+   barTintColor: ColorValue,
+   bottomBar: boolean,
++  searchTab: boolean,
+   scopeButton: Int32,
+   scopeButtons: $ReadOnlyArray<string>,
+   onChangeText: DirectEventHandler<$ReadOnly<{|
+diff --git a/TabBarItemNativeComponent.js b/TabBarItemNativeComponent.js
+index 599a475bbcd4649f569d53970a23f914419e709b..4896b461b29faae6a1658603c63189c85590edc3 100644
+--- a/TabBarItemNativeComponent.js
++++ b/TabBarItemNativeComponent.js
+@@ -21,6 +21,7 @@ type NativeProps = $ReadOnly<{|
+     uri: string,
+   |}>,
+   systemItem: string,
++  searchTab?: WithDefault<boolean, false>,
+   onPress: BubblingEventHandler<null>
+ |}>;
+ 
+diff --git a/android/src/main/java/com/navigation/reactnative/SearchBarViewManager.java b/android/src/main/java/com/navigation/reactnative/SearchBarViewManager.java
+index b641f12fc83a744f3faea36e32488420bae98ea5..ac0248482812669f2cb87fd54f002aa030729a60 100644
+--- a/android/src/main/java/com/navigation/reactnative/SearchBarViewManager.java
++++ b/android/src/main/java/com/navigation/reactnative/SearchBarViewManager.java
+@@ -124,6 +124,13 @@ public class SearchBarViewManager extends ViewGroupManager<SearchBarView> implem
+ 
+     }
+ 
++    @Override
++    @ReactProp(name = "searchTab", defaultBoolean = false)
++    public void setSearchTab(SearchBarView view, boolean searchTab) {
++        // UISearchTab is an iOS-only UIKit concept. Keep the generated
++        // cross-platform prop explicit so Android remains a normal search bar.
++    }
++
+     @ReactProp(name = "bottomBar")
+     public void setBottomBar(SearchBarView view, boolean bottomBar) {
+         view.bottomBar = bottomBar;
+diff --git a/android/src/main/java/com/navigation/reactnative/TabBarItemManager.java b/android/src/main/java/com/navigation/reactnative/TabBarItemManager.java
+index f863f9765f510151d9fcc72e2f313790cebe7fd3..b996fd6ef9dbba7c3e90974b2784914d90908c4b 100644
+--- a/android/src/main/java/com/navigation/reactnative/TabBarItemManager.java
++++ b/android/src/main/java/com/navigation/reactnative/TabBarItemManager.java
+@@ -58,6 +58,11 @@ public class TabBarItemManager extends ViewGroupManager<TabBarItemView> {
+         view.setBadge(badge != null ? Integer.parseInt(badge) : null);
+     }
+ 
++    @ReactProp(name = "searchTab", defaultBoolean = false)
++    public void setSearchTab(TabBarItemView view, boolean searchTab) {
++        // UISearchTab is an iOS-only UIKit concept.
++    }
++
+     @ReactProp(name = "badgeColor", customType = "Color", defaultInt = Integer.MAX_VALUE)
+     public void setBadgeColor(TabBarItemView view, int badgeColor) {
+         view.setBadgeColor(badgeColor != Integer.MAX_VALUE ? badgeColor : null);
+@@ -110,4 +115,3 @@ public class TabBarItemManager extends ViewGroupManager<TabBarItemView> {
+         parent.content.remove(index);
+     }
+ }
+-
+diff --git a/android/src/main/java/com/navigation/reactnative/TabBarItemViewManager.java b/android/src/main/java/com/navigation/reactnative/TabBarItemViewManager.java
+index be5e11ebdf76816d15af209ed6b315f431aa9e70..789b16d101e3421450bee1014a066656ceef577f 100644
+--- a/android/src/main/java/com/navigation/reactnative/TabBarItemViewManager.java
++++ b/android/src/main/java/com/navigation/reactnative/TabBarItemViewManager.java
+@@ -72,6 +72,13 @@ public class TabBarItemViewManager extends ViewGroupManager<TabBarItemView> impl
+     public void setSystemItem(TabBarItemView view, @Nullable String value) {
+     }
+ 
++    @Override
++    @ReactProp(name = "searchTab", defaultBoolean = false)
++    public void setSearchTab(TabBarItemView view, boolean searchTab) {
++        // UISearchTab is an iOS-only UIKit concept. Keep the generated
++        // cross-platform prop explicit so Android remains a normal tab.
++    }
++
+     @ReactProp(name = "testID")
+     public void setTestID(TabBarItemView view, String testID) {
+         view.setTestID(testID);
+@@ -131,4 +138,3 @@ public class TabBarItemViewManager extends ViewGroupManager<TabBarItemView> impl
+         parent.content.remove(index);
+     }
+ }
+-
+diff --git a/ios/NVBarView.m b/ios/NVBarView.m
+index ef3c38bfd399ba78aed37d961a3e9998696f3ee3..0fab0f839f834f1186711b38f40282a3d8fc64e3 100644
+--- a/ios/NVBarView.m
++++ b/ios/NVBarView.m
+@@ -34,8 +34,12 @@ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+     [self setBarButtons:self.buttons];
+-    for (NVBarButtonView *button in self.buttons) {
+-        [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:button];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        NSMutableSet *sharedElements = [controller sharedElements];
++        for (NVBarButtonView *button in self.buttons) {
++            [sharedElements addObject:button];
++        }
+     }
+ }
+ 
+@@ -43,8 +47,13 @@ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+     if (!newSuperview) {
+-        for (NVBarButtonView *button in self.buttons) {
+-            [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:button];
++        id controller = self.reactViewController;
++        if ([controller respondsToSelector:@selector(sharedElements)]) {
++            NSMutableSet *sharedElements = [controller sharedElements];
++            for (NVBarButtonView *button in self.buttons) {
++                [sharedElements removeObject:button];
++            }
++        }
+         }
+         [self setBarButtons:nil];
+     }
+diff --git a/ios/NVLeftBarComponentView.mm b/ios/NVLeftBarComponentView.mm
+index 95762ef0d34303af26163f0d49466c1f6194178f..cd443eb614da26a2552c834a27fd68905c0651c8 100644
+--- a/ios/NVLeftBarComponentView.mm
++++ b/ios/NVLeftBarComponentView.mm
+@@ -39,8 +39,12 @@ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+     [self setBarButtons:self.buttons];
+-    for (NVBarButtonComponentView *button in self.buttons) {
+-        [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:button];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        NSMutableSet *sharedElements = [controller sharedElements];
++        for (NVBarButtonComponentView *button in self.buttons) {
++            [sharedElements addObject:button];
++        }
+     }
+     [self.reactViewController.navigationItem setLeftItemsSupplementBackButton:_supplementBack];
+ }
+@@ -49,8 +53,12 @@ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+     if (!newSuperview) {
+-        for (NVBarButtonComponentView *button in self.buttons) {
+-            [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:button];
++        id controller = self.reactViewController;
++        if ([controller respondsToSelector:@selector(sharedElements)]) {
++            NSMutableSet *sharedElements = [controller sharedElements];
++            for (NVBarButtonComponentView *button in self.buttons) {
++                [sharedElements removeObject:button];
++            }
+         }
+         [self setBarButtons:nil];
+     }
+@@ -71,14 +79,20 @@ - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childCompone
+ {
+     [self.buttons insertObject:((NVBarButtonComponentView *) childComponentView) atIndex:index];
+     [self setBarButtons:self.buttons];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:(NVBarButtonComponentView *) childComponentView];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        [[controller sharedElements] addObject:(NVBarButtonComponentView *) childComponentView];
++    }
+ }
+ 
+ - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+     [self.buttons removeObject:((NVBarButtonComponentView *) childComponentView)];
+     [self setBarButtons:self.buttons];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:(NVBarButtonComponentView *) childComponentView];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        [[controller sharedElements] removeObject:(NVBarButtonComponentView *) childComponentView];
++    }
+ }
+ 
+ + (ComponentDescriptorProvider)componentDescriptorProvider
+diff --git a/ios/NVNavigationBarComponentView.mm b/ios/NVNavigationBarComponentView.mm
+index 53a5de8f1054abdcf2371c623a5c54c46cb48f25..fe97111b11bbd9ce66a26a719e61b1bbfd5c296f 100644
+--- a/ios/NVNavigationBarComponentView.mm
++++ b/ios/NVNavigationBarComponentView.mm
+@@ -36,6 +36,21 @@ - (instancetype)initWithFrame:(CGRect)frame
+     return self;
+ }
+ 
++- (void)didMoveToWindow
++{
++    [super didMoveToWindow];
++    // Fabric can receive props before Ridge attaches the component to its
++    // scene controller. Re-apply the title once UIKit owns the view so a
++    // compact title is not lost on pushed screens.
++    if (self.window && self.reactViewController) {
++        UINavigationController *navigationController = self.reactViewController.navigationController;
++        if (navigationController.topViewController == self.reactViewController) {
++            [self.reactViewController.navigationItem setTitle:self.title];
++            [self updateStyle];
++        }
++    }
++}
++
+ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
+ {
+     const auto &oldViewProps = *std::static_pointer_cast<NVNavigationBarProps const>(_props);
+diff --git a/ios/NVNavigationBarView.m b/ios/NVNavigationBarView.m
+index 6e1455081babd85b67486b91d04dc7a23093258a..23763eed6dd45fabaf39561dc4696ee9a73652c4 100644
+--- a/ios/NVNavigationBarView.m
++++ b/ios/NVNavigationBarView.m
+@@ -27,6 +27,20 @@ - (id)initWithBridge:(RCTBridge *)bridge
+     return self;
+ }
+ 
++- (void)didMoveToWindow
++{
++    [super didMoveToWindow];
++    // Keep legacy architecture consistent with Fabric when the React view
++    // controller is attached after the navigation bar receives its props.
++    if (self.window && self.reactViewController) {
++        UINavigationController *navigationController = self.reactViewController.navigationController;
++        if (navigationController.topViewController == self.reactViewController) {
++            [self.reactViewController.navigationItem setTitle:self.title];
++            [self updateStyle];
++        }
++    }
++}
++
+ - (void)setBackImage:(RCTImageSource *)source
+ {
+     if (!!source) {
+@@ -216,4 +230,3 @@ - (void) dealloc
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVRightBarComponentView.mm b/ios/NVRightBarComponentView.mm
+index 1bcf3a08d9da8cb46d8ada3801b23a3ab47f9a4f..075937617c23dbc14db209953a19c8769030762e 100644
+--- a/ios/NVRightBarComponentView.mm
++++ b/ios/NVRightBarComponentView.mm
+@@ -31,8 +31,12 @@ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+     [self setBarButtons:self.buttons];
+-    for (NVBarButtonComponentView *button in self.buttons) {
+-        [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:button];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        NSMutableSet *sharedElements = [controller sharedElements];
++        for (NVBarButtonComponentView *button in self.buttons) {
++            [sharedElements addObject:button];
++        }
+     }
+ }
+ 
+@@ -40,8 +44,12 @@ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+     if (!newSuperview) {
+-        for (NVBarButtonComponentView *button in self.buttons) {
+-            [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:button];
++        id controller = self.reactViewController;
++        if ([controller respondsToSelector:@selector(sharedElements)]) {
++            NSMutableSet *sharedElements = [controller sharedElements];
++            for (NVBarButtonComponentView *button in self.buttons) {
++                [sharedElements removeObject:button];
++            }
+         }
+         [self setBarButtons:nil];
+     }
+@@ -62,14 +70,20 @@ - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childCompone
+ {
+     [self.buttons insertObject:(NVBarButtonComponentView *) childComponentView atIndex:index];
+     [self setBarButtons:self.buttons];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:(NVBarButtonComponentView *) childComponentView];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        [[controller sharedElements] addObject:(NVBarButtonComponentView *) childComponentView];
++    }
+ }
+ 
+ - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+     [self.buttons removeObject:(NVBarButtonComponentView *) childComponentView];
+     [self setBarButtons:self.buttons];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:(NVBarButtonComponentView *) childComponentView];
++    id controller = self.reactViewController;
++    if ([controller respondsToSelector:@selector(sharedElements)]) {
++        [[controller sharedElements] removeObject:(NVBarButtonComponentView *) childComponentView];
++    }
+ }
+ 
+ + (ComponentDescriptorProvider)componentDescriptorProvider
+diff --git a/ios/NVSceneController.h b/ios/NVSceneController.h
+index aaf847a0b6afb359c94318dadeb9574332111342..d38f5c5873a41e13410c50fc5dca254fbd423ced 100644
+--- a/ios/NVSceneController.h
++++ b/ios/NVSceneController.h
+@@ -67,6 +67,8 @@ typedef struct {
+ 
+ @property UISearchController *searchController;
+ @property (nonatomic, assign) BOOL hideWhenScrolling;
++@property (nonatomic, assign) BOOL bottomBar;
++- (void)updateBottomAccessoryForTabBarController:(UITabBarController *)tabBarController active:(BOOL)active;
+ 
+ @end
+ 
+@@ -86,4 +88,3 @@ typedef struct {
+ - (id)initWithScene:(UIView *)scene;
+ 
+ @end
+-
+diff --git a/ios/NVSceneController.m b/ios/NVSceneController.m
+index a7fde408833c488c645b78ffc0b7a658e914db51..a847c7a5e15195896ba8cb99ae801ce757c10920 100644
+--- a/ios/NVSceneController.m
++++ b/ios/NVSceneController.m
+@@ -18,6 +18,7 @@ @implementation NVSceneController
+ {
+     UIView<NVScene> *_view;
+     CGRect _lastViewFrame;
++    __weak UIScrollView *_nvBoundContentScrollView;
+ }
+ 
+ - (id)initWithScene:(UIView<NVScene> *)view
+@@ -42,9 +43,24 @@ - (void)viewDidLoad
+     UIView<NVNavigationBar> *navigationBar = [self findNavigationBar];
+     UIView<NVSearchBar> *searchBar = [self findSearchBar:navigationBar];
+     self.definesPresentationContext = true;
+-    if (!!searchBar && !navigationBar.isHidden) {
++    if (!!searchBar && !searchBar.bottomBar && !navigationBar.isHidden) {
+         [self.navigationItem setSearchController:searchBar.searchController];
+         [self.navigationItem setHidesSearchBarWhenScrolling:searchBar.hideWhenScrolling];
++    } else {
++        // A scene such as Hours intentionally has no navigation header. Clear
++        // the previous scene's UISearchController or UIKit leaves a stale
++        // search field above the tab accessory after a tab switch.
++        [self.navigationItem setSearchController:nil];
++        [self.navigationItem setHidesSearchBarWhenScrolling:NO];
++    }
++    if (@available(iOS 26.0, *)) {
++        UITabBarController *tabBarController = self.navigationController.tabBarController;
++        if (tabBarController && tabBarController.selectedViewController == self.navigationController) {
++            if (searchBar.bottomBar)
++                [searchBar updateBottomAccessoryForTabBarController:tabBarController active:YES];
++            else
++                [tabBarController setBottomAccessory:nil animated:YES];
++        }
+     }
+ }
+ 
+@@ -73,9 +89,14 @@ - (void)viewWillAppear:(BOOL)animated
+     [self.navigationItem setLargeTitleDisplayMode:navigationBar.largeTitle ? UINavigationItemLargeTitleDisplayModeAlways : UINavigationItemLargeTitleDisplayModeNever];
+     UIView<NVSearchBar> *searchBar = [self findSearchBar:navigationBar];
+     self.definesPresentationContext = true;
+-    if (!!searchBar && !navigationBar.isHidden) {
++    if (!!searchBar && !searchBar.bottomBar && !navigationBar.isHidden) {
+         [self.navigationItem setSearchController:searchBar.searchController];
+         [self.navigationItem setHidesSearchBarWhenScrolling:searchBar.hideWhenScrolling];
++    } else {
++        // Keep navigation chrome deterministic when the next scene owns no
++        // native header/search bar.
++        [self.navigationItem setSearchController:nil];
++        [self.navigationItem setHidesSearchBarWhenScrolling:NO];
+     }
+     UIView<NVStatusBar> *statusBar = [self findStatusBar:navigationBar];
+     self.statusBarStyle = statusBar.tintStyle;
+@@ -92,6 +113,48 @@ - (void)viewWillLayoutSubviews
+     if (previousController.navigationItem.searchController.active) {
+         [self.navigationController setNavigationBarHidden:navigationBar.isHidden];
+     }
++    [self bindLargeTitleContentScrollViewIfNeeded];
++}
++
++// UIKit only auto-collapses the large title when it can associate the scene
++// with a content scroll view. React scenes mount their list asynchronously
++// (Suspense/data loading), after UIKit has already looked, so the association
++// never happens and the title stays expanded. Bind the first suitable
++// vertical scroll view explicitly once it exists; layout passes run again
++// whenever React mounts new content, making this a reliable late hook.
++- (void)bindLargeTitleContentScrollViewIfNeeded
++{
++    if (@available(iOS 15.0, *)) {
++        UIView<NVNavigationBar> *navigationBar = [self findNavigationBar];
++        if (!navigationBar || !navigationBar.largeTitle || navigationBar.isHidden)
++            return;
++        UIScrollView *scrollView = [self findLargeTitleContentScrollView:self.view depth:0];
++        if (scrollView && scrollView != _nvBoundContentScrollView) {
++            [self setContentScrollView:scrollView forEdge:NSDirectionalRectEdgeTop];
++            _nvBoundContentScrollView = scrollView;
++        }
++    }
++}
++
++- (UIScrollView *)findLargeTitleContentScrollView:(UIView *)view depth:(NSInteger)depth
++{
++    if (depth > 14)
++        return nil;
++    if ([view isKindOfClass:[UIScrollView class]]) {
++        UIScrollView *scrollView = (UIScrollView *)view;
++        // Only bind the scene's main vertical surface: skip horizontal
++        // carousels/chip rows and small embedded scrollers.
++        BOOL tallEnough = scrollView.frame.size.height >= self.view.bounds.size.height * 0.4;
++        BOOL wideEnough = scrollView.frame.size.width >= self.view.bounds.size.width * 0.8;
++        if (tallEnough && wideEnough)
++            return scrollView;
++    }
++    for (UIView *subview in view.subviews) {
++        UIScrollView *found = [self findLargeTitleContentScrollView:subview depth:depth + 1];
++        if (found)
++            return found;
++    }
++    return nil;
+ }
+ 
+ - (void)presentViewController:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion
+diff --git a/ios/NVSearchBarComponentView.h b/ios/NVSearchBarComponentView.h
+index c9edc537b7384a0d809a58b7aab8901462d25a35..09380e6701d9f1edf94d19d29f15b5d55e4583dd 100644
+--- a/ios/NVSearchBarComponentView.h
++++ b/ios/NVSearchBarComponentView.h
+@@ -5,7 +5,7 @@
+ 
+ NS_ASSUME_NONNULL_BEGIN
+ 
+-@interface NVSearchBarComponentView : RCTViewComponentView <UISearchResultsUpdating, UISearchBarDelegate, NVSearchBar>
++@interface NVSearchBarComponentView : RCTViewComponentView <UISearchResultsUpdating, UISearchBarDelegate, UITextFieldDelegate, NVSearchBar>
+ 
+ @property UISearchController *searchController;
+ @property (nonatomic, copy) NSString *fontFamily;
+@@ -13,9 +13,12 @@ NS_ASSUME_NONNULL_BEGIN
+ @property (nonatomic, copy) NSString *fontStyle;
+ @property (nonatomic, copy) NSNumber *fontSize;
+ @property (nonatomic, assign) BOOL hideWhenScrolling;
++@property (nonatomic, assign) BOOL bottomBar;
++@property (nonatomic, assign) BOOL searchTab;
+ @property (nonatomic, assign) NSInteger mostRecentEventCount;
+ @property (nonatomic, assign) NSInteger mostRecentActiveEventCount;
+ @property (nonatomic, assign) NSInteger mostRecentButtonEventCount;
++- (void)updateBottomAccessoryForTabBarController:(UITabBarController *)tabBarController active:(BOOL)active;
+ 
+ @end
+ 
+diff --git a/ios/NVSearchBarComponentView.mm b/ios/NVSearchBarComponentView.mm
+index e0f2d2f70fc93f346b28d309fcec0bfc0a10e8cb..a6fef3130ed010340548348fbd52e9f004790619 100644
+--- a/ios/NVSearchBarComponentView.mm
++++ b/ios/NVSearchBarComponentView.mm
+@@ -26,6 +26,10 @@ @implementation NVSearchBarComponentView
+     NSInteger _nativeActiveEventCount;
+     NSInteger _nativeButtonEventCount;
+     NVSearchBarShadowNode::ConcreteState::Shared _state;
++    BOOL _bottomBar;
++    BOOL _searchTab;
++    UISearchTextField *_bottomSearchField;
++    UITabAccessory *_bottomAccessory;
+ }
+ 
+ - (instancetype)initWithFrame:(CGRect)frame
+@@ -33,22 +37,50 @@ - (instancetype)initWithFrame:(CGRect)frame
+     if (self = [super initWithFrame:frame]) {
+         static const auto defaultProps = std::make_shared<const NVSearchBarProps>();
+         _props = defaultProps;
+-        NVSearchResultsController *viewController = [[NVSearchResultsController alloc] init];
+-        self.searchController = [[NVSearchController alloc] initWithSearchResultsController:viewController];
+-        self.searchController.searchBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
+-        self.searchController.searchResultsUpdater = self;
+-        self.searchController.searchBar.delegate = self;
+-        id __weak weakSelf = self;
+-        viewController.boundsDidChangeBlock = ^(CGRect newBounds) {
+-            [weakSelf notifyForBoundsChange:newBounds];
+-        };
+     }
+     return self;
+ }
+ 
++- (void)ensureSearchController
++{
++    if (self.searchController)
++        return;
++    NVSearchResultsController *viewController = [[NVSearchResultsController alloc] init];
++    self.searchController = [[NVSearchController alloc] initWithSearchResultsController:viewController];
++    self.searchController.searchBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
++    self.searchController.searchResultsUpdater = self;
++    self.searchController.searchBar.delegate = self;
++    id __weak weakSelf = self;
++    viewController.boundsDidChangeBlock = ^(CGRect newBounds) {
++        [weakSelf notifyForBoundsChange:newBounds];
++    };
++}
++
+ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
+ {
+     const auto &newViewProps = *std::static_pointer_cast<NVSearchBarProps const>(props);
++    _bottomBar = newViewProps.bottomBar;
++    _searchTab = newViewProps.searchTab;
++    BOOL usesBottomAccessoryForProps = NO;
++    if (@available(iOS 26.0, *))
++        usesBottomAccessoryForProps = _bottomBar;
++    if (!usesBottomAccessoryForProps)
++        [self ensureSearchController];
++    if (@available(iOS 26.0, *)) {
++        self.reactViewController.navigationItem.preferredSearchBarPlacement =
++            _searchTab ? UINavigationItemSearchBarPlacementIntegratedButton
++                        : UINavigationItemSearchBarPlacementAutomatic;
++    }
++    if (@available(iOS 26.0, *)) {
++        if (_bottomBar && !_bottomSearchField) {
++            _bottomSearchField = [[UISearchTextField alloc] initWithFrame:CGRectZero];
++            _bottomSearchField.delegate = self;
++            _bottomSearchField.clearButtonMode = UITextFieldViewModeWhileEditing;
++            _bottomSearchField.returnKeyType = UIReturnKeySearch;
++            [_bottomSearchField addTarget:self action:@selector(bottomSearchFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
++        }
++    }
++    UITextField *nativeTextField = _bottomSearchField ?: self.searchController.searchBar.searchTextField;
+     NSString *text = [[NSString alloc] initWithUTF8String: newViewProps.text.c_str()];
+     _fontFamily = [[NSString alloc] initWithUTF8String: newViewProps.fontFamily.c_str()];
+     _fontFamily = _fontFamily.length ? _fontFamily : nil;
+@@ -62,32 +94,60 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+     NSNumber *size = !self.fontSize ? @(UIFont.labelFontSize) : self.fontSize;
+     _font = [RCTFont updateFont:baseFont withFamily:self.fontFamily size:size weight:self.fontWeight style:self.fontStyle variant:nil scaleMultiplier:1];
+     if (@available(iOS 13.0, *)) {
+-        [self.searchController.searchBar.searchTextField setFont:_font];
++        [nativeTextField setFont:_font];
+     }
+     _mostRecentEventCount = newViewProps.mostRecentEventCount;
+     NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
+-    if (eventLag == 0 && ![self.searchController.searchBar.text isEqualToString:text]) {
+-        [self.searchController.searchBar setText:text];
++    if (eventLag == 0 && ![nativeTextField.text isEqualToString:text]) {
++        [nativeTextField setText:text];
+     }
+     BOOL active = newViewProps.active;
+     _mostRecentActiveEventCount = newViewProps.mostRecentActiveEventCount;
+     NSInteger eventActiveLag = _nativeActiveEventCount - _mostRecentActiveEventCount;
+-    if (eventActiveLag == 0 && self.searchController.active != active) {
+-        [self.searchController setActive:active];
+-        if (active) [self.searchController.searchBar becomeFirstResponder];
++    if (eventActiveLag == 0) {
++        if (usesBottomAccessoryForProps) {
++            if (active)
++                [nativeTextField becomeFirstResponder];
++            else
++                [nativeTextField resignFirstResponder];
++        } else if (!_searchTab && self.searchController.active != active) {
++            // UISearchTab owns activation and cancellation. React's default
++            // `active=false` must not immediately close Apple's field after
++            // automaticallyActivatesSearch selects the tab.
++            [self.searchController setActive:active];
++            if (active) [self.searchController.searchBar becomeFirstResponder];
++        }
+     }
+     NSString *autoCapitalize = [[NSString alloc] initWithUTF8String: newViewProps.autoCapitalize.c_str()];
+-    [self.searchController.searchBar setAutocapitalizationType:[self autoCapitalizationType:autoCapitalize]];
++    [nativeTextField setAutocapitalizationType:[self autoCapitalizationType:autoCapitalize]];
+     NSString *placeholder = [[NSString alloc] initWithUTF8String: newViewProps.placeholder.c_str()];
+-    if (self.searchController.searchBar.placeholder != placeholder)
+-        [self.searchController.searchBar setPlaceholder:placeholder];
++    if (nativeTextField.placeholder != placeholder)
++        [nativeTextField setPlaceholder:placeholder];
+     [self.searchController setObscuresBackgroundDuringPresentation:newViewProps.obscureBackground];
+     [self.searchController setHidesNavigationBarDuringPresentation:newViewProps.hideNavigationBar];
++    _hideWhenScrolling = newViewProps.hideWhenScrolling;
++    BOOL usesBottomAccessory = NO;
++    if (@available(iOS 26.0, *))
++        usesBottomAccessory = _bottomBar;
++    if (usesBottomAccessory) {
++        // A bottom accessory should keep the current tab visible while the
++        // field is focused. UIKit otherwise presents an empty results
++        // controller immediately, which appears as a black full-screen layer
++        // before the React query has produced any content.
++        [self.searchController setObscuresBackgroundDuringPresentation:NO];
++        [self.searchController setHidesNavigationBarDuringPresentation:NO];
++        [self.searchController setShowsSearchResultsController:NO];
++    }
+     if (@available(iOS 13.0, *)) {
+-        [self.searchController.searchBar.searchTextField setBackgroundColor:RCTUIColorFromSharedColor(newViewProps.barTintColor)];
++        // UITabAccessory owns the Liquid Glass surface on iOS 26. Do not
++        // replace it with a custom opaque/clear text-field background.
++        if (!usesBottomAccessory && !_searchTab)
++            [self.searchController.searchBar.searchTextField setBackgroundColor:RCTUIColorFromSharedColor(newViewProps.barTintColor)];
+     }
+-    _hideWhenScrolling = newViewProps.hideWhenScrolling;
+-    [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:_hideWhenScrolling];
++    if (usesBottomAccessory)
++        [self.reactViewController.navigationItem setSearchController:nil];
++    else
++        [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:_hideWhenScrolling];
+     NSMutableArray *scopeButtons = [[NSMutableArray alloc] init];
+     for (auto i = 0; i < newViewProps.scopeButtons.size(); i++) {
+         NSString *scopeButton = [[NSString alloc] initWithUTF8String: newViewProps.scopeButtons[i].c_str()];
+@@ -96,10 +156,11 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+     _mostRecentButtonEventCount = newViewProps.mostRecentButtonEventCount;
+     NSInteger eventButtonLag = _nativeButtonEventCount - _mostRecentButtonEventCount;
+     NSInteger scopeButton = newViewProps.scopeButton;
+-    if (eventButtonLag == 0 && self.searchController.searchBar.selectedScopeButtonIndex != scopeButton) {
++    if (!usesBottomAccessory && eventButtonLag == 0 && self.searchController.searchBar.selectedScopeButtonIndex != scopeButton) {
+         self.searchController.searchBar.selectedScopeButtonIndex = scopeButton;
+     }
+-    self.searchController.searchBar.scopeButtonTitles = scopeButtons;
++    if (!usesBottomAccessory)
++        self.searchController.searchBar.scopeButtonTitles = scopeButtons;
+     [super updateProps:props oldProps:oldProps];
+ }
+ 
+@@ -115,22 +176,75 @@ -(UITextAutocapitalizationType)autoCapitalizationType:(NSString*)val
+ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+-    [self.reactViewController.navigationItem setSearchController:_searchController];
++    BOOL usesBottomAccessory = NO;
++    if (@available(iOS 26.0, *))
++        usesBottomAccessory = _bottomBar;
++    if (!usesBottomAccessory) {
++        [self.reactViewController.navigationItem setSearchController:_searchController];
++    }
++    if (@available(iOS 26.0, *)) {
++        self.reactViewController.navigationItem.preferredSearchBarPlacement =
++            _searchTab ? UINavigationItemSearchBarPlacementIntegratedButton
++                        : UINavigationItemSearchBarPlacementAutomatic;
++    }
++    // Fabric can apply props before reactViewController is attached. Reapply
++    // this after the search controller is installed so UIKit can actually
++    // collapse the search bar with the scene's scroll view.
++    if (!usesBottomAccessory)
++        [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:_hideWhenScrolling];
+     if (@available(iOS 13.0, *)) {
+-        [self.searchController.searchBar.searchTextField setFont:_font];
++        UITextField *nativeTextField = _bottomSearchField ?: self.searchController.searchBar.searchTextField;
++        [nativeTextField setFont:_font];
+     }
++    dispatch_async(dispatch_get_main_queue(), ^{
++        UITabBarController *tabBarController = self.reactViewController.tabBarController;
++        if (tabBarController && tabBarController.selectedViewController == self.reactViewController.navigationController) {
++            [self updateBottomAccessoryForTabBarController:tabBarController active:YES];
++        }
++    });
+ }
+ 
+ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+     if (!newSuperview) {
+-        [self.reactViewController.navigationItem setSearchController:nil];
++        if (_bottomBar && @available(iOS 26.0, *)) {
++            [_bottomSearchField resignFirstResponder];
++            UITabBarController *tabBarController = self.reactViewController.tabBarController;
++            if (tabBarController)
++                [self updateBottomAccessoryForTabBarController:tabBarController active:NO];
++        } else {
++            [self.reactViewController.navigationItem setSearchController:nil];
++        }
++        if (!_bottomBar)
+         [self.searchController.searchResultsController dismissViewControllerAnimated:NO completion:nil];
+     }
+ }
+ 
++- (void)updateBottomAccessoryForTabBarController:(UITabBarController *)tabBarController active:(BOOL)active
++{
++    if (@available(iOS 26.0, *)) {
++        if (!_bottomBar)
++            return;
++    } else {
++        return;
++    }
++    if (active) {
++        if (!_bottomAccessory)
++            _bottomAccessory = [[UITabAccessory alloc] initWithContentView:_bottomSearchField];
++        if (tabBarController.bottomAccessory != _bottomAccessory)
++            [tabBarController setBottomAccessory:_bottomAccessory animated:YES];
++    } else if (tabBarController.bottomAccessory == _bottomAccessory) {
++        [tabBarController setBottomAccessory:nil animated:YES];
++    }
++}
++
+ - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
++    if (@available(iOS 26.0, *)) {
++        if (_bottomBar) {
++            [self.searchController setShowsSearchResultsController:NO];
++        }
++    }
+     _nativeEventCount++;
+     if (_eventEmitter != nullptr) {
+         std::static_pointer_cast<NVSearchBarEventEmitter const>(_eventEmitter)
+@@ -141,6 +255,44 @@ - (void)updateSearchResultsForSearchController:(UISearchController *)searchContr
+     }
+ }
+ 
++- (void)bottomSearchFieldDidChange:(UITextField *)textField
++{
++    _nativeEventCount++;
++    if (_eventEmitter != nullptr) {
++        std::static_pointer_cast<NVSearchBarEventEmitter const>(_eventEmitter)
++        ->onChangeText(NVSearchBarEventEmitter::OnChangeText{
++            .text = std::string([textField.text UTF8String]),
++            .eventCount = static_cast<int>(_nativeEventCount),
++        });
++    }
++}
++
++- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
++{
++    if (textField != _bottomSearchField)
++        return YES;
++    _nativeActiveEventCount++;
++    if (_eventEmitter != nullptr) {
++        std::static_pointer_cast<NVSearchBarEventEmitter const>(_eventEmitter)
++        ->onChangeActive(NVSearchBarEventEmitter::OnChangeActive{
++            .active = true,
++            .eventCount = static_cast<int>(_nativeActiveEventCount),
++        });
++    }
++    return YES;
++}
++
++- (BOOL)textFieldShouldReturn:(UITextField *)textField
++{
++    if (textField == _bottomSearchField && _eventEmitter != nullptr) {
++        std::static_pointer_cast<NVSearchBarEventEmitter const>(_eventEmitter)
++        ->onQuery(NVSearchBarEventEmitter::OnQuery{
++            .text = std::string([textField.text UTF8String]),
++        });
++    }
++    return YES;
++}
++
+ -(BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar
+ {
+     _nativeActiveEventCount++;
+@@ -200,12 +352,12 @@ - (void)notifyForBoundsChange:(CGRect)newBounds
+ 
+ - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+-    self.searchController.searchResultsController.view = childComponentView;
++    [(NVSearchResultsController *)self.searchController.searchResultsController setContentView:childComponentView];
+ }
+ 
+ - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+-    self.searchController.searchResultsController.view = nil;
++    [(NVSearchResultsController *)self.searchController.searchResultsController setContentView:nil];
+ }
+ 
+ - (void)updateState:(facebook::react::State::Shared const &)state
+diff --git a/ios/NVSearchBarManager.m b/ios/NVSearchBarManager.m
+index 15dde9575734821b86971395c3b9879d32a80945..b712597a5ec6f0a13aeca0c805846baeddcfee11 100644
+--- a/ios/NVSearchBarManager.m
++++ b/ios/NVSearchBarManager.m
+@@ -19,6 +19,8 @@ - (UIView *)view
+ RCT_EXPORT_VIEW_PROPERTY(obscureBackground, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(hideNavigationBar, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(hideWhenScrolling, BOOL)
++RCT_EXPORT_VIEW_PROPERTY(bottomBar, BOOL)
++RCT_EXPORT_VIEW_PROPERTY(searchTab, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(autoCapitalize, UITextAutocapitalizationType)
+ RCT_EXPORT_VIEW_PROPERTY(placeholder, NSString)
+ RCT_EXPORT_VIEW_PROPERTY(text, NSString)
+@@ -41,4 +43,3 @@ - (UIView *)view
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVSearchBarView.h b/ios/NVSearchBarView.h
+index d9d24d66e54499a7eae1f6e0330d7716dc3114f2..7ada61ae8c60a5b148fd86fa6208f0e9024f67e0 100644
+--- a/ios/NVSearchBarView.h
++++ b/ios/NVSearchBarView.h
+@@ -4,7 +4,7 @@
+ #import <React/RCTComponent.h>
+ #import "NVSceneController.h"
+ 
+-@interface NVSearchBarView : UIView <UISearchResultsUpdating, UISearchBarDelegate, NVSearchBar>
++@interface NVSearchBarView : UIView <UISearchResultsUpdating, UISearchBarDelegate, UITextFieldDelegate, NVSearchBar>
+ 
+ @property UISearchController *searchController;
+ @property (nonatomic, copy) NSString *text;
+@@ -22,10 +22,12 @@
+ @property (nonatomic, copy) RCTDirectEventBlock onChangeActive;
+ @property (nonatomic, copy) RCTDirectEventBlock onQuery;
+ @property (nonatomic, copy) RCTDirectEventBlock onChangeScopeButton;
++@property (nonatomic, assign) BOOL bottomBar;
++@property (nonatomic, assign) BOOL searchTab;
+ 
+ -(id)initWithBridge: (RCTBridge *)bridge;
++- (void)updateBottomAccessoryForTabBarController:(UITabBarController *)tabBarController active:(BOOL)active;
+ 
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVSearchBarView.m b/ios/NVSearchBarView.m
+index 3b8d2ac3a6a04559695c779dd568e621f579c200..6a36e4911348e63ed52845ccf3d77768437bcdc6 100644
+--- a/ios/NVSearchBarView.m
++++ b/ios/NVSearchBarView.m
+@@ -17,25 +17,35 @@ @implementation NVSearchBarView
+     NSInteger _nativeActiveEventCount;
+     NSInteger _nativeButtonEventCount;
+     UIFont *_font;
++    BOOL _bottomBar;
++    BOOL _searchTab;
++    UISearchTextField *_bottomSearchField;
++    UITabAccessory *_bottomAccessory;
+ }
+ 
+ - (id)initWithBridge:(RCTBridge *)bridge
+ {
+     if (self = [super initWithFrame:CGRectZero]) {
+         _bridge = bridge;
+-        NVSearchResultsController *viewController = [[NVSearchResultsController alloc] init];
+-        self.searchController = [[NVSearchController alloc] initWithSearchResultsController:viewController];
+-        self.searchController.searchBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
+-        self.searchController.searchResultsUpdater = self;
+-        self.searchController.searchBar.delegate = self;
+-        __weak typeof(self) weakSelf = self;
+-        viewController.boundsDidChangeBlock = ^(CGRect newBounds) {
+-            [weakSelf notifyForBoundsChange:newBounds];
+-        };
+     }
+     return self;
+ }
+ 
++- (void)ensureSearchController
++{
++    if (self.searchController)
++        return;
++    NVSearchResultsController *viewController = [[NVSearchResultsController alloc] init];
++    self.searchController = [[NVSearchController alloc] initWithSearchResultsController:viewController];
++    self.searchController.searchBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
++    self.searchController.searchResultsUpdater = self;
++    self.searchController.searchBar.delegate = self;
++    __weak typeof(self) weakSelf = self;
++    viewController.boundsDidChangeBlock = ^(CGRect newBounds) {
++        [weakSelf notifyForBoundsChange:newBounds];
++    };
++}
++
+ - (void)setObscureBackground:(BOOL)obscureBackground
+ {
+     if (@available(iOS 9.1, *)) {
+@@ -61,6 +71,8 @@ - (void)setPlaceholder:(NSString *)placeholder
+ - (void)setBarTintColor:(UIColor *)barTintColor
+ {
+     if (@available(iOS 13.0, *)) {
++        if (@available(iOS 26.0, *) && (self.bottomBar || self.searchTab))
++            return;
+         [self.searchController.searchBar.searchTextField setBackgroundColor:barTintColor];
+     }
+ }
+@@ -72,31 +84,74 @@ - (void)setScopeButtons:(NSArray *)scopeButtons
+ 
+ - (void)didSetProps:(NSArray<NSString *> *)changedProps
+ {
++    _bottomBar = self.bottomBar;
++    _searchTab = self.searchTab;
++    BOOL usesBottomAccessoryForProps = NO;
++    if (@available(iOS 26.0, *))
++        usesBottomAccessoryForProps = _bottomBar;
++    if (!usesBottomAccessoryForProps)
++        [self ensureSearchController];
++    if (@available(iOS 26.0, *)) {
++        self.reactViewController.navigationItem.preferredSearchBarPlacement =
++            _searchTab ? UINavigationItemSearchBarPlacementIntegratedButton
++                        : UINavigationItemSearchBarPlacementAutomatic;
++    }
++    if (@available(iOS 26.0, *)) {
++        if (_bottomBar && !_bottomSearchField) {
++            _bottomSearchField = [[UISearchTextField alloc] initWithFrame:CGRectZero];
++            _bottomSearchField.delegate = self;
++            _bottomSearchField.clearButtonMode = UITextFieldViewModeWhileEditing;
++            _bottomSearchField.returnKeyType = UIReturnKeySearch;
++            [_bottomSearchField addTarget:self action:@selector(bottomSearchFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
++        }
++    }
++    UITextField *nativeTextField = _bottomSearchField ?: self.searchController.searchBar.searchTextField;
+     if ([changedProps containsObject:@"fontFamily"] || [changedProps containsObject:@"fontWeight"]
+         || [changedProps containsObject:@"fontStyle"] || [changedProps containsObject:@"fontSize"]) {
+         UIFont *baseFont = !self.fontFamily ? [UIFont systemFontOfSize:UIFont.labelFontSize] : nil;
+         NSNumber *size = !self.fontSize ? @(UIFont.labelFontSize) : self.fontSize;
+         _font = [RCTFont updateFont:baseFont withFamily:self.fontFamily size:size weight:self.fontWeight style:self.fontStyle variant:nil scaleMultiplier:1];
+         if (@available(iOS 13.0, *)) {
+-            [self.searchController.searchBar.searchTextField setFont:_font];
++            [nativeTextField setFont:_font];
+         }
+     }
+     if (@available(iOS 11.0, *)) {
+-        [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:self.hideWhenScrolling];
++        BOOL usesBottomAccessory = NO;
++        if (@available(iOS 26.0, *))
++            usesBottomAccessory = self.bottomBar;
++        if (!usesBottomAccessory)
++            [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:self.hideWhenScrolling];
++    }
++    if (@available(iOS 26.0, *)) {
++        if (_bottomBar) {
++            [self.searchController setObscuresBackgroundDuringPresentation:NO];
++            [self.searchController setHidesNavigationBarDuringPresentation:NO];
++            [self.searchController setShowsSearchResultsController:NO];
++            [self.reactViewController.navigationItem setSearchController:nil];
++        }
+     }
+     NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
+-    if (eventLag == 0 && ![self.searchController.searchBar.text isEqualToString:_text]) {
+-        [self.searchController.searchBar setText:_text];
++    if (eventLag == 0 && ![nativeTextField.text isEqualToString:_text]) {
++        [nativeTextField setText:_text];
+     }
+     NSInteger activeEventLag = _nativeActiveEventCount - _mostRecentActiveEventCount;
+-    if (activeEventLag == 0 && self.searchController.active != _active) {
+-        [self.searchController setActive:_active];
+-        if (_active) [self.searchController.searchBar becomeFirstResponder];
++    if (activeEventLag == 0) {
++        if (_bottomBar && @available(iOS 26.0, *)) {
++            if (_active)
++                [nativeTextField becomeFirstResponder];
++            else
++                [nativeTextField resignFirstResponder];
++        } else if (!_searchTab && self.searchController.active != _active) {
++            // UISearchTab owns activation and cancellation. React's default
++            // `active=false` must not immediately close Apple's field after
++            // automaticallyActivatesSearch selects the tab.
++            [self.searchController setActive:_active];
++            if (_active) [self.searchController.searchBar becomeFirstResponder];
++        }
+     }
+     NSInteger buttonEventLag = _nativeButtonEventCount - _mostRecentButtonEventCount;
+-    if (buttonEventLag == 0 && self.searchController.searchBar.selectedScopeButtonIndex != _scopeButton) {
++    if (!_bottomBar && buttonEventLag == 0 && self.searchController.searchBar.selectedScopeButtonIndex != _scopeButton)
+         self.searchController.searchBar.selectedScopeButtonIndex = _scopeButton;
+-    }
+ }
+ 
+ - (void)notifyForBoundsChange:(CGRect)newBounds
+@@ -109,7 +164,7 @@ - (void)notifyForBoundsChange:(CGRect)newBounds
+ - (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
+ {
+     [super insertReactSubview:subview atIndex:atIndex];
+-    self.searchController.searchResultsController.view = subview;
++    [(NVSearchResultsController *)self.searchController.searchResultsController setContentView:subview];
+     _reactSubview = subview;
+     [_reactSubview addObserver:self forKeyPath:@"hidden" options:0 context:nil];
+ }
+@@ -136,11 +191,32 @@ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+     if (@available(iOS 11.0, *)) {
+-        [self.reactViewController.navigationItem setSearchController:_searchController];
++        BOOL usesBottomAccessory = NO;
++        if (@available(iOS 26.0, *))
++            usesBottomAccessory = _bottomBar;
++        if (!usesBottomAccessory) {
++            [self.reactViewController.navigationItem setSearchController:_searchController];
++        }
++        if (@available(iOS 26.0, *)) {
++            self.reactViewController.navigationItem.preferredSearchBarPlacement =
++                _searchTab ? UINavigationItemSearchBarPlacementIntegratedButton
++                            : UINavigationItemSearchBarPlacementAutomatic;
++        }
++        // Reapply after attachment; prop updates may have arrived before the
++        // React view was owned by its scene controller.
++        if (!usesBottomAccessory)
++            [self.reactViewController.navigationItem setHidesSearchBarWhenScrolling:self.hideWhenScrolling];
+     }
+     if (@available(iOS 13.0, *)) {
+-        [self.searchController.searchBar.searchTextField setFont:_font];
++        UITextField *nativeTextField = _bottomSearchField ?: self.searchController.searchBar.searchTextField;
++        [nativeTextField setFont:_font];
+     }
++    dispatch_async(dispatch_get_main_queue(), ^{
++        UITabBarController *tabBarController = self.reactViewController.tabBarController;
++        if (tabBarController && tabBarController.selectedViewController == self.reactViewController.navigationController) {
++            [self updateBottomAccessoryForTabBarController:tabBarController active:YES];
++        }
++    });
+ }
+ 
+ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+@@ -148,13 +224,44 @@ - (void)willMoveToSuperview:(nullable UIView *)newSuperview
+     [super willMoveToSuperview:newSuperview];
+     if (!newSuperview) {
+         if (@available(iOS 11.0, *)) {
+-            [self.reactViewController.navigationItem setSearchController:nil];
+-            [self.searchController.searchResultsController dismissViewControllerAnimated:NO completion:nil];
++            if (_bottomBar && @available(iOS 26.0, *)) {
++                [_bottomSearchField resignFirstResponder];
++                UITabBarController *tabBarController = self.reactViewController.tabBarController;
++                if (tabBarController)
++                    [self updateBottomAccessoryForTabBarController:tabBarController active:NO];
++            } else {
++                [self.reactViewController.navigationItem setSearchController:nil];
++            }
++            if (!_bottomBar)
++                [self.searchController.searchResultsController dismissViewControllerAnimated:NO completion:nil];
+         }
+     }
+ }
+ 
++- (void)updateBottomAccessoryForTabBarController:(UITabBarController *)tabBarController active:(BOOL)active
++{
++    if (@available(iOS 26.0, *)) {
++        if (!_bottomBar)
++            return;
++    } else {
++        return;
++    }
++    if (active) {
++        if (!_bottomAccessory)
++            _bottomAccessory = [[UITabAccessory alloc] initWithContentView:_bottomSearchField];
++        if (tabBarController.bottomAccessory != _bottomAccessory)
++            [tabBarController setBottomAccessory:_bottomAccessory animated:YES];
++    } else if (tabBarController.bottomAccessory == _bottomAccessory) {
++        [tabBarController setBottomAccessory:nil animated:YES];
++    }
++}
++
+ - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
++    if (@available(iOS 26.0, *)) {
++        if (_bottomBar) {
++            [self.searchController setShowsSearchResultsController:NO];
++        }
++    }
+     _nativeEventCount++;
+     if (!!self.onChangeText) {
+         self.onChangeText(@{
+@@ -164,6 +271,41 @@ - (void)updateSearchResultsForSearchController:(UISearchController *)searchContr
+     }
+ }
+ 
++- (void)bottomSearchFieldDidChange:(UITextField *)textField
++{
++    _nativeEventCount++;
++    if (!!self.onChangeText) {
++        self.onChangeText(@{
++            @"text": textField.text,
++            @"eventCount": @(_nativeEventCount),
++        });
++    }
++}
++
++- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
++{
++    if (textField != _bottomSearchField)
++        return YES;
++    _nativeActiveEventCount++;
++    if (!!self.onChangeActive) {
++        self.onChangeActive(@{
++            @"active": @YES,
++            @"eventCount": @(_nativeActiveEventCount),
++        });
++    }
++    return YES;
++}
++
++- (BOOL)textFieldShouldReturn:(UITextField *)textField
++{
++    if (textField == _bottomSearchField && !!self.onQuery) {
++        self.onQuery(@{
++            @"text": textField.text,
++        });
++    }
++    return YES;
++}
++
+ -(BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar
+ {
+     _nativeActiveEventCount++;
+@@ -216,4 +358,3 @@ - (void)dealloc
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVSearchResultsController.h b/ios/NVSearchResultsController.h
+index 64e688306fd933187ec34513d63e83360afe3429..6c64b765cff98f50bd15a0e48c7c6d7d3be738df 100644
+--- a/ios/NVSearchResultsController.h
++++ b/ios/NVSearchResultsController.h
+@@ -4,6 +4,11 @@
+ 
+ @property (nonatomic, copy) void (^boundsDidChangeBlock)(CGRect newBounds);
+ 
++// Keep the React result view inside a stable UIKit-owned container. Assigning
++// a Fabric view directly as UIViewController.view makes UIKit present a black
++// result layer on iOS 26 before React has received the controller's bounds.
++- (void)setContentView:(UIView *)contentView;
++
+ @end
+ 
+ @interface NVSearchController : UISearchController
+diff --git a/ios/NVSearchResultsController.m b/ios/NVSearchResultsController.m
+index 0e3f307e589a686a1bd7f8e9c4c5430aa5de9880..a3d43c048b66ddb168e509d0f56d8317c0a085ce 100644
+--- a/ios/NVSearchResultsController.m
++++ b/ios/NVSearchResultsController.m
+@@ -3,6 +3,7 @@
+ @implementation NVSearchResultsController
+ {
+     CGRect _lastViewFrame;
++    UIView *_contentView;
+ }
+ 
+ - (id)init
+@@ -13,9 +14,39 @@ - (id)init
+     return self;
+ }
+ 
++- (void)setContentView:(UIView *)contentView
++{
++    if (_contentView == contentView)
++        return;
++
++    [_contentView removeFromSuperview];
++    _contentView = contentView;
++
++    if (self.isViewLoaded && contentView) {
++        [self.view addSubview:contentView];
++        contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++        contentView.frame = self.view.bounds;
++    }
++}
++
++- (void)viewDidLoad
++{
++    [super viewDidLoad];
++    self.view.backgroundColor = UIColor.clearColor;
++    self.view.opaque = NO;
++    if (_contentView) {
++        [self.view addSubview:_contentView];
++        _contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++        _contentView.frame = self.view.bounds;
++    }
++}
++
+ - (void)viewDidLayoutSubviews
+ {
+     [super viewDidLayoutSubviews];
++    if (_contentView) {
++        _contentView.frame = self.view.bounds;
++    }
+     if (self.boundsDidChangeBlock && !CGRectEqualToRect(_lastViewFrame, self.view.frame)) {
+         self.boundsDidChangeBlock(self.view.bounds);
+         _lastViewFrame = self.view.frame;
+diff --git a/ios/NVSharedElementComponentView.mm b/ios/NVSharedElementComponentView.mm
+index 9b7e2b1b5a42f5a7b335b3ebe63e803cfb8528b8..1ad7aab410b911c511587af1c43cfd3b86612155 100644
+--- a/ios/NVSharedElementComponentView.mm
++++ b/ios/NVSharedElementComponentView.mm
+@@ -33,14 +33,19 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:self];
++    id controller = self.reactViewController;
++    if (self.window && [controller respondsToSelector:@selector(sharedElements)]) {
++        [((UIViewController<NVSharedElementController> *) controller).sharedElements addObject:self];
++    }
+ }
+ 
+ - (void)willMoveToSuperview:(UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+-    if (!newSuperview)
+-        [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:self];
++    id controller = self.reactViewController;
++    if (!newSuperview && [controller respondsToSelector:@selector(sharedElements)]) {
++        [((UIViewController<NVSharedElementController> *) controller).sharedElements removeObject:self];
++    }
+ }
+ 
+ 
+diff --git a/ios/NVSharedElementView.m b/ios/NVSharedElementView.m
+index 2373b3d92b7f9dd1ae55c4fa71e89ec8d52164c5..edee27ddc8717e59c8fe06d70b731fd2e8320238 100644
+--- a/ios/NVSharedElementView.m
++++ b/ios/NVSharedElementView.m
+@@ -8,17 +8,21 @@ @implementation NVSharedElementView
+ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+-    [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements addObject:self];
++    id controller = self.reactViewController;
++    if (self.window && [controller respondsToSelector:@selector(sharedElements)]) {
++        [((UIViewController<NVSharedElementController> *) controller).sharedElements addObject:self];
++    }
+ }
+ 
+ - (void)willMoveToSuperview:(UIView *)newSuperview
+ {
+     [super willMoveToSuperview:newSuperview];
+-    if (!newSuperview)
+-        [((UIViewController<NVSharedElementController> *) self.reactViewController).sharedElements removeObject:self];
++    id controller = self.reactViewController;
++    if (!newSuperview && [controller respondsToSelector:@selector(sharedElements)]) {
++        [((UIViewController<NVSharedElementController> *) controller).sharedElements removeObject:self];
++    }
+ }
+ 
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVTabBarComponentView.mm b/ios/NVTabBarComponentView.mm
+index 0eacb46a2a34b8cf6e3e3fa61a44e35d334cbeb9..a046fdc32e49db1a211da92c9b0249a7ac5a4b3d 100644
+--- a/ios/NVTabBarComponentView.mm
++++ b/ios/NVTabBarComponentView.mm
+@@ -2,6 +2,7 @@
+ #import "NVTabBarComponentView.h"
+ #import "NVTabBarItemComponentView.h"
+ #import "NVTabBarPagerComponentView.h"
++#import "NVSceneController.h"
+ 
+ #import <react/renderer/components/navigationreactnative/ComponentDescriptors.h>
+ #import <react/renderer/components/navigationreactnative/EventEmitters.h>
+@@ -29,6 +30,9 @@ @implementation NVTabBarComponentView
+     int _foucCounter;
+     bool _firstSceneReselected;
+     bool _jsUpdate;
++    __weak UIView<NVSearchBar> *_activeBottomSearchBar;
++    NSArray<UITab *> *_tabs;
++    bool _usesModernTabs;
+ }
+ 
+ - (instancetype)initWithFrame:(CGRect)frame
+@@ -38,12 +42,117 @@ - (instancetype)initWithFrame:(CGRect)frame
+         _props = defaultProps;
+         _tabBarController = [[UITabBarController alloc] init];
+         _tabBarController.tabBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
++        if (@available(iOS 26.0, *)) {
++            _tabBarController.tabBarMinimizeBehavior = UITabBarMinimizeBehaviorOnScrollDown;
++        }
+         [self addSubview:_tabBarController.view];
+         _tabBarController.delegate = self;
+     }
+     return self;
+ }
+ 
++- (NSInteger)nativeTabCount
++{
++    return _usesModernTabs ? (NSInteger)_tabs.count : (NSInteger)_tabBarController.viewControllers.count;
++}
++
++- (NSInteger)nativeSelectedIndex
++{
++    if (!_usesModernTabs)
++        return _tabBarController.selectedIndex;
++    NSInteger index = [_tabs indexOfObject:_tabBarController.selectedTab];
++    return index == NSNotFound ? NSNotFound : index;
++}
++
++- (UIViewController *)nativeSelectedViewController
++{
++    return _usesModernTabs ? _tabBarController.selectedTab.viewController : _tabBarController.selectedViewController;
++}
++
++- (void)syncNativeTabs
++{
++    BOOL hasSearchTab = NO;
++    for (NVTabBarItemComponentView *tabBarItem in self.reactSubviews) {
++        hasSearchTab = hasSearchTab || tabBarItem.searchTab;
++    }
++
++    if (@available(iOS 18.0, *)) {
++        if (_usesModernTabs || hasSearchTab) {
++            NSMutableArray<UITab *> *tabs = [NSMutableArray arrayWithCapacity:self.reactSubviews.count];
++            for (NVTabBarItemComponentView *tabBarItem in self.reactSubviews) {
++                UITab *tab = [tabBarItem navigationTab];
++                if (!tab)
++                    return;
++                [tabs addObject:tab];
++            }
++            _usesModernTabs = true;
++            _tabs = [tabs copy];
++            [_tabBarController setTabs:_tabs animated:NO];
++            if (_selectedTab >= 0 && _selectedTab < (NSInteger)_tabs.count)
++                _tabBarController.selectedTab = _tabs[_selectedTab];
++            return;
++        }
++    }
++
++    _usesModernTabs = false;
++    _tabs = nil;
++    NSMutableArray *controllers = [NSMutableArray arrayWithCapacity:self.reactSubviews.count];
++    for (NVTabBarItemComponentView *tabBarItem in self.reactSubviews) {
++        if (tabBarItem.navigationController)
++            [controllers addObject:tabBarItem.navigationController];
++    }
++    [_tabBarController setViewControllers:controllers];
++    if (_selectedTab >= 0 && _selectedTab < (NSInteger)controllers.count)
++        _tabBarController.selectedIndex = _selectedTab;
++}
++
++- (BOOL)shouldSelectIndex:(NSInteger)index viewController:(UIViewController *)viewController
++{
++    if (index < 0 || index >= (NSInteger)self.reactSubviews.count)
++        return NO;
++    NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[index];
++    if (tabBarItem.foucCounter == _foucCounter || _selectedTab == index) {
++        NSArray *viewControllers = [(UINavigationController *)viewController viewControllers];
++        _firstSceneReselected = _selectedTab == index && viewControllers.count == 1;
++        return YES;
++    }
++    [self selectTab:index];
++    return NO;
++}
++
++- (void)didSelectIndex:(NSInteger)index viewController:(UIViewController *)viewController
++{
++    if (_selectedTab != index) {
++        _selectedTab = index;
++        [self selectTab:_selectedTab];
++    }
++    if (_firstSceneReselected && _scrollsToTop) {
++        UIViewController *sceneController = ((UINavigationController *) viewController).viewControllers.firstObject;
++        UIScrollView *scrollView;
++        for (UIView *subview in sceneController.view.subviews) {
++            if ([subview isKindOfClass:[RCTScrollViewComponentView class]]){
++                scrollView = ((RCTScrollViewComponentView *) subview).scrollView;
++            }
++            for (UIView *subsubview in subview.subviews) {
++                if ([subsubview isKindOfClass:[NVTabBarPagerComponentView class]]){
++                    [((NVTabBarPagerComponentView *) subsubview) scrollToTop];
++                }
++            }
++        }
++        if (scrollView) {
++            CGFloat topLayoutOffset = sceneController.topLayoutGuide.length;
++            CGFloat bottomLayoutOffset = sceneController.bottomLayoutGuide.length;
++            CGRect safeArea = sceneController.view.bounds;
++            safeArea.origin.y += topLayoutOffset;
++            safeArea.size.height -= topLayoutOffset + bottomLayoutOffset;
++            CGRect localSafeArea = [sceneController.view convertRect:safeArea toView:scrollView];
++            CGFloat top = MAX(0, CGRectGetMinY(localSafeArea) - CGRectGetMinY(scrollView.bounds));
++            [scrollView setContentOffset:CGPointMake(0, -top) animated:YES];
++        }
++    }
++    [self updateBottomAccessory];
++}
++
+ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
+ {
+     const auto &newViewProps = *std::static_pointer_cast<NVTabBarProps const>(props);
+@@ -54,7 +163,11 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+     if (@available(iOS 13.0, *)) {
+         UITabBarAppearance *appearance = [UITabBarAppearance new];
+         [appearance configureWithDefaultBackground];
+-        if (barTintColor) {
++        // iOS 26 owns the floating Liquid Glass tab-bar surface. Applying the
++        // app's opaque background here opts the system out of that treatment.
++        if (@available(iOS 26.0, *)) {
++            // Keep the system default background and scroll-edge behavior.
++        } else if (barTintColor) {
+             if (CGColorGetAlpha(barTintColor.CGColor) == 0)
+                 [appearance configureWithTransparentBackground];
+             if (CGColorGetAlpha(barTintColor.CGColor) == 1)
+@@ -103,6 +216,7 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+         [_tabBarController.tabBar setTintColor: selectedTintColor];
+         [_tabBarController.tabBar setUnselectedItemTintColor: unselectedTintColor];
+     }
++    [self syncNativeTabs];
+     _mostRecentEventCount = newViewProps.mostRecentEventCount;
+     _nativeEventCount = MAX(_nativeEventCount, _mostRecentEventCount);
+     NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
+@@ -111,30 +225,72 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+         _selectedTab = newViewProps.selectedTab;
+     if (newViewProps.preventFouc != _preventFouc && newViewProps.preventFouc)
+         _foucCounter++;
+-    NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[_tabBarController.selectedIndex];
+-    tabBarItem.foucCounter = _foucCounter;
+-    if (_tabBarController.selectedIndex != _selectedTab) {
++    NSInteger selectedIndex = [self nativeSelectedIndex];
++    if (selectedIndex >= 0 && selectedIndex < (NSInteger)self.reactSubviews.count) {
++        NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[selectedIndex];
++        tabBarItem.foucCounter = _foucCounter;
++    }
++    if ([self nativeSelectedIndex] != _selectedTab) {
+         if (tabChanged) {
+             dispatch_async(dispatch_get_main_queue(), ^{
++                // Fabric can deliver the tab selection before its child
++                // views have mounted. Do not index reactSubviews until the
++                // corresponding native controller exists.
++                if (self->_selectedTab < 0 ||
++                    self->_selectedTab >= (NSInteger)self.reactSubviews.count ||
++                    self->_selectedTab >= [self nativeTabCount]) {
++                    return;
++                }
+                 if (self->_preventFouc)self->_foucCounter++;
+                 NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[self->_selectedTab];
+                 tabBarItem.foucCounter = self->_foucCounter;
+-                self->_tabBarController.selectedIndex = self->_selectedTab;
++                if (self->_usesModernTabs)
++                    self->_tabBarController.selectedTab = self->_tabs[self->_selectedTab];
++                else
++                    self->_tabBarController.selectedIndex = self->_selectedTab;
+                 self->_jsUpdate = true;
+                 [self selectTab:self->_selectedTab];
+                 self->_jsUpdate = false;
+             });
+         } else {
+-            _selectedTab = _tabBarController.selectedIndex;
+-            _jsUpdate = true;
+-            [self selectTab:_selectedTab];
+-            _jsUpdate = false;
++            _selectedTab = [self nativeSelectedIndex];
++            if (_selectedTab >= 0 && _selectedTab < (NSInteger)self.reactSubviews.count) {
++                _jsUpdate = true;
++                [self selectTab:_selectedTab];
++                _jsUpdate = false;
++            }
+         }
+     }
+     _scrollsToTop = newViewProps.scrollsToTop;
++    [self updateBottomAccessory];
+     [super updateProps:props oldProps:oldProps];
+ }
+ 
++- (UIView<NVSearchBar> *)bottomSearchBarInView:(UIView *)view
++{
++    if ([view conformsToProtocol:@protocol(NVSearchBar)])
++        return (UIView<NVSearchBar> *)view;
++    for (UIView *subview in view.subviews) {
++        UIView<NVSearchBar> *searchBar = [self bottomSearchBarInView:subview];
++        if (searchBar)
++            return searchBar;
++    }
++    return nil;
++}
++
++- (void)updateBottomAccessory
++{
++    if (@available(iOS 26.0, *)) {
++        UIViewController *selectedViewController = [self nativeSelectedViewController];
++        UIView<NVSearchBar> *searchBar = [self bottomSearchBarInView:selectedViewController.view];
++        if (_activeBottomSearchBar != searchBar) {
++            [_activeBottomSearchBar updateBottomAccessoryForTabBarController:_tabBarController active:NO];
++            _activeBottomSearchBar = searchBar;
++        }
++        [_activeBottomSearchBar updateBottomAccessoryForTabBarController:_tabBarController active:YES];
++    }
++}
++
+ - (void)didMoveToWindow
+ {
+     [super didMoveToWindow];
+@@ -145,6 +301,9 @@ - (void)didMoveToWindow
+         }
+         parentView = parentView.superview;
+     }
++    dispatch_async(dispatch_get_main_queue(), ^{
++        [self updateBottomAccessory];
++    });
+ }
+ 
+ - (void)layoutSubviews
+@@ -161,51 +320,41 @@ - (void)dealloc
+ 
+ - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(nonnull UIViewController *)viewController
+ {
++    if (_usesModernTabs)
++        return;
+     NSInteger selectedIndex = [tabBarController.viewControllers indexOfObject:viewController];
+-    if (_selectedTab != selectedIndex) {
+-        _selectedTab = selectedIndex;
+-        [self selectTab:_selectedTab];
+-    }
+-    if (_firstSceneReselected && _scrollsToTop) {
+-        UIViewController *sceneController = ((UINavigationController *) viewController).viewControllers[0];
+-        UIScrollView *scrollView;
+-        for (UIView *subview in sceneController.view.subviews) {
+-            if ([subview isKindOfClass:[RCTScrollViewComponentView class]]){
+-                scrollView = ((RCTScrollViewComponentView *) subview).scrollView;
+-            }
+-            for (UIView *subsubview in subview.subviews) {
+-                if ([subsubview isKindOfClass:[NVTabBarPagerComponentView class]]){
+-                    [((NVTabBarPagerComponentView *) subsubview) scrollToTop];
+-                }
+-            }
+-        }
+-        CGFloat topLayoutOffset = sceneController.topLayoutGuide.length;
+-        CGFloat bottomLayoutOffset = sceneController.bottomLayoutGuide.length;
+-        CGRect safeArea = sceneController.view.bounds;
+-        safeArea.origin.y += topLayoutOffset;
+-        safeArea.size.height -= topLayoutOffset + bottomLayoutOffset;
+-        CGRect localSafeArea = [sceneController.view convertRect:safeArea toView:scrollView];
+-        CGFloat top = MAX(0, CGRectGetMinY(localSafeArea) - CGRectGetMinY(scrollView.bounds));
+-        [scrollView setContentOffset:CGPointMake(0, -top) animated:YES];
+-    }
++    [self didSelectIndex:selectedIndex viewController:viewController];
+ }
+ 
+ - (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController
+ {
++    if (_usesModernTabs)
++        return YES;
+     NSInteger selectedIndex = [tabBarController.viewControllers indexOfObject:viewController];
+-    NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[selectedIndex];
+-    if (tabBarItem.foucCounter == _foucCounter || _selectedTab == selectedIndex) {
+-        NSArray *viewControllers = ((UINavigationController *) viewController).viewControllers;
+-        _firstSceneReselected = _selectedTab == selectedIndex && viewControllers.count == 1;
++    return [self shouldSelectIndex:selectedIndex viewController:viewController];
++}
++
++- (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectTab:(UITab *)tab
++{
++    if (!_usesModernTabs)
+         return YES;
+-    } else {
+-        [self selectTab:selectedIndex];
+-        return NO;
+-    }
++    NSInteger selectedIndex = [_tabs indexOfObject:tab];
++    return [self shouldSelectIndex:selectedIndex viewController:tab.viewController];
++}
++
++- (void)tabBarController:(UITabBarController *)tabBarController didSelectTab:(UITab *)selectedTab previousTab:(UITab *)previousTab
++{
++    if (!_usesModernTabs)
++        return;
++    NSInteger selectedIndex = [_tabs indexOfObject:selectedTab];
++    [self didSelectIndex:selectedIndex viewController:selectedTab.viewController];
+ }
+ 
+ -(void)selectTab:(NSInteger)index
+ {
++    if (index < 0 || index >= (NSInteger)self.reactSubviews.count ||
++        index >= [self nativeTabCount])
++        return;
+     if (!_jsUpdate)
+         _nativeEventCount++;
+     NVTabBarItemComponentView *tabBarItem = (NVTabBarItemComponentView *)self.reactSubviews[index];
+@@ -226,25 +375,17 @@ -(void)selectTab:(NSInteger)index
+ - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+     [self insertReactSubview:childComponentView atIndex:index];
+-    NSMutableArray *controllers = [NSMutableArray arrayWithArray:[_tabBarController viewControllers]];
+-    [controllers insertObject:[(NVTabBarItemComponentView *) childComponentView navigationController] atIndex:index];
+-    [_tabBarController setViewControllers:controllers];
+-    if (_selectedTab == controllers.count - 1)
+-        _tabBarController.selectedIndex = _selectedTab;
+     ((NVTabBarItemComponentView *) childComponentView).stackDidChangeBlock = ^(NVTabBarItemComponentView *tabBarItemView){
+-        NSMutableArray *controllers = [NSMutableArray arrayWithArray:[self->_tabBarController viewControllers]];
+-        [controllers insertObject:[tabBarItemView navigationController] atIndex: [self.reactSubviews indexOfObject:tabBarItemView]];
+-        [self->_tabBarController setViewControllers:controllers];
++        [self syncNativeTabs];
+     };
++    [self syncNativeTabs];
+ }
+ 
+ - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+ {
+     [self removeReactSubview:childComponentView];
+     ((NVTabBarItemComponentView *) childComponentView).stackDidChangeBlock = nil;
+-    NSMutableArray *controllers = [NSMutableArray arrayWithArray:[_tabBarController viewControllers]];
+-    [controllers removeObjectAtIndex:index];
+-    [_tabBarController setViewControllers:controllers];
++    [self syncNativeTabs];
+     [childComponentView removeFromSuperview];
+ }
+ 
+diff --git a/ios/NVTabBarItemComponentView.h b/ios/NVTabBarItemComponentView.h
+index 1aa1321fec9912ff784d61e67be5bf7635e74521..597066ed5a6d6451b16494ecb42fc4e70023762c 100644
+--- a/ios/NVTabBarItemComponentView.h
++++ b/ios/NVTabBarItemComponentView.h
+@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
+ @interface NVTabBarItemComponentView : RCTViewComponentView
+ 
+ @property UITabBarItem *tab;
++@property (nonatomic, assign) BOOL searchTab;
+ @property (nonatomic, assign) NSInteger foucCounter;
+ @property (nonatomic, copy) NSString *fontFamily;
+ @property (nonatomic, copy) NSString *fontWeight;
+@@ -15,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
+ @property (nonatomic, strong) UINavigationController *navigationController;
+ @property (nonatomic, copy) void (^ _Nullable stackDidChangeBlock)(NVTabBarItemComponentView *tabBarItemView);
+ 
++- (UITab *)navigationTab API_AVAILABLE(ios(18.0));
++
+ -(void)onPress;
+ 
+ @end
+diff --git a/ios/NVTabBarItemComponentView.mm b/ios/NVTabBarItemComponentView.mm
+index b296a8b43fc7a16c39504b80e25645b2c5f96756..88e09616e12f61eaabde4602c19aaa34fd878621 100644
+--- a/ios/NVTabBarItemComponentView.mm
++++ b/ios/NVTabBarItemComponentView.mm
+@@ -25,6 +25,9 @@ @implementation NVTabBarItemComponentView
+     UIImage *_image;
+     ImageSource _imageSource;
+     RCTImageLoader *_imageLoader;
++    UITab *_navigationTab;
++    NSString *_navigationTabIdentifier;
++    BOOL _navigationTabIsSearch;
+ }
+ 
+ - (instancetype)initWithFrame:(CGRect)frame
+@@ -43,11 +46,59 @@ - (void)ensureTabBarItem
+     }
+ }
+ 
++- (UITab *)navigationTab
++{
++    if (!self.navigationController)
++        return nil;
++    if (@available(iOS 26.0, *)) {
++        // Continue below.
++    } else {
++        return nil;
++    }
++
++    if (!_navigationTab || _navigationTabIsSearch != self.searchTab) {
++        __weak NVTabBarItemComponentView *weakSelf = self;
++        if (self.searchTab) {
++            UISearchTab *searchTab = [[UISearchTab alloc] initWithViewControllerProvider:^UIViewController *(__kindof UITab *tab) {
++                return weakSelf.navigationController;
++            }];
++            if (@available(iOS 26.0, *))
++                searchTab.automaticallyActivatesSearch = YES;
++            _navigationTab = searchTab;
++            _navigationTabIsSearch = YES;
++        } else {
++            if (!_navigationTabIdentifier)
++                _navigationTabIdentifier = [NSUUID UUID].UUIDString;
++            _navigationTab = [[UITab alloc] initWithTitle:self.tab.title ?: @""
++                                                       image:self.tab.image
++                                                  identifier:_navigationTabIdentifier
++                                      viewControllerProvider:^UIViewController *(__kindof UITab *tab) {
++                return weakSelf.navigationController;
++            }];
++            _navigationTabIsSearch = NO;
++        }
++    }
++
++    if (!self.searchTab) {
++        _navigationTab.title = self.tab.title ?: @"";
++        _navigationTab.image = self.tab.image;
++        _navigationTab.badgeValue = self.tab.badgeValue;
++    }
++    _navigationTab.accessibilityIdentifier = self.tab.accessibilityIdentifier;
++    return _navigationTab;
++}
++
+ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
+ {
+     [self ensureTabBarItem];
+     const auto &oldViewProps = *std::static_pointer_cast<NVTabBarItemProps const>(_props);
+     const auto &newViewProps = *std::static_pointer_cast<NVTabBarItemProps const>(props);
++    BOOL searchTabChanged = oldViewProps.searchTab != newViewProps.searchTab;
++    self.searchTab = newViewProps.searchTab;
++    if (searchTabChanged) {
++        _navigationTab = nil;
++        _navigationTabIsSearch = NO;
++    }
+     if (oldViewProps.systemItem != newViewProps.systemItem) {
+         NSString *systemItemVal = [[NSString alloc] initWithUTF8String: newViewProps.systemItem.c_str()];
+         if (systemItemVal.length) {
+@@ -97,6 +148,8 @@ - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &
+         || _imageSource.size.width != oldViewProps.image.width || _imageSource.size.height != oldViewProps.image.height
+         || _imageSource.scale != oldViewProps.image.scale)
+         [self loadImage];
++    if (searchTabChanged && self.stackDidChangeBlock)
++        self.stackDidChangeBlock(self);
+     [super updateProps:props oldProps:oldProps];
+ }
+ 
+@@ -156,6 +209,8 @@ - (void)loadImage
+             if (sfSymbol) {
+                 _image = sfSymbol;
+                 _tab.image = sfSymbol;
++                if (_navigationTab && !_navigationTabIsSearch)
++                    _navigationTab.image = sfSymbol;
+                 return;
+             }
+         }
+@@ -163,11 +218,15 @@ - (void)loadImage
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 self->_image = image;
+                 self->_tab.image = image;
++                if (self->_navigationTab && !self->_navigationTabIsSearch)
++                    self->_navigationTab.image = image;
+             });
+         }];
+     } else {
+         if (_tab.image == _image)
+             _tab.image = nil;
++        if (_navigationTab && !_navigationTabIsSearch)
++            _navigationTab.image = nil;
+         _image = nil;
+     }
+ }
+@@ -181,6 +240,8 @@ - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childCompone
+     if ([childComponentView class] == [NVNavigationStackComponentView class])
+         self.navigationController = [(NVNavigationStackComponentView *) childComponentView navigationController];
+     self.navigationController.tabBarItem = self.tab;
++    _navigationTab = nil;
++    _navigationTabIsSearch = NO;
+     if (self.stackDidChangeBlock) {
+         self.stackDidChangeBlock(self);
+     }
+diff --git a/ios/NVTabBarItemManager.m b/ios/NVTabBarItemManager.m
+index eac9b8fb54457db7f005129dc54a0871c272a416..81fb2d700657549d2c6b7cf1c0525f3c1835f661 100644
+--- a/ios/NVTabBarItemManager.m
++++ b/ios/NVTabBarItemManager.m
+@@ -47,10 +47,10 @@ - (UIView *)view
+ RCT_EXPORT_VIEW_PROPERTY(badgeColor, UIColor)
+ RCT_EXPORT_VIEW_PROPERTY(image, RCTImageSource)
+ RCT_EXPORT_VIEW_PROPERTY(systemItem, UITabBarSystemItem)
++RCT_EXPORT_VIEW_PROPERTY(searchTab, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(testID, NSString)
+ 
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVTabBarItemView.h b/ios/NVTabBarItemView.h
+index eed7ce229ce6d769ad0612999757623f0a2925b3..6fd618fde63779b9575676d9954ad445b4f459a4 100644
+--- a/ios/NVTabBarItemView.h
++++ b/ios/NVTabBarItemView.h
+@@ -6,6 +6,7 @@
+ @interface NVTabBarItemView : UIView
+ 
+ @property UITabBarItem *tab;
++@property (nonatomic, assign) BOOL searchTab;
+ @property (nonatomic, assign) NSInteger foucCounter;
+ @property (nonatomic, copy) NSString *fontFamily;
+ @property (nonatomic, copy) NSString *fontWeight;
+@@ -15,9 +16,10 @@
+ @property (nonatomic, copy) RCTBubblingEventBlock onPress;
+ @property (nonatomic, copy) void (^stackDidChangeBlock)(NVTabBarItemView *tabBarItemView);
+ 
++- (UITab *)navigationTab API_AVAILABLE(ios(18.0));
++
+ -(id)initWithBridge: (RCTBridge *)bridge;
+ 
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVTabBarItemView.m b/ios/NVTabBarItemView.m
+index b039dc633aaeec95eafbc51e61aacbbd011480bb..93d87a81df13e8e43da7ed9ddcc779b19dd49667 100644
+--- a/ios/NVTabBarItemView.m
++++ b/ios/NVTabBarItemView.m
+@@ -17,6 +17,9 @@ @implementation NVTabBarItemView
+     __weak RCTBridge *_bridge;
+     NSString *_title;
+     UIImage *_image;
++    UITab *_navigationTab;
++    NSString *_navigationTabIdentifier;
++    BOOL _navigationTabIsSearch;
+ }
+ 
+ - (id)initWithBridge:(RCTBridge *)bridge
+@@ -28,15 +31,72 @@ - (id)initWithBridge:(RCTBridge *)bridge
+     return self;
+ }
+ 
++- (void)setSearchTab:(BOOL)searchTab
++{
++    if (_searchTab == searchTab)
++        return;
++    _searchTab = searchTab;
++    _navigationTab = nil;
++    _navigationTabIsSearch = NO;
++    if (self.stackDidChangeBlock)
++        self.stackDidChangeBlock(self);
++}
++
++- (UITab *)navigationTab
++{
++    if (!self.navigationController)
++        return nil;
++    if (@available(iOS 26.0, *)) {
++        // Continue below.
++    } else {
++        return nil;
++    }
++
++    if (!_navigationTab || _navigationTabIsSearch != self.searchTab) {
++        __weak NVTabBarItemView *weakSelf = self;
++        if (self.searchTab) {
++            UISearchTab *searchTab = [[UISearchTab alloc] initWithViewControllerProvider:^UIViewController *(__kindof UITab *tab) {
++                return weakSelf.navigationController;
++            }];
++            if (@available(iOS 26.0, *))
++                searchTab.automaticallyActivatesSearch = YES;
++            _navigationTab = searchTab;
++            _navigationTabIsSearch = YES;
++        } else {
++            if (!_navigationTabIdentifier)
++                _navigationTabIdentifier = [NSUUID UUID].UUIDString;
++            _navigationTab = [[UITab alloc] initWithTitle:self.tab.title ?: @""
++                                                       image:self.tab.image
++                                                  identifier:_navigationTabIdentifier
++                                      viewControllerProvider:^UIViewController *(__kindof UITab *tab) {
++                return weakSelf.navigationController;
++            }];
++            _navigationTabIsSearch = NO;
++        }
++    }
++
++    if (!self.searchTab) {
++        _navigationTab.title = self.tab.title ?: @"";
++        _navigationTab.image = self.tab.image;
++        _navigationTab.badgeValue = self.tab.badgeValue;
++    }
++    _navigationTab.accessibilityIdentifier = self.tab.accessibilityIdentifier;
++    return _navigationTab;
++}
++
+ - (void)setTitle:(NSString *)title
+ {
+     _title = title;
+     self.tab.title = title;
++    if (_navigationTab && !_navigationTabIsSearch)
++        _navigationTab.title = title;
+ }
+ 
+ - (void)setBadge:(NSString *)badge
+ {
+     self.tab.badgeValue = badge;
++    if (_navigationTab && !_navigationTabIsSearch)
++        _navigationTab.badgeValue = badge;
+ }
+ 
+ - (void)setBadgeColor:(UIColor *)badgeColor
+@@ -54,6 +114,8 @@ - (void)setImage:(RCTImageSource *)source
+             if (sfSymbol) {
+                 _image = sfSymbol;
+                 _tab.image = sfSymbol;
++                if (_navigationTab && !_navigationTabIsSearch)
++                    _navigationTab.image = sfSymbol;
+                 return;
+             }
+         }
+@@ -61,11 +123,15 @@ - (void)setImage:(RCTImageSource *)source
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 self->_image = image;
+                 self->_tab.image = image;
++                if (self->_navigationTab && !self->_navigationTabIsSearch)
++                    self->_navigationTab.image = image;
+             });
+         }];
+     } else {
+         _image = nil;
+         _tab.image = nil;
++        if (_navigationTab && !_navigationTabIsSearch)
++            _navigationTab.image = nil;
+     }
+ }
+ 
+@@ -113,6 +179,8 @@ - (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
+     if ([subview class] == [NVNavigationStackView class])
+         self.navigationController = [(NVNavigationStackView *) subview navigationController];
+     self.navigationController.tabBarItem = self.tab;
++    _navigationTab = nil;
++    _navigationTabIsSearch = NO;
+     if (self.stackDidChangeBlock) {
+         self.stackDidChangeBlock(self);
+     }
+@@ -121,4 +189,3 @@ - (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
+ @end
+ 
+ #endif
+-
+diff --git a/ios/NVTabBarPagerView.m b/ios/NVTabBarPagerView.m
+index ff2528bf0d9087b7b353041247a576471d39c028..d9ecf693765de6e72eeab2f2753d7894b5fd4473 100644
+--- a/ios/NVTabBarPagerView.m
++++ b/ios/NVTabBarPagerView.m
+@@ -4,7 +4,7 @@
+ #import "NVTabBarItemView.h"
+ 
+ #import <React/UIView+React.h>
+-#import <React/RCTScrollView.h>
++#import <UIKit/UIKit.h>
+ 
+ @implementation NVTabBarPagerView
+ {
+@@ -121,8 +121,8 @@ - (NVTabBarItemView *)getTabAt:(NSInteger)index
+ - (void)scrollToTop
+ {
+     UIView *tabBarItem = _tabs[_selectedTab].view.subviews[0];
+-    if ([tabBarItem isKindOfClass:[RCTScrollView class]] && _scrollsToTop) {
+-        UIScrollView *scrollView = ((RCTScrollView *) tabBarItem).scrollView;
++    if ([tabBarItem isKindOfClass:[UIScrollView class]] && _scrollsToTop) {
++        UIScrollView *scrollView = (UIScrollView *) tabBarItem;
+         [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+     }
+ }
+diff --git a/ios/NVTabBarView.m b/ios/NVTabBarView.m
+index 7ef3d38f639ca5dbce225d7a56fb30c904911076..536e630336f8d263ee7c55926772be10c9177e4f 100644
+--- a/ios/NVTabBarView.m
++++ b/ios/NVTabBarView.m
+@@ -2,12 +2,13 @@
+ #import "NVTabBarView.h"
+ #import "NVTabBarItemView.h"
+ #import "NVTabBarPagerView.h"
++#import "NVSceneController.h"
+ 
+ #import <UIKit/UIKit.h>
+ #import <React/UIView+React.h>
+ #import <React/RCTFont.h>
+ #import <React/RCTI18nUtil.h>
+-#import <React/RCTScrollView.h>
++#import <UIKit/UIKit.h>
+ 
+ @implementation NVTabBarView
+ {
+@@ -17,6 +18,9 @@ @implementation NVTabBarView
+     int _foucCounter;
+     bool _firstSceneReselected;
+     bool _jsUpdate;
++    __weak UIView<NVSearchBar> *_activeBottomSearchBar;
++    NSArray<UITab *> *_tabs;
++    bool _usesModernTabs;
+ }
+ 
+ - (id)init
+@@ -24,25 +28,123 @@ - (id)init
+     if (self = [super init]) {
+         _tabBarController = [[UITabBarController alloc] init];
+         _tabBarController.tabBar.semanticContentAttribute = ![[RCTI18nUtil sharedInstance] isRTL] ? UISemanticContentAttributeForceLeftToRight : UISemanticContentAttributeForceRightToLeft;
++        if (@available(iOS 26.0, *)) {
++            _tabBarController.tabBarMinimizeBehavior = UITabBarMinimizeBehaviorOnScrollDown;
++        }
+         [self addSubview:_tabBarController.view];
+         _tabBarController.delegate = self;
+     }
+     return self;
+ }
+ 
+-- (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
++- (NSInteger)nativeTabCount
+ {
+-    [super insertReactSubview:subview atIndex:atIndex];
+-    NSMutableArray *controllers = [NSMutableArray arrayWithArray:[_tabBarController viewControllers]];
+-    [controllers insertObject:[(NVTabBarItemView *) subview navigationController] atIndex:atIndex];
++    return _usesModernTabs ? (NSInteger)_tabs.count : (NSInteger)_tabBarController.viewControllers.count;
++}
++
++- (NSInteger)nativeSelectedIndex
++{
++    if (!_usesModernTabs)
++        return _tabBarController.selectedIndex;
++    NSInteger index = [_tabs indexOfObject:_tabBarController.selectedTab];
++    return index == NSNotFound ? NSNotFound : index;
++}
++
++- (UIViewController *)nativeSelectedViewController
++{
++    return _usesModernTabs ? _tabBarController.selectedTab.viewController : _tabBarController.selectedViewController;
++}
++
++- (void)syncNativeTabs
++{
++    BOOL hasSearchTab = NO;
++    for (NVTabBarItemView *tabBarItem in self.reactSubviews)
++        hasSearchTab = hasSearchTab || tabBarItem.searchTab;
++
++    if (@available(iOS 18.0, *)) {
++        if (_usesModernTabs || hasSearchTab) {
++            NSMutableArray<UITab *> *tabs = [NSMutableArray arrayWithCapacity:self.reactSubviews.count];
++            for (NVTabBarItemView *tabBarItem in self.reactSubviews) {
++                UITab *tab = [tabBarItem navigationTab];
++                if (!tab)
++                    return;
++                [tabs addObject:tab];
++            }
++            _usesModernTabs = true;
++            _tabs = [tabs copy];
++            [_tabBarController setTabs:_tabs animated:NO];
++            if (_selectedTab >= 0 && _selectedTab < (NSInteger)_tabs.count)
++                _tabBarController.selectedTab = _tabs[_selectedTab];
++            return;
++        }
++    }
++
++    _usesModernTabs = false;
++    _tabs = nil;
++    NSMutableArray *controllers = [NSMutableArray arrayWithCapacity:self.reactSubviews.count];
++    for (NVTabBarItemView *tabBarItem in self.reactSubviews) {
++        if (tabBarItem.navigationController)
++            [controllers addObject:tabBarItem.navigationController];
++    }
+     [_tabBarController setViewControllers:controllers];
+-    if (_selectedTab == controllers.count - 1)
++    if (_selectedTab >= 0 && _selectedTab < (NSInteger)controllers.count)
+         _tabBarController.selectedIndex = _selectedTab;
++}
++
++- (BOOL)shouldSelectIndex:(NSInteger)index viewController:(UIViewController *)viewController
++{
++    if (index < 0 || index >= (NSInteger)self.reactSubviews.count)
++        return NO;
++    NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[index];
++    if (tabBarItem.foucCounter == _foucCounter || _selectedIndex == index) {
++        NSArray *viewControllers = [(UINavigationController *)viewController viewControllers];
++        _firstSceneReselected = _selectedIndex == index && viewControllers.count == 1;
++        return YES;
++    }
++    [self selectTab:index];
++    return NO;
++}
++
++- (void)didSelectIndex:(NSInteger)index viewController:(UIViewController *)viewController
++{
++    if (_selectedIndex != index) {
++        _selectedIndex = index;
++        [self selectTab:_selectedIndex];
++    }
++    if (_firstSceneReselected && _scrollsToTop) {
++        UIViewController *sceneController = ((UINavigationController *) viewController).viewControllers.firstObject;
++        UIScrollView *scrollView = nil;
++        for (UIView *subview in sceneController.view.subviews) {
++            if ([subview isKindOfClass:[UIScrollView class]]) {
++                scrollView = (UIScrollView *) subview;
++            }
++            for (UIView *subsubview in subview.subviews) {
++                if ([subsubview isKindOfClass:[NVTabBarPagerView class]]){
++                    [((NVTabBarPagerView *) subsubview) scrollToTop];
++                }
++            }
++        }
++        if (scrollView) {
++            CGFloat topLayoutOffset = sceneController.topLayoutGuide.length;
++            CGFloat bottomLayoutOffset = sceneController.bottomLayoutGuide.length;
++            CGRect safeArea = sceneController.view.bounds;
++            safeArea.origin.y += topLayoutOffset;
++            safeArea.size.height -= topLayoutOffset + bottomLayoutOffset;
++            CGRect localSafeArea = [sceneController.view convertRect:safeArea toView:scrollView];
++            CGFloat top = MAX(0, CGRectGetMinY(localSafeArea) - CGRectGetMinY(scrollView.bounds));
++            [scrollView setContentOffset:CGPointMake(0, -top) animated:YES];
++        }
++    }
++    [self updateBottomAccessory];
++}
++
++- (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
++{
++    [super insertReactSubview:subview atIndex:atIndex];
+     ((NVTabBarItemView *) subview).stackDidChangeBlock = ^(NVTabBarItemView *tabBarItemView){
+-        NSMutableArray *controllers = [NSMutableArray arrayWithArray:[self->_tabBarController viewControllers]];
+-        [controllers replaceObjectAtIndex:[self.reactSubviews indexOfObject:tabBarItemView] withObject:[tabBarItemView navigationController]];
+-        [self->_tabBarController setViewControllers:controllers];
++        [self syncNativeTabs];
+     };
++    [self syncNativeTabs];
+ }
+ 
+ - (void)removeReactSubview:(UIView *)subview
+@@ -50,33 +152,43 @@ - (void)removeReactSubview:(UIView *)subview
+     NSInteger tab = [self.reactSubviews indexOfObject:subview];
+     ((NVTabBarItemView *) subview).stackDidChangeBlock = nil;
+     [super removeReactSubview:subview];
+-    NSMutableArray *controllers = [NSMutableArray arrayWithArray:[_tabBarController viewControllers]];
+-    [controllers removeObjectAtIndex:tab];
+-    [_tabBarController setViewControllers:controllers];
++    [self syncNativeTabs];
+ }
+ 
+ - (void)didSetProps:(NSArray<NSString *> *)changedProps
+ {
++    [self syncNativeTabs];
+     _nativeEventCount = MAX(_nativeEventCount, _mostRecentEventCount);
+     NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
+     if (eventLag == 0) {
+         _selectedIndex = _selectedTab;
+     }
+-    if (_tabBarController.selectedIndex == NSNotFound) {
+-        _tabBarController.selectedIndex = 0;
++    if ([self nativeSelectedIndex] == NSNotFound) {
++        if (_usesModernTabs && _tabs.count > 0)
++            _tabBarController.selectedTab = _tabs[0];
++        else
++            _tabBarController.selectedIndex = 0;
+     }
+     if ([changedProps containsObject:@"preventFouc"] && _preventFouc)
+         _foucCounter++;
+-    NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[_tabBarController.selectedIndex];
+-    tabBarItem.foucCounter = _foucCounter;
+-    if (_tabBarController.selectedIndex != _selectedIndex) {
++    NSInteger selectedIndex = [self nativeSelectedIndex];
++    if (selectedIndex >= 0 && selectedIndex < (NSInteger)self.reactSubviews.count) {
++        NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[selectedIndex];
++        tabBarItem.foucCounter = _foucCounter;
++    }
++    if ([self nativeSelectedIndex] != _selectedIndex) {
+         if ([changedProps containsObject:@"selectedTab"]) {
+             if (_preventFouc)_foucCounter++;
+-            NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[_selectedIndex];
+-            tabBarItem.foucCounter = _foucCounter;
+-            _tabBarController.selectedIndex = _selectedIndex;
++            if (_selectedIndex >= 0 && _selectedIndex < (NSInteger)self.reactSubviews.count) {
++                NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[_selectedIndex];
++                tabBarItem.foucCounter = _foucCounter;
++                if (_usesModernTabs)
++                    _tabBarController.selectedTab = _tabs[_selectedIndex];
++                else
++                    _tabBarController.selectedIndex = _selectedIndex;
++            }
+         } else {
+-            _selectedIndex = _tabBarController.selectedIndex;
++            _selectedIndex = [self nativeSelectedIndex];
+         }
+         _jsUpdate = true;
+         [self selectTab:_selectedIndex];
+@@ -85,7 +197,11 @@ - (void)didSetProps:(NSArray<NSString *> *)changedProps
+     if (@available(iOS 13.0, *)) {
+         UITabBarAppearance *appearance = [UITabBarAppearance new];
+         [appearance configureWithDefaultBackground];
+-        if (_barTintColor) {
++        // iOS 26 owns the floating Liquid Glass tab-bar surface. Applying the
++        // app's opaque background here opts the system out of that treatment.
++        if (@available(iOS 26.0, *)) {
++            // Keep the system default background and scroll-edge behavior.
++        } else if (_barTintColor) {
+             if (CGColorGetAlpha(_barTintColor.CGColor) == 0)
+                 [appearance configureWithTransparentBackground];
+             if (CGColorGetAlpha(_barTintColor.CGColor) == 1)
+@@ -119,13 +235,39 @@ - (void)didSetProps:(NSArray<NSString *> *)changedProps
+         appearance.inlineLayoutAppearance = itemAppearance;
+         _tabBarController.tabBar.standardAppearance = appearance;
+         [_tabBarController.tabBar setNeedsLayout];
+-        if (@available(iOS 15.0, *))
++    if (@available(iOS 15.0, *))
+             _tabBarController.tabBar.scrollEdgeAppearance = appearance;
+     } else {
+         [_tabBarController.tabBar setBarTintColor:_barTintColor];
+         [_tabBarController.tabBar setUnselectedItemTintColor: _unselectedTintColor];
+         [_tabBarController.tabBar setTintColor: _selectedTintColor];
+     }
++    [self updateBottomAccessory];
++}
++
++- (UIView<NVSearchBar> *)bottomSearchBarInView:(UIView *)view
++{
++    if ([view conformsToProtocol:@protocol(NVSearchBar)])
++        return (UIView<NVSearchBar> *)view;
++    for (UIView *subview in view.subviews) {
++        UIView<NVSearchBar> *searchBar = [self bottomSearchBarInView:subview];
++        if (searchBar)
++            return searchBar;
++    }
++    return nil;
++}
++
++- (void)updateBottomAccessory
++{
++    if (@available(iOS 26.0, *)) {
++        UIViewController *selectedViewController = [self nativeSelectedViewController];
++        UIView<NVSearchBar> *searchBar = [self bottomSearchBarInView:selectedViewController.view];
++        if (_activeBottomSearchBar != searchBar) {
++            [_activeBottomSearchBar updateBottomAccessoryForTabBarController:_tabBarController active:NO];
++            _activeBottomSearchBar = searchBar;
++        }
++        [_activeBottomSearchBar updateBottomAccessoryForTabBarController:_tabBarController active:YES];
++    }
+ }
+ 
+ - (void)didMoveToWindow
+@@ -138,6 +280,9 @@ - (void)didMoveToWindow
+         }
+         parentView = parentView.superview;
+     }
++    dispatch_async(dispatch_get_main_queue(), ^{
++        [self updateBottomAccessory];
++    });
+ }
+ 
+ - (void)didUpdateReactSubviews
+@@ -157,51 +302,41 @@ - (void)dealloc
+ 
+ - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(nonnull UIViewController *)viewController
+ {
++    if (_usesModernTabs)
++        return;
+     NSInteger selectedIndex = [tabBarController.viewControllers indexOfObject:viewController];
+-    if (_selectedIndex != selectedIndex) {
+-        _selectedIndex = selectedIndex;
+-        [self selectTab:_selectedIndex];
+-    }
+-    if (_firstSceneReselected && _scrollsToTop) {
+-        UIViewController *sceneController = ((UINavigationController *) viewController).viewControllers[0];
+-        UIScrollView *scrollView;
+-        for (UIView *subview in sceneController.view.subviews) {
+-            if ([subview isKindOfClass:[RCTScrollView class]]){
+-                scrollView = ((RCTScrollView *) subview).scrollView;
+-            }
+-            for (UIView *subsubview in subview.subviews) {
+-                if ([subsubview isKindOfClass:[NVTabBarPagerView class]]){
+-                    [((NVTabBarPagerView *) subsubview) scrollToTop];
+-                }
+-            }
+-        }
+-        CGFloat topLayoutOffset = sceneController.topLayoutGuide.length;
+-        CGFloat bottomLayoutOffset = sceneController.bottomLayoutGuide.length;
+-        CGRect safeArea = sceneController.view.bounds;
+-        safeArea.origin.y += topLayoutOffset;
+-        safeArea.size.height -= topLayoutOffset + bottomLayoutOffset;
+-        CGRect localSafeArea = [sceneController.view convertRect:safeArea toView:scrollView];
+-        CGFloat top = MAX(0, CGRectGetMinY(localSafeArea) - CGRectGetMinY(scrollView.bounds));
+-        [scrollView setContentOffset:CGPointMake(0, -top) animated:YES];
+-    }
++    [self didSelectIndex:selectedIndex viewController:viewController];
+ }
+ 
+ - (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController
+ {
++    if (_usesModernTabs)
++        return YES;
+     NSInteger selectedIndex = [tabBarController.viewControllers indexOfObject:viewController];
+-    NVTabBarItemView *tabBarItem = (NVTabBarItemView *)self.reactSubviews[selectedIndex];
+-    if (tabBarItem.foucCounter == _foucCounter || _selectedIndex == selectedIndex) {
+-        NSArray *viewControllers = ((UINavigationController *) viewController).viewControllers;
+-        _firstSceneReselected = _selectedIndex == selectedIndex && viewControllers.count == 1;
++    return [self shouldSelectIndex:selectedIndex viewController:viewController];
++}
++
++- (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectTab:(UITab *)tab
++{
++    if (!_usesModernTabs)
+         return YES;
+-    } else {
+-        [self selectTab:selectedIndex];
+-        return NO;
+-    }
++    NSInteger selectedIndex = [_tabs indexOfObject:tab];
++    return [self shouldSelectIndex:selectedIndex viewController:tab.viewController];
++}
++
++- (void)tabBarController:(UITabBarController *)tabBarController didSelectTab:(UITab *)selectedTab previousTab:(UITab *)previousTab
++{
++    if (!_usesModernTabs)
++        return;
++    NSInteger selectedIndex = [_tabs indexOfObject:selectedTab];
++    [self didSelectIndex:selectedIndex viewController:selectedTab.viewController];
+ }
+ 
+ -(void) selectTab:(NSInteger)index
+ {
++    if (index < 0 || index >= (NSInteger)self.reactSubviews.count ||
++        index >= [self nativeTabCount])
++        return;
+     if (!_jsUpdate) {
+         _nativeEventCount++;
+         self.onTabSelected(@{
+@@ -218,4 +353,3 @@ -(void) selectTab:(NSInteger)index
+ @end
+ 
+ #endif
+-
+diff --git a/navigation.react.native.d.ts b/navigation.react.native.d.ts
+index 1fc7452c2c619a77ba49a6ce90eb01298c340c9e..97d5c1e996c351a2001b9506463bb6cb5fe2fb1a 100644
+--- a/navigation.react.native.d.ts
++++ b/navigation.react.native.d.ts
+@@ -488,6 +488,13 @@ export class BarButton extends Component<BarButtonProps> { }
+  * Defines the Search Bar Props contract
+  */
+ export interface SearchBarProps {
++    /**
++     * Places the search field in the iOS 26 tab bar bottom accessory
++     * when supported. Older iOS versions retain the navigation-bar search.
++     */
++    bottomBar?: boolean;
++    /** Marks the iOS 26 UISearchTab search field. */
++    searchTab?: boolean;
+     /**
+      * Indicates whether the search bar takes over the toolbar
+      * @platform android
+@@ -735,6 +742,11 @@ export interface TabBarItemProps {
+     systemItem?: 'bookmarks' | 'contacts' | 'downloads' | 'favorites'
+         | 'featured' | 'history' | 'more' | 'most-recent' | 'most-viewed'
+         | 'recents' | 'search' | 'top-rated';
++    /**
++     * Uses Apple's system UISearchTab on iOS 26 and newer.
++     * @platform ios
++     */
++    searchTab?: boolean;
+     /**
+      * The tab font family
+      */
+diff --git a/navigation.react.native.js b/navigation.react.native.js
+index 7d4764766469ac33cb28f4699a7cbe2b8ba974f0..500d22e74456faadfb3b09855a2e10229033d16a 100644
+--- a/navigation.react.native.js
++++ b/navigation.react.native.js
+@@ -64,6 +64,7 @@ var Suspender = ({ freeze, children }) => {
+     return children;
+ };
+ var Freeze = ({ enabled, children }) => {
++    enabled = false;
+     const suspendable = !!React__default.Suspense;
+     const suspender = React__default.createElement(Suspender, { freeze: enabled && suspendable }, children);
+     return suspendable ? React__default.createElement(Suspense, { fallback: null }, suspender) : suspender;
+@@ -229,7 +230,11 @@ const styles = StyleSheet.create({
+ });
+ var Scene$1 = props => (React__default.createElement(NavigationContext.Consumer, null, (navigationEvent) => React__default.createElement(Scene, Object.assign({ navigationEvent: navigationEvent }, props))));
+ 
+-const NavigationStack = ({ underlayColor: underlayColorStack = '#000', title, customAnimation = Platform.OS === 'android', crumbStyle: crumbStyleStack = () => null, unmountStyle: unmountStyleStack = () => null, hidesTabBar: hidesTabBarStack = () => false, sharedElement: getSharedElementStack = () => null, sharedElements: getSharedElementsStack = () => null, backgroundColor: backgroundColorStack = () => null, landscape: landscapeStack = () => null, stackInvalidatedLink, renderScene, children }) => {
++// Keep iOS interactive navigation enabled even when an app intentionally
++// hides UINavigationBar and draws its own compact header. On iOS 26 the
++// system gesture can otherwise be disabled with the hidden bar; the custom
++// stack bridge supports both the edge and content swipe recognizers.
++const NavigationStack = ({ underlayColor: underlayColorStack = '#000', title, customAnimation = true, crumbStyle: crumbStyleStack = () => null, unmountStyle: unmountStyleStack = () => null, hidesTabBar: hidesTabBarStack = () => false, sharedElement: getSharedElementStack = () => null, sharedElements: getSharedElementsStack = () => null, backgroundColor: backgroundColorStack = () => null, landscape: landscapeStack = () => null, stackInvalidatedLink, renderScene, children }) => {
+     var _a;
+     const resumeNavigationRef = useRef(null);
+     const ref = useRef(null);
+@@ -441,7 +446,7 @@ const RightBar = ({ children }) => (Platform.OS === "ios" ?
+ const NVRightBar = global.nativeFabricUIManager ? require('./RightBarNativeComponent').default : requireNativeComponent('NVRightBar');
+ 
+ const SearchBar = (_a) => {
+-    var { obscureBackground = true, hideNavigationBar = true, hideWhenScrolling = false, autoCapitalize = 'sentences', barTintColor, onChangeText, placeholder = Platform.OS === 'ios' ? 'Search' : undefined, children, bottomBar, active, onChangeActive, onQuery, scopeButton, scopeButtons, onChangeScopeButton, toolbar } = _a, props = __rest(_a, ["obscureBackground", "hideNavigationBar", "hideWhenScrolling", "autoCapitalize", "barTintColor", "onChangeText", "placeholder", "children", "bottomBar", "active", "onChangeActive", "onQuery", "scopeButton", "scopeButtons", "onChangeScopeButton", "toolbar"]);
++    var { obscureBackground = true, hideNavigationBar = true, hideWhenScrolling = false, autoCapitalize = 'sentences', barTintColor, onChangeText, placeholder = Platform.OS === 'ios' ? 'Search' : undefined, children, bottomBar, searchTab, active, onChangeActive, onQuery, scopeButton, scopeButtons, onChangeScopeButton, toolbar } = _a, props = __rest(_a, ["obscureBackground", "hideNavigationBar", "hideWhenScrolling", "autoCapitalize", "barTintColor", "onChangeText", "placeholder", "children", "bottomBar", "searchTab", "active", "onChangeActive", "onQuery", "scopeButton", "scopeButtons", "onChangeScopeButton", "toolbar"]);
+     const [show, setShow] = useState(false);
+     const [mostRecentEventCount, setMostRecentEventCount] = useState(0);
+     const [mostRecentButtonEventCount, setMostRecentButtonEventCount] = useState(0);
+@@ -472,15 +477,19 @@ const SearchBar = (_a) => {
+     };
+     const Material3 = global.__turboModuleProxy != null ? require("./NativeMaterial3Module").default : NativeModules.Material3;
+     const { on: material3 } = Platform.OS === 'android' ? Material3.getConstants() : { on: false };
+-    const constants = UIManager.getViewManagerConfig('NVSearchBar').Constants;
+-    autoCapitalize = Platform.OS === 'android' ? constants.AutoCapitalize[autoCapitalize] : autoCapitalize;
++    // Fabric can mount a SearchBar before its view manager has registered.
++    // Keep navigation alive and use the platform's default capitalization.
++    const searchBarConfig = UIManager.getViewManagerConfig('NVSearchBar');
++    const constants = (searchBarConfig === null || searchBarConfig === void 0 ? void 0 : searchBarConfig.Constants) || {};
++    const autoCapitalizeConstants = constants.AutoCapitalize || {};
++    autoCapitalize = Platform.OS === 'android' ? (autoCapitalizeConstants[autoCapitalize] || autoCapitalize) : autoCapitalize;
+     const top = !bottomBar && !toolbar ? (!material3 ? 56 : 64) : 0;
+     const bottom = !bottomBar ? 0 : (!material3 ? 56 : 80);
+     const showStyle = Platform.OS === 'android' && { top, bottom, zIndex: show ? 58 : -58 };
+     const SearchBar = Platform.OS === 'ios' || !toolbar ? NVSearchBar : NVSearchResults;
+     barTintColor = typeof barTintColor === 'function' ? barTintColor(!toolbar) : barTintColor;
+     placeholder = typeof placeholder === 'function' ? placeholder(!toolbar) : placeholder;
+-    return (React__default.createElement(SearchBar, Object.assign({}, props, { active: show, placeholder: placeholder, bottomBar: bottomBar, barTintColor: barTintColor, obscureBackground: obscureBackground, hideNavigationBar: hideNavigationBar, hideWhenScrolling: hideWhenScrolling, autoCapitalize: '' + autoCapitalize, scopeButton: scopeButton ? scopeButtons === null || scopeButtons === void 0 ? void 0 : scopeButtons.indexOf(scopeButton) : 0, scopeButtons: scopeButtons, mostRecentEventCount: mostRecentEventCount, mostRecentActiveEventCount: mostRecentActiveEventCount, mostRecentButtonEventCount: mostRecentButtonEventCount, onChangeText: changeText, onChangeActive: onChangeShow, onQuery: ({ nativeEvent }) => onQuery && onQuery(nativeEvent.text), onChangeScopeButton: changeScopeButton, style: [styles$2.searchBar, showStyle] }), children));
++    return (React__default.createElement(SearchBar, Object.assign({}, props, { active: show, placeholder: placeholder, bottomBar: bottomBar, searchTab: searchTab, barTintColor: barTintColor, obscureBackground: obscureBackground, hideNavigationBar: hideNavigationBar, hideWhenScrolling: hideWhenScrolling, autoCapitalize: '' + autoCapitalize, scopeButton: scopeButton ? scopeButtons === null || scopeButtons === void 0 ? void 0 : scopeButtons.indexOf(scopeButton) : 0, scopeButtons: scopeButtons, mostRecentEventCount: mostRecentEventCount, mostRecentActiveEventCount: mostRecentActiveEventCount, mostRecentButtonEventCount: mostRecentButtonEventCount, onChangeText: changeText, onChangeActive: onChangeShow, onQuery: ({ nativeEvent }) => onQuery && onQuery(nativeEvent.text), onChangeScopeButton: changeScopeButton, style: [styles$2.searchBar, showStyle] }), children));
+ };
+ var NVSearchBar = global.nativeFabricUIManager ? require('./SearchBarNativeComponent').default : requireNativeComponent('NVSearchBar');
+ var NVSearchResults = global.nativeFabricUIManager ? require('./SearchResultsNativeComponent').default : requireNativeComponent('NVSearchResults');
+@@ -664,9 +673,9 @@ class NavigationBar extends React__default.Component {
+             return statusBar;
+         if (bottomBar)
+             return React__default.createElement(BottomAppBar, Object.assign({}, this.props));
+-        var collapsingBar = Platform.OS === 'android' && !searchToolbar && childrenArray.find(({ type }) => type === CollapsingBar$1);
+         var searchBar = childrenArray.find(({ type }) => type === SearchBar);
+         var searchToolbar = !!(searchBar === null || searchBar === void 0 ? void 0 : searchBar.props.toolbar);
++        var collapsingBar = Platform.OS === 'android' && !searchToolbar && childrenArray.find(({ type }) => type === CollapsingBar$1);
+         var Toolbar = !searchToolbar ? NVToolbar : NVSearchToolbar;
+         var searchBarTintColor = searchBar === null || searchBar === void 0 ? void 0 : searchBar.props.barTintColor;
+         searchBarTintColor = typeof searchBarTintColor === 'function' ? searchBarTintColor(true) : searchBarTintColor;
+@@ -723,9 +732,19 @@ const styles$5 = StyleSheet.create({
+ const BarButton = React__default.forwardRef((_a, ref) => {
+     var _b;
+     var { image, systemItem, show, search = false, size = 48, style, children, testID } = _a, props = __rest(_a, ["image", "systemItem", "show", "search", "size", "style", "children", "testID"]);
+-    var constants = UIManager.getViewManagerConfig('NVNavigationBar').Constants;
++    var navigationBarConfig = UIManager.getViewManagerConfig('NVNavigationBar');
++    var constants = (navigationBarConfig === null || navigationBarConfig === void 0 ? void 0 : navigationBarConfig.Constants) || {};
++    var showAsAction = constants.ShowAsAction || {};
+     var actionBar = !!(((_b = React__default.Children.toArray(children)[0]) === null || _b === void 0 ? void 0 : _b.type) === ActionBar);
+-    return (Platform.OS === 'android' || !search) && (React__default.createElement(NVBarButton, Object.assign({ ref: ref, key: Platform.OS === 'ios' ? systemItem : testID, testID: testID, search: search, showActionView: !!children, showAsAction: Platform.OS === 'android' ? constants.ShowAsAction[show || 'never'] : null, actionBar: actionBar, image: Image.resolveAssetSource(image), systemItem: systemItem || '', buttonWidth: actionBar ? 0 : size, style: { position: 'absolute', width: actionBar ? undefined : size }, children: children }, props)));
++    // Image-only iOS bar buttons do not have a systemItem. Using only
++    // systemItem as the React key makes sibling SF Symbol actions collide
++    // and causes Ridge to drop all but one action during reconciliation.
++    // Read the public title prop from the original props object. The rest
++    // object is intentionally forwarded to the native button, but Hermes can
++    // treat a property access on the generated rest binding as an unresolved
++    // property when this package is transformed by Metro.
++    const key = Platform.OS === 'ios' ? (systemItem || testID || _a.title) : testID;
++    return (Platform.OS === 'android' || !search) && (React__default.createElement(NVBarButton, Object.assign({ ref: ref, key: key, testID: testID, search: search, showActionView: !!children, showAsAction: Platform.OS === 'android' ? (showAsAction[show || 'never'] || 0) : null, actionBar: actionBar, image: Image.resolveAssetSource(image), systemItem: systemItem || '', buttonWidth: actionBar ? 0 : size, style: { position: 'absolute', width: actionBar ? undefined : size }, children: children }, props)));
+ });
+ const NVBarButton = global.nativeFabricUIManager ? require('./BarButtonNativeComponent').default : requireNativeComponent('NVBarButton');
+ 
+@@ -755,7 +774,7 @@ var createBackHandler = () => {
+ };
+ 
+ const TabBarItem = (_a) => {
+-    var { selected, onPress, children, title, image, systemItem, badge, index, primary, freezable } = _a, props = __rest(_a, ["selected", "onPress", "children", "title", "image", "systemItem", "badge", "index", "primary", "freezable"]);
++    var { selected, onPress, children, title, image, systemItem, searchTab, badge, index, primary, freezable } = _a, props = __rest(_a, ["selected", "onPress", "children", "title", "image", "systemItem", "searchTab", "badge", "index", "primary", "freezable"]);
+     const [loaded, setLoaded] = useState(selected);
+     const [freeze, setFreeze] = useState(false);
+     const backHandler = useRef(createBackHandler());
+@@ -783,13 +802,13 @@ const TabBarItem = (_a) => {
+     return (React__default.createElement(React__default.Fragment, null,
+         React__default.createElement(BackButton, { onPress: () => selected && backHandler.current.handleBack() }),
+         React__default.createElement(Freeze, { enabled: loaded && !selected && freeze },
+-            React__default.createElement(TabBarItem, Object.assign({ ref: (ref) => {
++                React__default.createElement(TabBarItem, Object.assign({ ref: (ref) => {
+                     var _a;
+                     const viewConfig = (ref === null || ref === void 0 ? void 0 : ref.viewConfig) || (ref === null || ref === void 0 ? void 0 : ref._viewConfig) || (ref === null || ref === void 0 ? void 0 : ref.__viewConfig);
+                     if (!!React__default.Suspense && ((_a = viewConfig === null || viewConfig === void 0 ? void 0 : viewConfig.validAttributes) === null || _a === void 0 ? void 0 : _a.style)) {
+                         viewConfig.validAttributes.style = Object.assign(Object.assign({}, viewConfig.validAttributes.style), { display: null });
+                     }
+-                } }, props, { selected: selected, title: title, badge: badge != null ? '' + badge : undefined, image: Image.resolveAssetSource(image), systemItem: systemItem || '', style: styles$6.tabBarItem, onPress: event => {
++                } }, props, { selected: selected, title: title, badge: badge != null ? '' + badge : undefined, image: Image.resolveAssetSource(image), systemItem: systemItem || '', searchTab: !!searchTab, style: styles$6.tabBarItem, onPress: event => {
+                     event.stopPropagation();
+                     if (onPress)
+                         onPress(event);
+@@ -878,7 +897,8 @@ const Sheet = ({ detent, defaultDetent = 'collapsed', expandedHeight, expandedOf
+     });
+     if (detent != null && detent !== sheetState.selectedDetent)
+         setSheetState(prevSheetState => (Object.assign(Object.assign({}, prevSheetState), { selectedDetent: detent, dismissed: detent === 'hidden' && sheetState.dismissed })));
+-    const detents = (_b = UIManager.getViewManagerConfig('NVBottomSheet').Constants) === null || _b === void 0 ? void 0 : _b.Detent;
++    const bottomSheetConfig = UIManager.getViewManagerConfig('NVBottomSheet');
++    const detents = ((_b = bottomSheetConfig === null || bottomSheetConfig === void 0 ? void 0 : bottomSheetConfig.Constants) === null || _b === void 0 ? void 0 : _b.Detent) || {};
+     const onDetentChanged = ({ nativeEvent }) => {
+         const { eventCount: mostRecentEventCount, detent: nativeDetent } = nativeEvent;
+         const selectedDetent = Platform.OS === 'android' ? Object.keys(detents).find(name => detents[name] === nativeDetent) : nativeDetent;

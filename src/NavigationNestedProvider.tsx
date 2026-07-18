@@ -84,7 +84,9 @@ function NavigationNestedProvider({ children }: { children: any }) {
           renderScene={(state, data) => {
             return (
               <>
-                <HiddenNavbarWithSwipeBack />
+                <HiddenNavbarWithSwipeBack
+                  nativeHeader={state?.screen?.options?.nativeHeader}
+                />
                 <OptimizedContextProvider state={state} data={data}>
                   {state.key === rootKey ? children : state.renderScene()}
                 </OptimizedContextProvider>

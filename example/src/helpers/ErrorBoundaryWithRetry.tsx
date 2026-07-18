@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Button, Paragraph } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
+import Button from '../ui/Button';
+import Text from '../ui/Text';
 
 interface State {
   error: Error | null;
@@ -38,9 +39,11 @@ class ErrorBoundaryWithRetry extends React.Component<Props, State> {
       if (!fallback) {
         return (
           <View style={styles.root}>
-            <Paragraph>Er is iets foutgegaan</Paragraph>
-            <Button onPress={this._retry} mode="outlined">
-              Probeer opnieuw
+            <Text muted style={styles.message}>
+              Something went wrong loading this screen.
+            </Text>
+            <Button onPress={this._retry} variant="outline">
+              Try again
             </Button>
           </View>
         );
@@ -57,6 +60,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: 12,
+  },
+  message: {
+    marginBottom: 12,
   },
 });
 

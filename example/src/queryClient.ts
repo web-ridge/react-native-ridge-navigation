@@ -1,11 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      suspense: true,
-    },
-  },
-});
+// react-query v5 removed the global `suspense` option; screens now use
+// useSuspenseQuery explicitly.
+const queryClient = new QueryClient();
 
 export default queryClient;

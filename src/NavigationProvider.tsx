@@ -8,6 +8,7 @@ import {
   getPathFromUrl,
   getRootKeyFromPath,
   getScreenKey,
+  getSharedElementsForState,
   makeVariablesNavigationFriendly,
   type Root,
   type RootChildBottomTabs,
@@ -55,7 +56,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   });
   const colorScheme = useColorScheme();
   const theme = React.useMemo(
-    () => (themeSettings || defaultTheme)[colorScheme || 'light'],
+    () =>
+      (themeSettings || defaultTheme)[
+        colorScheme === 'dark' ? 'dark' : 'light'
+      ],
     [colorScheme, themeSettings]
   );
 
@@ -302,7 +306,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     [navigationRoot, rootNavigator, setGoToUrl]
   );
 
-  const [_, setForceRerender] = React.useState(0);
+  const [navigationReady, setNavigationReady] = React.useState(false);
   const firstTime = React.useRef(true);
 
   React.useEffect(() => {
@@ -310,7 +314,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       if (firstTime.current) {
         openUrl(goToUrl, false);
         firstTime.current = false;
-        setForceRerender((prev) => prev + 1);
+        setNavigationReady(true);
       } else {
         const timerId = setTimeout(() => {
           openUrl(goToUrl, true);
@@ -319,11 +323,19 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           clearTimeout(timerId);
         };
       }
+      return undefined;
     }
-    return undefined;
-  }, [goToUrl, openUrl]);
 
-  if (firstTime.current) {
+    if (firstTime.current && initialDefaultUrl) {
+      openUrl(initialDefaultUrl, false, true);
+      firstTime.current = false;
+      setNavigationReady(true);
+    }
+
+    return undefined;
+  }, [goToUrl, initialDefaultUrl, openUrl]);
+
+  if (!navigationReady) {
     return null;
   }
   return (
@@ -354,11 +366,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
             <NavigationStack
               underlayColor={theme.layout.backgroundColor}
               backgroundColor={() => theme.layout.backgroundColor}
+              sharedElements={getSharedElementsForState}
               // unmountStyle={() => ''}
               renderScene={(state, data) => {
                 return (
                   <>
-                    <HiddenNavbarWithSwipeBack />
+                    <HiddenNavbarWithSwipeBack
+                      nativeHeader={state?.screen?.options?.nativeHeader}
+                    />
                     <OptimizedContextProvider state={state} data={data}>
                       <OptimizedRenderScene renderScene={state.renderScene} />
                     </OptimizedContextProvider>

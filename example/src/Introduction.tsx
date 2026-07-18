@@ -1,37 +1,44 @@
 import { Image, Linking, StyleSheet, View } from 'react-native';
-import { IconButton, Paragraph, Text, Title } from 'react-native-paper';
 import Superman from './img/superman.png';
-import { useNavigation } from 'react-native-ridge-navigation';
+import Text from './ui/Text';
+import { useTheme } from './ui/theme';
 
 function Introduction() {
-  const { canNavigateBack, pop } = useNavigation();
+  const theme = useTheme();
   return (
-    <>
+    <View>
       <View style={styles.titleContainer}>
-        {canNavigateBack(1) ? (
-          <IconButton icon="arrow-left" onPress={() => pop()} />
-        ) : (
-          <Image source={Superman} style={styles.logo} />
-        )}
-        <Title>react-native-ridge-navigation</Title>
+        <Image source={Superman} style={styles.logo} />
+        <View style={styles.titles}>
+          <Text variant="caption" color={theme.primary}>
+            react-native
+          </Text>
+          <Text variant="display" style={styles.wordmark}>
+            ridge navigation
+          </Text>
+        </View>
       </View>
-      <Paragraph>
-        Simple, performant & type-safe cross platform navigation in React Native
-        / React Native Web brought to you by{' '}
+      <Text muted>
+        Type-safe, cross-platform navigation with 100% native stacks and URLs on
+        every platform — by{' '}
         <Text
+          muted
           onPress={() => Linking.openURL('https://webridge.nl')}
           style={styles.underline}
         >
           webRidge
         </Text>
-      </Paragraph>
-    </>
+        .
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   underline: { textDecorationLine: 'underline' },
-  logo: { width: 56, height: 56, marginRight: 24 },
+  logo: { width: 52, height: 52, marginRight: 16 },
+  titles: { flex: 1 },
+  wordmark: { fontSize: 28, lineHeight: 32 },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',

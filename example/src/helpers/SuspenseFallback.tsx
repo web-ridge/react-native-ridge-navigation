@@ -1,14 +1,5 @@
-import { View, StyleSheet } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import Spinner from '../ui/Spinner';
 
 export default function SuspenseFallback() {
-  return (
-    <View style={styles.root}>
-      <ActivityIndicator />
-    </View>
-  );
+  return <Spinner />;
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-});

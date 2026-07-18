@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Button, Paragraph, Text, useTheme } from 'react-native-paper';
+import { Modal, ScrollView, StyleSheet, View } from 'react-native';
 import useAuthState, { reset } from './useAuthState';
-
 import {
   useBottomTabIndex,
   useBottomTabBadges,
@@ -9,12 +8,14 @@ import {
   ModalBackHandler,
   BottomTabLink,
 } from 'react-native-ridge-navigation';
-import { View, ScrollView, Modal } from 'react-native';
 import Header from './Header';
 import { useRenderLog } from './helpers/utils';
 import routes from './Routes';
 import ButtonLink from './ButtonLink';
 import BottomRoots from './BottomRoots';
+import Button from './ui/Button';
+import Text from './ui/Text';
+import { useTheme } from './ui/theme';
 
 function AccountScreen() {
   useRenderLog('AccountScreen');
@@ -28,60 +29,59 @@ function AccountScreen() {
     setModalVisible(false);
   }, [setModalVisible]);
   if (!user) {
-    return <Text>No user logged in</Text>;
+    return <Text>No user signed in</Text>;
   }
   return (
     <>
       <Header title={user?.name} />
-      <ScrollView style={{ padding: 12 }}>
-        <View style={{ alignItems: 'flex-start' }}>
-          <Paragraph>{user.email}</Paragraph>
-          <Paragraph>{user.website}</Paragraph>
-          <Paragraph>{user.phone}</Paragraph>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={[styles.profile, { borderColor: theme.border }]}>
+          <Text muted>{user.email}</Text>
+          <Text muted>{user.website}</Text>
+          <Text muted>{user.phone}</Text>
+        </View>
+        <View style={styles.actions}>
           <Button
-            style={{ marginTop: 12 }}
-            mode="outlined"
+            variant="outline"
+            icon="notifications-outline"
             onPress={() => {
               updateBadge(BottomRoots.Posts, 10000);
             }}
           >
-            +1 bottom-tab post badge
+            Badge the Posts tab
           </Button>
           <Button
-            style={{ marginTop: 12 }}
-            mode="outlined"
+            variant="outline"
+            icon="swap-horizontal-outline"
             onPress={() => {
               switchToTab(BottomRoots.Posts);
             }}
           >
-            Go to posts tab
+            Switch to Posts tab
           </Button>
           <BottomTabLink to={BottomRoots.Posts} params={{}}>
             {(linkProps) => (
-              <Button style={{ marginTop: 12 }} mode="outlined" {...linkProps}>
-                Go to posts tab (route)
+              <Button variant="outline" icon="link-outline" {...linkProps}>
+                Posts tab as a link
               </Button>
             )}
           </BottomTabLink>
-
           <Button
-            style={{ marginTop: 12 }}
-            mode="contained"
+            variant="outline"
+            icon="layers-outline"
             onPress={() => {
-              reset();
-            }}
-          >
-            Logout
-          </Button>
-          <Button
-            style={{ marginTop: 12 }}
-            mode="outlined"
-            onPress={() => {
-              console.log(new Date().getTime(), 'setModalVisible(true)');
               setModalVisible(true);
             }}
           >
             Open modal stack
+          </Button>
+          <Button
+            icon="log-out-outline"
+            onPress={() => {
+              reset();
+            }}
+          >
+            Sign out
           </Button>
         </View>
       </ScrollView>
@@ -89,7 +89,7 @@ function AccountScreen() {
         {(handleBack) => (
           <Modal
             visible={modalVisible}
-            style={{ backgroundColor: theme.colors.background }}
+            style={{ backgroundColor: theme.background }}
             statusBarTranslucent={true}
             presentationStyle="pageSheet"
             animationType="slide"
@@ -98,7 +98,7 @@ function AccountScreen() {
             }}
           >
             <NavigationNestedProvider>
-              <SimpleComponent onClose={onClose} />
+              <ModalHome onClose={onClose} />
             </NavigationNestedProvider>
           </Modal>
         )}
@@ -107,16 +107,47 @@ function AccountScreen() {
   );
 }
 
-const SimpleComponent = React.memo(({ onClose }: { onClose: () => void }) => {
-  // console.log(new Date().getTime(), 'SimpleComponent');
+const ModalHome = React.memo(({ onClose }: { onClose: () => void }) => {
   return (
-    <View style={{ height: 250 }}>
+    <View style={styles.modal}>
       <Header title="Modal stack" />
-      <Button onPress={onClose}>Close modal</Button>
-      <ButtonLink to={routes.PostScreen} params={{ id: '2' }}>
-        Go to post detail
-      </ButtonLink>
+      <View style={styles.modalContent}>
+        <ButtonLink to={routes.PostScreen} params={{ id: '2' }}>
+          Push post detail in this modal
+        </ButtonLink>
+        <Button variant="ghost" onPress={onClose}>
+          Close modal
+        </Button>
+      </View>
     </View>
   );
 });
+
+const styles = StyleSheet.create({
+  content: {
+    padding: 20,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  profile: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    gap: 4,
+  },
+  actions: {
+    marginTop: 20,
+    gap: 10,
+    alignItems: 'stretch',
+  },
+  modal: {
+    height: 320,
+  },
+  modalContent: {
+    padding: 20,
+    gap: 10,
+  },
+});
+
 export default React.memo(AccountScreen);

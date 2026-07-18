@@ -41,7 +41,9 @@ export const PostsScreen = registerScreen(
   '/overview',
   RequireAuthHOC(lazy(() => import('./PostsScreen'))),
   () => {
-    queryClient.prefetchQuery(queryKeyPostsScreen, queryKeyPostsScreenPromise, {
+    queryClient.prefetchQuery({
+      queryKey: queryKeyPostsScreen,
+      queryFn: queryKeyPostsScreenPromise,
       staleTime: 3000,
     });
     return 'testQueryReference';
@@ -57,11 +59,11 @@ export const PostScreen = registerScreen(
   RequireAuthHOC(lazy(() => import('./PostScreen'))),
   (params) => {
     const { id } = params;
-    queryClient.prefetchQuery(
-      queryKeyPostScreen({ id }),
-      queryKeyPostScreenPromise({ id }),
-      { staleTime: 3000 }
-    );
+    queryClient.prefetchQuery({
+      queryKey: queryKeyPostScreen({ id }),
+      queryFn: queryKeyPostScreenPromise({ id }),
+      staleTime: 3000,
+    });
     return 'testQueryReference';
   },
   {
