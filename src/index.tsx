@@ -34,6 +34,8 @@ export { default as SplitView, type SplitViewProps } from './SplitView';
 export {
   default as TripleSplitView,
   type TripleSplitViewProps,
+  type TripleSelection,
+  type TripleSelectionEntry,
 } from './TripleSplitView';
 export { default as ModalBackHandler } from './ModalBackHandler';
 export { default as createLinkComponent } from './createLinkComponent';

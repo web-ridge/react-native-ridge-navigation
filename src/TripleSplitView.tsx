@@ -44,7 +44,30 @@ export type TripleSplitViewProps = {
   sidebarStyle?: StyleProp<ViewStyle>;
   masterStyle?: StyleProp<ViewStyle>;
   detailStyle?: StyleProp<ViewStyle>;
+  /**
+   * Restore a previous middle/detail selection on mount — the hook that makes
+   * the three columns deep-linkable. Paths are the registered `screen.path`
+   * values (stable across reloads), NOT the internal per-instance pane keys.
+   * The host typically reads these from the URL.
+   */
+  initialSelection?: TripleSelection;
+  /**
+   * Fires whenever the middle or detail selection changes, with the full
+   * current selection expressed as stable `screen.path` + params. The host
+   * writes this to the URL (query string / route params) so the columns become
+   * shareable, bookmarkable links without the panes fighting the main
+   * navigator for browser history.
+   */
+  onSelectionChange?: (selection: TripleSelection) => void;
 };
+
+/** One column's current selection: the registered screen path plus its params,
+ *  or null when that column is showing its placeholder. */
+export type TripleSelection = {
+  middle: TripleSelectionEntry | null;
+  detail: TripleSelectionEntry | null;
+};
+export type TripleSelectionEntry = { path: string; params?: any };
 
 /**
  * Three-column master/detail (iPad Mail / macOS Settings style) for wide
@@ -71,6 +94,8 @@ export default function TripleSplitView({
   sidebarStyle,
   masterStyle,
   detailStyle,
+  initialSelection,
+  onSelectionChange,
 }: TripleSplitViewProps) {
   // Seed from window width so it renders on first paint (no null-until-onLayout
   // flash / background-tab breakage); onLayout refines the container width.
@@ -91,6 +116,8 @@ export default function TripleSplitView({
           sidebarStyle={sidebarStyle}
           masterStyle={masterStyle}
           detailStyle={detailStyle}
+          initialSelection={initialSelection}
+          onSelectionChange={onSelectionChange}
         >
           {sidebar}
         </WideTripleSplitView>
@@ -180,6 +207,8 @@ function WideTripleSplitView({
   sidebarStyle,
   masterStyle,
   detailStyle,
+  initialSelection,
+  onSelectionChange,
 }: Omit<TripleSplitViewProps, 'sidebar' | 'breakingPointWidth'> & {
   children: React.ReactNode;
 }) {
@@ -208,23 +237,75 @@ function WideTripleSplitView({
     middleRootKey
   );
 
+  // Report the current selection (both columns) as stable screen paths + params
+  // so the host can mirror it into the URL. A column showing its placeholder
+  // (navigator at its root, no `screen`) reports null.
+  const onSelectionChangeRef = useLatest(onSelectionChange);
+  const reportSelection = React.useCallback(() => {
+    const report = onSelectionChangeRef.current;
+    if (!report) {
+      return;
+    }
+    const toEntry = (nav: StateNavigator): TripleSelectionEntry | null => {
+      const state: any = nav.stateContext.state;
+      return state?.screen?.path
+        ? { path: state.screen.path, params: nav.stateContext.data }
+        : null;
+    };
+    report({
+      middle: toEntry(middleNavigator),
+      detail: toEntry(detailNavigator),
+    });
+  }, [onSelectionChangeRef, middleNavigator, detailNavigator]);
+
   // Selecting a new middle section clears the detail column back to its
   // placeholder (iPad Mail: switching mailbox empties the message pane).
   const resetDetail = React.useCallback(() => {
     detailNavigator.navigate(detailRootKey);
   }, [detailNavigator, detailRootKey]);
 
+  const onMiddleSelected = React.useCallback(() => {
+    resetDetail();
+    reportSelection();
+  }, [resetDetail, reportSelection]);
+
   // Sidebar pushes select the middle column (and reset detail); middle-column
   // pushes select the detail column.
   const sidebarSelect = useSelectIntoPaneNavigator(
     middleNavigator,
     middleRootKey,
-    resetDetail
+    onMiddleSelected
   );
   const middleSelect = useSelectIntoPaneNavigator(
     detailNavigator,
-    detailRootKey
+    detailRootKey,
+    reportSelection
   );
+
+  // Restore a deep-linked selection once, after the panes exist. Middle first
+  // (which resets detail), then detail on top — mirroring the interactive
+  // order — so a shared URL reopens exactly where it pointed.
+  const didRestore = React.useRef(false);
+  React.useEffect(() => {
+    if (didRestore.current || !initialSelection) {
+      return;
+    }
+    didRestore.current = true;
+    const { middle, detail } = initialSelection;
+    if (middle?.path) {
+      sidebarSelect.navigate(
+        rootKeyAndPaths(middleRootKey, middle.path),
+        middle.params
+      );
+    }
+    if (detail?.path) {
+      middleSelect.navigate(
+        rootKeyAndPaths(detailRootKey, detail.path),
+        detail.params
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelection]);
 
   // Root maps so both scoped navigators resolve their placeholder root.
   const navigationRootWithPanes = React.useMemo(
