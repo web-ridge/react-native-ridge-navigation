@@ -31,6 +31,10 @@ export { default as useNavigation } from './useNavigation';
 export { default as NavigationProvider } from './NavigationProvider';
 export { default as NavigationNestedProvider } from './NavigationNestedProvider';
 export { default as SplitView, type SplitViewProps } from './SplitView';
+export {
+  default as TripleSplitView,
+  type TripleSplitViewProps,
+} from './TripleSplitView';
 export { default as ModalBackHandler } from './ModalBackHandler';
 export { default as createLinkComponent } from './createLinkComponent';
 
