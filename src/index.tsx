@@ -37,6 +37,10 @@ export {
   type TripleSelection,
   type TripleSelectionEntry,
 } from './TripleSplitView';
+export {
+  default as SplitPaneContext,
+  useIsInsideSplitPane,
+} from './contexts/SplitPaneContext';
 export { default as ModalBackHandler } from './ModalBackHandler';
 export { default as createLinkComponent } from './createLinkComponent';
 

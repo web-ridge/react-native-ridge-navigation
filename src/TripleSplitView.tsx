@@ -15,6 +15,7 @@ import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import SplitPaneContext from './contexts/SplitPaneContext';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
 import {
@@ -409,13 +410,18 @@ function WideTripleSplitView({
       <View style={[{ width: masterWidth }, masterStyle]}>
         <RidgeNavigationContext.Provider value={middleRidgeValue}>
           <OptimizedContext.Provider value={middleOptimizedValue}>
-            <PaneScenes
-              navigator={middleNavigator}
-              rootKey={middleRootKey}
-              renderPlaceholder={renderMasterPlaceholder}
-              backgroundColor={theme.layout.backgroundColor}
-              linkNavigator={middleSelect}
-            />
+            {/* SplitPaneContext lets entity list screens in the middle render
+                list-only (no nested SplitView) so their row pushes land in the
+                detail column instead of a split-inside-a-split. */}
+            <SplitPaneContext.Provider value={true}>
+              <PaneScenes
+                navigator={middleNavigator}
+                rootKey={middleRootKey}
+                renderPlaceholder={renderMasterPlaceholder}
+                backgroundColor={theme.layout.backgroundColor}
+                linkNavigator={middleSelect}
+              />
+            </SplitPaneContext.Provider>
           </OptimizedContext.Provider>
         </RidgeNavigationContext.Provider>
       </View>
