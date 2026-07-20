@@ -23,10 +23,18 @@ export function OptimizedContextProvider({
   data,
   state,
   children,
+  stateNavigatorOverride,
 }: {
   data: any;
   state: State | null;
   children: any;
+  // When a pane renders its own scene stack (e.g. the middle column of
+  // TripleSplitView), the Links inside must push through a specific navigator
+  // — the select-into-next-pane proxy — rather than the ambient
+  // NavigationContext navigator. Providing this overrides the stateNavigator
+  // seen by descendants without needing a NavigationHandler (which would fight
+  // the pane's own navigator for ownership).
+  stateNavigatorOverride?: StateNavigator;
 }) {
   const {
     preloadedCache,
@@ -37,10 +45,11 @@ export function OptimizedContextProvider({
     theme,
   } = React.useContext(RidgeNavigationContext);
   const {
-    stateNavigator,
+    stateNavigator: contextStateNavigator,
     state: fallbackState,
     data: fallbackData,
   } = React.useContext(NavigationContext);
+  const stateNavigator = stateNavigatorOverride ?? contextStateNavigator;
   const preloadId = state?.preloadId || fallbackState?.preloadId;
 
   const params = data || fallbackData;

@@ -142,10 +142,13 @@ function useScopedPaneNavigator(
 
 /** A proxy over `paneNavigator` whose `navigate(key, params)` RESETS the pane to
  *  [root, key] — i.e. selecting replaces the current selection instead of
- *  stacking on it. Mirrors SplitView's masterNavigator. */
+ *  stacking on it. Mirrors SplitView's masterNavigator. `onAfterSelect` runs
+ *  after each selection (used so selecting a new middle section also clears the
+ *  downstream detail column back to its placeholder). */
 function useSelectIntoPaneNavigator(
   paneNavigator: StateNavigator,
-  rootKey: string
+  rootKey: string,
+  onAfterSelect?: () => void
 ) {
   return React.useMemo(() => {
     const select = (key: string, params?: any) => {
@@ -154,6 +157,7 @@ function useSelectIntoPaneNavigator(
         .navigate(rootKey)
         .navigate(key, params);
       paneNavigator.navigateLink(fluent.url);
+      onAfterSelect?.();
     };
     return new Proxy(paneNavigator, {
       get(target: any, prop) {
@@ -164,7 +168,7 @@ function useSelectIntoPaneNavigator(
         return typeof value === 'function' ? value.bind(target) : value;
       },
     }) as StateNavigator;
-  }, [paneNavigator, rootKey]);
+  }, [paneNavigator, rootKey, onAfterSelect]);
 }
 
 function WideTripleSplitView({
@@ -204,10 +208,18 @@ function WideTripleSplitView({
     middleRootKey
   );
 
-  // Sidebar pushes select the middle column; middle-column pushes select detail.
+  // Selecting a new middle section clears the detail column back to its
+  // placeholder (iPad Mail: switching mailbox empties the message pane).
+  const resetDetail = React.useCallback(() => {
+    detailNavigator.navigate(detailRootKey);
+  }, [detailNavigator, detailRootKey]);
+
+  // Sidebar pushes select the middle column (and reset detail); middle-column
+  // pushes select the detail column.
   const sidebarSelect = useSelectIntoPaneNavigator(
     middleNavigator,
-    middleRootKey
+    middleRootKey,
+    resetDetail
   );
   const middleSelect = useSelectIntoPaneNavigator(
     detailNavigator,
@@ -304,18 +316,25 @@ function WideTripleSplitView({
         </OptimizedContext.Provider>
       </RidgeNavigationContext.Provider>
 
-      {/* Column 2 — middle/list, whose pushes select the detail column */}
+      {/* Column 2 — middle/list, whose pushes select the detail column.
+          No NavigationHandler here on purpose: the middle scene stack is driven
+          by the middleNavigator prop, and the Links inside must push through
+          `middleSelect` (reset the detail column) — passed as linkNavigator so
+          OptimizedContextProvider overrides the ambient stateNavigator. Wrapping
+          this in a NavigationHandler(middleSelect) would fight the detail
+          column's own NavigationHandler for ownership of detailNavigator and
+          leave the middle showing only its placeholder. Mirrors how SplitView's
+          master renders its children with no handler at all. */}
       <View style={[{ width: masterWidth }, masterStyle]}>
         <RidgeNavigationContext.Provider value={middleRidgeValue}>
           <OptimizedContext.Provider value={middleOptimizedValue}>
-            <NavigationHandler stateNavigator={middleNavigator}>
-              <PaneScenes
-                navigator={middleNavigator}
-                rootKey={middleRootKey}
-                renderPlaceholder={renderMasterPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-              />
-            </NavigationHandler>
+            <PaneScenes
+              navigator={middleNavigator}
+              rootKey={middleRootKey}
+              renderPlaceholder={renderMasterPlaceholder}
+              backgroundColor={theme.layout.backgroundColor}
+              linkNavigator={middleSelect}
+            />
           </OptimizedContext.Provider>
         </RidgeNavigationContext.Provider>
       </View>
@@ -366,11 +385,16 @@ function PaneScenes({
   rootKey,
   renderPlaceholder,
   backgroundColor,
+  linkNavigator,
 }: {
   navigator: StateNavigator;
   rootKey: string;
   renderPlaceholder: () => React.ReactNode;
   backgroundColor: any;
+  /** When set, Links inside the rendered scenes push through this navigator
+   *  instead of the ambient NavigationContext one (used by the middle column so
+   *  its rows select the detail column). */
+  linkNavigator?: StateNavigator;
 }) {
   const [stateContext, setStateContext] = React.useState<
     StateNavigator['stateContext']
@@ -401,7 +425,11 @@ function PaneScenes({
             style={[StyleSheet.absoluteFill, { backgroundColor }]}
             pointerEvents={isTop ? 'auto' : 'none'}
           >
-            <OptimizedContextProvider state={scene.state} data={scene.data}>
+            <OptimizedContextProvider
+              state={scene.state}
+              data={scene.data}
+              stateNavigatorOverride={linkNavigator}
+            >
               {scene.state.key === rootKey
                 ? renderPlaceholder()
                 : scene.state.renderScene()}
