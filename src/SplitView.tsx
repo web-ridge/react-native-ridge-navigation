@@ -5,6 +5,7 @@ import {
   Platform,
   StyleSheet,
   View,
+  useWindowDimensions,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -59,14 +60,19 @@ export default function SplitView({
   masterStyle,
   detailStyle,
 }: SplitViewProps) {
-  const [width, setWidth] = React.useState<number | undefined>(undefined);
-  const isWide = width !== undefined && width >= breakingPointWidth;
+  // Seed from the window width (available synchronously) so the split renders on
+  // first paint instead of null-until-onLayout — no blank flash, and it works in
+  // throttled/background tabs where onLayout can be deferred. onLayout then
+  // refines with the true container width near the breakpoint.
+  const windowWidth = useWindowDimensions().width;
+  const [width, setWidth] = React.useState<number>(windowWidth);
+  const isWide = width >= breakingPointWidth;
   return (
     <View
       style={styles.root}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
-      {width === undefined ? null : isWide ? (
+      {isWide ? (
         <WideSplitView
           detailPlaceholder={detailPlaceholder}
           masterWidth={masterWidth}
