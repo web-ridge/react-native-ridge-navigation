@@ -1,7 +1,11 @@
 import * as React from 'react';
-import { StyleSheet, TextInput as NativeTextInput, View } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  TextInput as NativeTextInput,
+  View,
+} from 'react-native';
 import { SplitView, usePreloadResult } from 'react-native-ridge-navigation';
-import { LegendList } from '@legendapp/list/react-native';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,8 +21,6 @@ import { useRenderLog } from './helpers/utils';
 import ListItemLink from './ListItemLink';
 import Text from './ui/Text';
 import { radii, useTheme } from './ui/theme';
-
-const ITEM_HEIGHT = 72;
 
 function PostsScreen() {
   useRenderLog('PostsScreen');
@@ -45,7 +47,7 @@ function PostsScreen() {
   return (
     <SplitView
       masterTitle="Posts"
-      masterLargeTitle={false}
+      masterLargeTitle
       detailPlaceholder={
         <View style={styles.placeholder}>
           <Ionicons name="reader-outline" size={40} color={theme.muted} />
@@ -56,12 +58,10 @@ function PostsScreen() {
       }
       masterStyle={{ borderRightColor: theme.border }}
     >
-      <LegendList
+      <FlatList
         data={posts}
         renderItem={({ item }) => <Item item={item} />}
         keyExtractor={(item) => `${item.id}`}
-        estimatedItemSize={ITEM_HEIGHT}
-        recycleItems
         contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={
           <View
@@ -97,6 +97,8 @@ const Item = React.memo(({ item }: { item: PostType }) => {
       params={{ id: `${item.id}` }}
       title={item.title}
       description={item.body}
+      image={require('./img/superman.png')}
+      sharedName={`item${item.id}`}
     />
   );
 });

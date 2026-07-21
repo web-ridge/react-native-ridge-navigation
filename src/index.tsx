@@ -7,6 +7,17 @@ export {
   default as NativeNavigationBar,
   type NativeNavigationSearch,
 } from './NativeNavigationBar';
+// Native header vocabulary (iOS/Android). Re-exported so screens can build
+// collapsing large-title / immersive colored headers and shared-element
+// transitions without reaching into navigation-react-native directly.
+export {
+  NavigationBar,
+  SharedElement,
+  CoordinatorLayout,
+  CollapsingBar,
+  type NavigationBarProps,
+  type SharedElementProps,
+} from 'navigation-react-native';
 export {
   usePreloadResult,
   setPreloadResultTransformHook,

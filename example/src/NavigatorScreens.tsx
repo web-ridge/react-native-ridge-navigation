@@ -69,5 +69,11 @@ export const PostScreen = registerScreen(
   {
     title: 'Post',
     description: 'A post',
+    // Demo B: let the screen own a native (colored, collapsing) UINavigationBar
+    // instead of the hidden swipe-back bar.
+    nativeHeader: true,
+    // Demo C: fly the tapped row's thumbnail into this screen's hero on push.
+    // The name must match the source row's <SharedElement name={`item${id}`}>.
+    sharedElements: (_state: any, data: any) => `item${data?.id}`,
   }
 );

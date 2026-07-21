@@ -327,7 +327,14 @@ function MasterPaneScene({
         renderScene={() => (
           <>
             <NavigationBar hidden={false} title={title} largeTitle={largeTitle} />
-            {children}
+            {/*
+             * Bound the master content to the scene so its scroll view has a
+             * finite height. Without this the list lays out at its full content
+             * height (clipped by the master column's overflow:hidden): it can't
+             * scroll, and UIKit never finds a collapsible content scroll view,
+             * so the large title stays permanently expanded.
+             */}
+            <View style={styles.masterContent}>{children}</View>
           </>
         )}
       />
@@ -401,6 +408,9 @@ const styles = StyleSheet.create({
   },
   master: {
     overflow: 'hidden',
+  },
+  masterContent: {
+    flex: 1,
   },
   paneScenes: {
     flex: 1,
