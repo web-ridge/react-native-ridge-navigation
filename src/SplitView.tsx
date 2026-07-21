@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
+import NavigationBar from './navigation/NavigationBar';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
@@ -37,6 +38,18 @@ export type SplitViewProps = {
   masterWidth?: number;
   masterStyle?: StyleProp<ViewStyle>;
   detailStyle?: StyleProp<ViewStyle>;
+  /**
+   * When set, the master column mounts its OWN native navigation bar
+   * (iPad-Mail style) scoped to the master column width. The master is a
+   * single, non-pushing scene, so — unlike the detail pane — an embedded
+   * native stack at partial width is safe here: it never pushes, so the
+   * new-architecture partial-width push limitation does not apply.
+   *
+   * Native only (iOS/Android). On web this is ignored; render your own header.
+   */
+  masterTitle?: string;
+  /** Large-title (native collapse on scroll). Defaults to true. */
+  masterLargeTitle?: boolean;
 };
 
 /**
@@ -59,6 +72,8 @@ export default function SplitView({
   masterWidth = 360,
   masterStyle,
   detailStyle,
+  masterTitle,
+  masterLargeTitle,
 }: SplitViewProps) {
   // Seed from the window width (available synchronously) so the split renders on
   // first paint instead of null-until-onLayout — no blank flash, and it works in
@@ -78,6 +93,8 @@ export default function SplitView({
           masterWidth={masterWidth}
           masterStyle={masterStyle}
           detailStyle={detailStyle}
+          masterTitle={masterTitle}
+          masterLargeTitle={masterLargeTitle}
         >
           {children}
         </WideSplitView>
@@ -94,6 +111,8 @@ function WideSplitView({
   masterWidth,
   masterStyle,
   detailStyle,
+  masterTitle,
+  masterLargeTitle,
 }: Omit<SplitViewProps, 'breakingPointWidth'>) {
   const id = React.useId();
   const rootKey = 'splitViewProvider_' + id.replace(/:/g, '--');
@@ -211,7 +230,19 @@ function WideSplitView({
     <View style={styles.row}>
       <RidgeNavigationContext.Provider value={splitRidgeValue}>
         <OptimizedContext.Provider value={masterOptimizedValue}>
-          <View style={[{ width: masterWidth }, masterStyle]}>{children}</View>
+          <View style={[styles.master, { width: masterWidth }, masterStyle]}>
+            {Platform.OS !== 'web' && masterTitle != null ? (
+              <MasterPaneScene
+                title={masterTitle}
+                largeTitle={masterLargeTitle ?? true}
+                backgroundColor={theme.layout.backgroundColor}
+              >
+                {children}
+              </MasterPaneScene>
+            ) : (
+              children
+            )}
+          </View>
         </OptimizedContext.Provider>
         <View style={[styles.detail, detailStyle]}>
           <NavigationHandler stateNavigator={detailNavigator}>
@@ -254,6 +285,53 @@ function WideSplitView({
         </View>
       </RidgeNavigationContext.Provider>
     </View>
+  );
+}
+
+/**
+ * Hosts the master column inside its OWN one-scene native navigation stack so
+ * the UINavigationBar lays out in the master column's bounds (see
+ * NVNavigationStackView `layoutSubviews`, which sets the embedded
+ * UINavigationController's view frame to the RN view bounds). Because the scene
+ * never pushes — master row taps drive the DETAIL navigator instead — the
+ * partial-width push limitation that forces the detail pane onto a JS fallback
+ * does not apply here.
+ */
+function MasterPaneScene({
+  children,
+  title,
+  largeTitle,
+  backgroundColor,
+}: {
+  children: React.ReactNode;
+  title: string;
+  largeTitle: boolean;
+  backgroundColor: any;
+}) {
+  const sceneNavigator = React.useMemo(() => {
+    const navigator = new StateNavigator([
+      { key: 'master', route: 'master', trackCrumbTrail: false },
+    ]);
+    navigator.historyManager.disabled = true;
+    navigator.historyManager.stop();
+    navigator.navigate('master');
+    return navigator;
+  }, []);
+
+  return (
+    <NavigationHandler stateNavigator={sceneNavigator}>
+      <NavigationStack
+        underlayColor={backgroundColor}
+        backgroundColor={() => backgroundColor}
+        //@ts-ignore - renderScene signature comes from navigation-react-native
+        renderScene={() => (
+          <>
+            <NavigationBar hidden={false} title={title} largeTitle={largeTitle} />
+            {children}
+          </>
+        )}
+      />
+    </NavigationHandler>
   );
 }
 
@@ -320,6 +398,9 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: 'row',
+  },
+  master: {
+    overflow: 'hidden',
   },
   paneScenes: {
     flex: 1,

@@ -44,6 +44,8 @@ function PostsScreen() {
 
   return (
     <SplitView
+      masterTitle="Posts"
+      masterLargeTitle={false}
       detailPlaceholder={
         <View style={styles.placeholder}>
           <Ionicons name="reader-outline" size={40} color={theme.muted} />
@@ -54,34 +56,35 @@ function PostsScreen() {
       }
       masterStyle={{ borderRightColor: theme.border }}
     >
-      <View
-        style={[
-          styles.searchWrap,
-          {
-            marginTop: top + 12,
-            marginLeft: left + 12,
-            marginRight: right + 12,
-            backgroundColor: theme.surface,
-            borderColor: theme.border,
-          },
-        ]}
-      >
-        <Ionicons name="search" size={17} color={theme.muted} />
-        <NativeTextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search posts"
-          placeholderTextColor={theme.muted}
-          style={[styles.searchInput, { color: theme.text }]}
-        />
-      </View>
-
       <LegendList
         data={posts}
         renderItem={({ item }) => <Item item={item} />}
         keyExtractor={(item) => `${item.id}`}
         estimatedItemSize={ITEM_HEIGHT}
         recycleItems
+        contentInsetAdjustmentBehavior="automatic"
+        ListHeaderComponent={
+          <View
+            style={[
+              styles.searchWrap,
+              {
+                marginLeft: left + 12,
+                marginRight: right + 12,
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Ionicons name="search" size={17} color={theme.muted} />
+            <NativeTextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search posts"
+              placeholderTextColor={theme.muted}
+              style={[styles.searchInput, { color: theme.text }]}
+            />
+          </View>
+        }
       />
     </SplitView>
   );
