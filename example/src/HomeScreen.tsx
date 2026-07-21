@@ -79,6 +79,15 @@ function HomeScreen() {
             onPress={() => push(Routes.PostScreen, { id: '1' })}
           />
           <Card
+            icon="fitness-outline"
+            badge="NEW"
+            title="Translucent sidebar"
+            description="Health-style: a glass sidebar floating over an edge-to-edge colored hero — the color bleeds under it (TripleSplitView floatingSidebar)."
+            path="/health"
+            onPressIn={() => preload(Routes.HealthScreen, {})}
+            onPress={() => push(Routes.HealthScreen, {})}
+          />
+          <Card
             icon="link-outline"
             title="URLs everywhere"
             description="Every screen has a real path on web, iOS and Android. Deep links and browser history for free."

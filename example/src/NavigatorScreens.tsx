@@ -56,6 +56,38 @@ export const PostsScreen = registerScreen(
   }
 );
 
+// Demo F — Health-style translucent sidebar over immersive content
+// (TripleSplitView floatingSidebar). Renders its own native header.
+export const HealthScreen = registerScreen(
+  '/health',
+  lazy(() => import('./HealthScreen')),
+  () => {},
+  {
+    title: 'Health',
+    description: 'Translucent sidebar over immersive content',
+  }
+);
+
+// Demo G — a full-screen edit that a split-detail push escapes into.
+export const PostEditScreen = registerScreen(
+  '/post/:id/edit',
+  RequireAuthHOC(lazy(() => import('./PostEditScreen'))),
+  (params) => {
+    const { id } = params;
+    queryClient.prefetchQuery({
+      queryKey: queryKeyPostScreen({ id }),
+      queryFn: queryKeyPostScreenPromise({ id }),
+      staleTime: 3000,
+    });
+    return 'testQueryReference';
+  },
+  {
+    title: 'Edit post',
+    description: 'Edit a post full-screen',
+    nativeHeader: true,
+  }
+);
+
 export const PostScreen = registerScreen(
   '/post/:id',
   RequireAuthHOC(lazy(() => import('./PostScreen'))),

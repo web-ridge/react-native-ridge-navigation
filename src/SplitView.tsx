@@ -16,10 +16,14 @@ import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import FullScreenPushContext from './contexts/FullScreenPushContext';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
+import useCurrentRoot from './useCurrentRoot';
+import useBottomTabIndex from './useBottomTabIndex';
 import {
   createNormalRoot,
+  getScreenKey,
   makeVariablesNavigationFriendly,
   rootKeyAndPaths,
 } from './navigationUtils';
@@ -131,6 +135,26 @@ function WideSplitView({
   const theme = outerOptimized.theme;
   const detailPlaceholderRef = useLatest(detailPlaceholder);
 
+  // Full-screen push (Demo G): pushes on the MAIN navigator that the split
+  // itself lives in, so the pushed screen escapes the split and presents at
+  // full width (native full-screen push / normal web route), with a back that
+  // returns to the split. Captured here because at this point the context still
+  // holds the main navigator (before the split overrides it below).
+  const mainNavigator = outerOptimized.stateNavigator;
+  const { preloadScreen } = outerOptimized;
+  const { currentRootKey } = useCurrentRoot();
+  const { currentTab } = useBottomTabIndex();
+  const fullScreenPush = React.useCallback(
+    (screen: any, params: any, options?: { preload?: boolean }) => {
+      if (options?.preload) {
+        preloadScreen(screen, params);
+      }
+      const screenKey = getScreenKey(currentRootKey!, currentTab, screen.path);
+      mainNavigator.navigate(screenKey, params, 'add');
+    },
+    [mainNavigator, preloadScreen, currentRootKey, currentTab]
+  );
+
   const detailNavigator = React.useMemo(() => {
     const stateInfos = [
       {
@@ -236,7 +260,8 @@ function WideSplitView({
   const renderPlaceholder = () => detailPlaceholderRef.current ?? null;
 
   return (
-    <View style={styles.row}>
+    <FullScreenPushContext.Provider value={fullScreenPush}>
+      <View style={styles.row}>
       <RidgeNavigationContext.Provider value={splitRidgeValue}>
         <OptimizedContext.Provider value={masterOptimizedValue}>
           <View style={[styles.master, { width: masterWidth }, masterStyle]}>
@@ -294,7 +319,8 @@ function WideSplitView({
           </NavigationHandler>
         </View>
       </RidgeNavigationContext.Provider>
-    </View>
+      </View>
+    </FullScreenPushContext.Provider>
   );
 }
 

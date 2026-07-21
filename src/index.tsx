@@ -31,6 +31,13 @@ export {
   type CollapsingHeaderProps,
   type HeaderAction,
 } from './CollapsingHeader';
+// Column-scoped, Contacts-style immersive header that collapses on scroll and
+// keeps its gradient confined to its own pane (native uses JS + injected native
+// blur; web mirror uses backdrop-filter). For SplitView/TripleSplitView detail.
+export {
+  default as ScopedCollapsingHeader,
+  type ScopedCollapsingHeaderProps,
+} from './ScopedCollapsingHeader';
 export {
   usePreloadResult,
   setPreloadResultTransformHook,
@@ -65,6 +72,11 @@ export {
   default as SplitPaneContext,
   useIsInsideSplitPane,
 } from './contexts/SplitPaneContext';
+export {
+  default as FullScreenPushContext,
+  useFullScreenPush,
+  type FullScreenPush,
+} from './contexts/FullScreenPushContext';
 export { default as ModalBackHandler } from './ModalBackHandler';
 export { default as createLinkComponent } from './createLinkComponent';
 

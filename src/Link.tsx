@@ -17,6 +17,7 @@ export default function Link<T extends BaseScreen>({
   skipLinkBehaviourIfPressIsDefined,
   replace: isReplaceInsteadOfPush,
   refresh: isRefreshInsteadOfPush,
+  fullScreen,
   ...rest
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
@@ -57,6 +58,7 @@ export default function Link<T extends BaseScreen>({
       const options = {
         preload: isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
         toBottomTab,
+        fullScreen,
       };
 
       if (isRefreshInsteadOfPush) {
@@ -79,6 +81,7 @@ export default function Link<T extends BaseScreen>({
       hasPreloadedData,
       replace,
       push,
+      fullScreen,
     ]
   );
 

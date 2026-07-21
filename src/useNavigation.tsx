@@ -10,10 +10,17 @@ import OptimizedContext from './contexts/OptimizedContext';
 import useBottomTabIndex from './useBottomTabIndex';
 import { Platform } from 'react-native';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import { useFullScreenPush } from './contexts/FullScreenPushContext';
 
 type NavigateOptions = {
   preload?: boolean;
   toBottomTab?: BottomTabType;
+  /**
+   * Escape an enclosing SplitView / TripleSplitView: push FULL-SCREEN over the
+   * whole split via the main navigator instead of landing in the detail pane.
+   * No-op outside a split (falls back to a normal push).
+   */
+  fullScreen?: boolean;
 };
 export default function useNavigation() {
   const {
@@ -25,6 +32,7 @@ export default function useNavigation() {
     stateNavigator,
   } = React.useContext(OptimizedContext);
   const { fluent, navigationRoot } = React.useContext(RidgeNavigationContext);
+  const fullScreenPush = useFullScreenPush();
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
   const { currentTab, switchToTab } = useBottomTabIndex();
@@ -135,9 +143,14 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
+      // Demo G — escape the split and present full-screen on the main navigator.
+      if (options?.fullScreen && fullScreenPush) {
+        fullScreenPush(screen, params, { preload: options.preload });
+        return;
+      }
       innerNavigate(screen, params, options, 'add');
     },
-    [innerNavigate]
+    [innerNavigate, fullScreenPush]
   );
 
   const replace = React.useCallback(

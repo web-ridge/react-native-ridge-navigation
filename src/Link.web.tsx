@@ -23,6 +23,7 @@ export default function Link<T extends BaseScreen>({
   skipLinkBehaviourIfPressIsDefined,
   replace: isReplaceInsteadOfPush,
   refresh: isRefreshInsteadOfPush,
+  fullScreen,
   ...rest
 }: LinkProps<T>) {
   const { basePath, preloadedCache, rootNavigator } = React.useContext(
@@ -94,6 +95,7 @@ export default function Link<T extends BaseScreen>({
           preload:
             isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
           toBottomTab,
+          fullScreen,
         };
         if (isRefreshInsteadOfPush) {
           refresh(to, params, options);

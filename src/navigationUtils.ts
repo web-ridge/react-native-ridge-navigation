@@ -177,6 +177,11 @@ export type LinkProps<T extends BaseScreen> = {
   skipLinkBehaviourIfPressIsDefined?: boolean;
   replace?: boolean;
   refresh?: boolean;
+  /**
+   * Push FULL-SCREEN over an enclosing SplitView / TripleSplitView (via the main
+   * navigator) instead of into the detail pane. No-op outside a split.
+   */
+  fullScreen?: boolean;
 };
 
 export type BottomTabLinkRenderProps = LinkRenderProps & {
