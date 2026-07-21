@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import {
+  BackLink,
   BarButton,
   LeftBar,
   Link,
@@ -90,6 +91,15 @@ function PostScreen() {
 
   const body = (
     <View style={styles.body}>
+      {/* In selectionParam mode this in-app back must DESELECT (drop ?detail=)
+          via the main navigator history — same as browser Back. */}
+      <BackLink>
+        {({ onPress }) => (
+          <Pressable testID="detail-back" onPress={onPress}>
+            <Text style={styles.detailBack}>‹ Back (deselect)</Text>
+          </Pressable>
+        )}
+      </BackLink>
       <RouteChip path={`/post/${id}`} accent />
       <Text style={styles.actionStatus}>
         {saved ? 'Bookmarked' : 'Not bookmarked'} · Shared {shares}×
@@ -347,10 +357,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  heroImageWrap: { width: 88, height: 88, borderRadius: 20, overflow: 'hidden' },
+  heroImageWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   heroImage: { width: 88, height: 88 },
   heroTitle: { flex: 1, fontSize: 20, lineHeight: 26, fontWeight: '700' },
   body: { padding: 20, maxWidth: 640, width: '100%', alignSelf: 'center' },
+  detailBack: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#4C51F7',
+    marginBottom: 8,
+  },
   actionStatus: { marginTop: 10, fontSize: 14, fontWeight: '600' },
   bodyText: { fontSize: 16, lineHeight: 26, marginTop: 14 },
   actions: { marginTop: 24, gap: 10, alignItems: 'stretch' },
