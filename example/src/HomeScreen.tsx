@@ -88,6 +88,15 @@ function HomeScreen() {
             onPress={() => push(Routes.HealthScreen, {})}
           />
           <Card
+            icon="options-outline"
+            badge="NEW"
+            title="Three-column workspace"
+            description="Sidebar → list → detail, every level reflected in the URL (sectionParam/detailParam) and a sub-form drilled inside the detail column."
+            path="/settings?section=…&detail=…"
+            onPressIn={() => preload(Routes.TripleWorkspaceScreen, {})}
+            onPress={() => push(Routes.TripleWorkspaceScreen, {})}
+          />
+          <Card
             icon="link-outline"
             title="URLs everywhere"
             description="Every screen has a real path on web, iOS and Android. Deep links and browser history for free."

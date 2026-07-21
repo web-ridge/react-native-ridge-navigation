@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { NavigationMotion } from 'navigation-react-mobile';
+import type { StateNavigator } from 'navigation';
 
 import OptimizedContext, {
   OptimizedContextProvider,
@@ -8,7 +9,20 @@ import { Head } from '../Head';
 import type { BaseScreen } from 'react-native-ridge-navigation';
 import { View, StyleSheet } from 'react-native';
 
-function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
+function NavigationStack({
+  renderWeb,
+  stateNavigatorOverride,
+}: {
+  renderWeb?: (key: string) => any;
+  /**
+   * Route pushes/pops made from inside the rendered scenes through this
+   * navigator instead of the ambient NavigationContext one. Used by
+   * SplitView/TripleSplitView so a drill deeper inside the detail pane becomes a
+   * main-navigator URL entry (deep-linkable + back-navigable) rather than a
+   * private, history-less pane push. Undefined keeps the ambient navigator.
+   */
+  stateNavigatorOverride?: StateNavigator;
+}) {
   const { theme } = React.useContext(OptimizedContext);
   return (
     <NavigationMotion
@@ -40,7 +54,11 @@ function NavigationStack({ renderWeb }: { renderWeb?: (key: string) => any }) {
                 <meta name="description" content={description || ''} />
               </Head>
             )}
-            <OptimizedContextProvider state={state} data={data}>
+            <OptimizedContextProvider
+              state={state}
+              data={data}
+              stateNavigatorOverride={stateNavigatorOverride}
+            >
               {renderWeb?.(state.key) || scene}
             </OptimizedContextProvider>
           </View>

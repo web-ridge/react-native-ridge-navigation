@@ -20,6 +20,7 @@ import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
 import {
   createNormalRoot,
+  generatePath,
   makeVariablesNavigationFriendly,
   rootKeyAndPaths,
 } from './navigationUtils';
@@ -69,6 +70,35 @@ export type TripleSplitViewProps = {
    * navigator for browser history.
    */
   onSelectionChange?: (selection: TripleSelection) => void;
+  /**
+   * Opt in to making the SIDEBAR→MIDDLE selection (which section is open) part
+   * of navigation state. When set to a query-param name (e.g. `"section"`),
+   * selecting a section from the sidebar:
+   *
+   *  - reflects the selection in the URL of the MAIN navigator as a query param
+   *    (`…/more?section=werknemers`), so it is deep-linkable and restored on a
+   *    cold reload,
+   *  - records it as a real entry on the MAIN navigator's single history
+   *    timeline, so browser Back/Forward (web) and the native back gesture step
+   *    back through selections — no second history stack to fight the main one.
+   *
+   * Switching to another section also drops any `detailParam` from the URL, so
+   * the detail column empties (iPad Mail: changing mailbox clears the message).
+   *
+   * This is the three-column analogue of SplitView's `selectionParam`, applied
+   * to the first level. Pair it with `detailParam` for the second level.
+   */
+  sectionParam?: string;
+  /**
+   * Opt in to making the MIDDLE→DETAIL selection (which item is open) part of
+   * navigation state. When set to a query-param name (e.g. `"detail"`),
+   * selecting an item from the middle column reflects it in the MAIN URL
+   * (`…/more?section=werknemers&detail=user/42`), records a history entry, and
+   * re-derives the detail pane from that URL — so it is deep-linkable,
+   * back/forward-navigable and cold-restorable, exactly like SplitView's
+   * `selectionParam`.
+   */
+  detailParam?: string;
 };
 
 /** One column's current selection: the registered screen path plus its params,
@@ -107,6 +137,8 @@ export default function TripleSplitView({
   floatingSidebar,
   initialSelection,
   onSelectionChange,
+  sectionParam,
+  detailParam,
 }: TripleSplitViewProps) {
   // Seed from window width so it renders on first paint (no null-until-onLayout
   // flash / background-tab breakage); onLayout refines the container width.
@@ -130,6 +162,8 @@ export default function TripleSplitView({
           floatingSidebar={floatingSidebar}
           initialSelection={initialSelection}
           onSelectionChange={onSelectionChange}
+          sectionParam={sectionParam}
+          detailParam={detailParam}
         >
           {sidebar}
         </WideTripleSplitView>
@@ -179,37 +213,6 @@ function useScopedPaneNavigator(
   }, [SuspenseContainer, rootKey, screens]);
 }
 
-/** A proxy over `paneNavigator` whose `navigate(key, params)` RESETS the pane to
- *  [root, key] — i.e. selecting replaces the current selection instead of
- *  stacking on it. Mirrors SplitView's masterNavigator. `onAfterSelect` runs
- *  after each selection (used so selecting a new middle section also clears the
- *  downstream detail column back to its placeholder). */
-function useSelectIntoPaneNavigator(
-  paneNavigator: StateNavigator,
-  rootKey: string,
-  onAfterSelect?: () => void
-) {
-  return React.useMemo(() => {
-    const select = (key: string, params?: any) => {
-      const fluent = new StateNavigator(paneNavigator)
-        .fluent()
-        .navigate(rootKey)
-        .navigate(key, params);
-      paneNavigator.navigateLink(fluent.url);
-      onAfterSelect?.();
-    };
-    return new Proxy(paneNavigator, {
-      get(target: any, prop) {
-        if (prop === 'navigate') {
-          return select;
-        }
-        const value = target[prop];
-        return typeof value === 'function' ? value.bind(target) : value;
-      },
-    }) as StateNavigator;
-  }, [paneNavigator, rootKey, onAfterSelect]);
-}
-
 function WideTripleSplitView({
   children,
   masterPlaceholder,
@@ -222,6 +225,8 @@ function WideTripleSplitView({
   floatingSidebar,
   initialSelection,
   onSelectionChange,
+  sectionParam,
+  detailParam,
 }: Omit<TripleSplitViewProps, 'sidebar' | 'breakingPointWidth'> & {
   children: React.ReactNode;
 }) {
@@ -234,6 +239,42 @@ function WideTripleSplitView({
   const outerOptimized = React.useContext(OptimizedContext);
   const { screens, navigationRoot, SuspenseContainer } = ridge;
   const theme = outerOptimized.theme;
+
+  // The MAIN navigator the split itself lives on. With `sectionParam`/
+  // `detailParam` set, selections flow through it (URL query + single history
+  // timeline) instead of staying private to the panes — see below.
+  const mainNavigator = outerOptimized.stateNavigator;
+  const { preloadScreen } = outerOptimized;
+  const urlDriven = Boolean(sectionParam || detailParam);
+
+  // In-app back for URL-selection mode. Each selection level (section, detail,
+  // and any sub-form drilled inside the detail) is a MAIN-navigator history
+  // entry created by `refresh(..., 'add')` — the state stays put, only the
+  // query data changes. Browser Back walks those data entries via the History
+  // API, but `mainNavigator.navigateBack` walks the CRUMB trail instead and
+  // would jump out of the whole split. So in-app back must replicate a browser
+  // history back: step the History API on web (the panes re-derive from the
+  // resulting URL through the URL-mirror effect). Native has no browser
+  // history; fall back to the crumb navigator (best-effort).
+  const paneCanGoBack = React.useCallback(() => {
+    const data: any = mainNavigator.stateContext.data ?? {};
+    const hasSelection =
+      (sectionParam && data[sectionParam] != null) ||
+      (detailParam && data[detailParam] != null);
+    return Boolean(hasSelection) || mainNavigator.canNavigateBack(1);
+  }, [mainNavigator, sectionParam, detailParam]);
+  const paneGoBack = React.useCallback(
+    (n = 1) => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.history.go(-n);
+        return;
+      }
+      if (mainNavigator.canNavigateBack(n)) {
+        mainNavigator.navigateBack(n);
+      }
+    },
+    [mainNavigator]
+  );
   const masterPlaceholderRef = useLatest(masterPlaceholder);
   const detailPlaceholderRef = useLatest(detailPlaceholder);
 
@@ -282,25 +323,204 @@ function WideTripleSplitView({
     reportSelection();
   }, [resetDetail, reportSelection]);
 
+  // Encode a pane route key + params (what a row push carries) into the compact
+  // href stored in the main URL, e.g. key `<rootKey>/user/:id` + {id:'42'} ->
+  // `user/42`. Relative to the pane rootKey, so the reverse is just
+  // `rootKey + '/' + href`. Mirrors SplitView's encodeSelectionHref.
+  const encodeHref = React.useCallback(
+    (rootKey: string, key: string, params?: any) => {
+      const template = key.startsWith(rootKey + '/')
+        ? key.slice(rootKey.length + 1)
+        : key;
+      return generatePath(template, params ?? {});
+    },
+    []
+  );
+
   // Sidebar pushes select the middle column (and reset detail); middle-column
   // pushes select the detail column.
-  const sidebarSelect = useSelectIntoPaneNavigator(
+  //
+  // With `sectionParam`/`detailParam`, that selection instead flows through the
+  // MAIN navigator: a row push records the selection as a query param on the
+  // current main URL (history 'add'), and the pane is re-derived from that URL
+  // by the effect below. One history timeline (URL + browser/native Back),
+  // deep-linkable and back-navigable — the panes never drive themselves out of
+  // sync with the URL. Unset params keep the original history-less behaviour.
+  const sidebarSelect = React.useMemo(() => {
+    const selectViaUrl = (key: string, params?: any) => {
+      const href = encodeHref(middleRootKey, key, params);
+      const currentData = mainNavigator.stateContext.data ?? {};
+      const next: any = { ...currentData, [sectionParam as string]: href };
+      // Switching section clears any detail selection (iPad Mail behaviour).
+      if (detailParam) {
+        delete next[detailParam];
+      }
+      mainNavigator.refresh(next, 'add');
+    };
+    const selectLocal = (key: string, params?: any) => {
+      const fluent = new StateNavigator(middleNavigator)
+        .fluent()
+        .navigate(middleRootKey)
+        .navigate(key, params);
+      middleNavigator.navigateLink(fluent.url);
+      onMiddleSelected();
+    };
+    return new Proxy(middleNavigator, {
+      get(target: any, prop) {
+        if (prop === 'navigate') {
+          return sectionParam ? selectViaUrl : selectLocal;
+        }
+        // In URL mode the selection lives on the MAIN navigator's history, so
+        // in-app back (BackLink/pop) must step through that history — the panes
+        // re-derive from the resulting URL. Popping the history-less pane would
+        // be a no-op.
+        if (sectionParam && prop === 'navigateBack') {
+          return paneGoBack;
+        }
+        if (sectionParam && prop === 'canNavigateBack') {
+          return () => paneCanGoBack();
+        }
+        const value = target[prop];
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }) as StateNavigator;
+  }, [
     middleNavigator,
     middleRootKey,
-    onMiddleSelected
-  );
-  const middleSelect = useSelectIntoPaneNavigator(
+    sectionParam,
+    detailParam,
+    mainNavigator,
+    encodeHref,
+    onMiddleSelected,
+    paneGoBack,
+    paneCanGoBack,
+  ]);
+
+  const middleSelect = React.useMemo(() => {
+    const selectViaUrl = (key: string, params?: any) => {
+      const href = encodeHref(detailRootKey, key, params);
+      const currentData = mainNavigator.stateContext.data ?? {};
+      mainNavigator.refresh(
+        { ...currentData, [detailParam as string]: href },
+        'add'
+      );
+    };
+    const selectLocal = (key: string, params?: any) => {
+      const fluent = new StateNavigator(detailNavigator)
+        .fluent()
+        .navigate(detailRootKey)
+        .navigate(key, params);
+      detailNavigator.navigateLink(fluent.url);
+      reportSelection();
+    };
+    return new Proxy(detailNavigator, {
+      get(target: any, prop) {
+        if (prop === 'navigate') {
+          return detailParam ? selectViaUrl : selectLocal;
+        }
+        // URL mode: in-app back steps the MAIN navigator's history (which owns
+        // the detail selection + any deeper drill), keeping Terug consistent
+        // with browser Back. This proxy also backs the DETAIL column itself, so
+        // a card push inside the detail (a sub-form) becomes a new `?detail=`
+        // entry and Terug/back walks it back one level.
+        if (detailParam && prop === 'navigateBack') {
+          return paneGoBack;
+        }
+        if (detailParam && prop === 'canNavigateBack') {
+          return () => paneCanGoBack();
+        }
+        const value = target[prop];
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }) as StateNavigator;
+  }, [
     detailNavigator,
     detailRootKey,
-    reportSelection
-  );
+    detailParam,
+    mainNavigator,
+    encodeHref,
+    reportSelection,
+    paneGoBack,
+    paneCanGoBack,
+  ]);
+
+  // URL-mirror: when a param is set the corresponding pane is a pure function of
+  // the main navigator's query. Re-derive whenever the main navigator navigates
+  // (row tap -> refresh, browser Back/Forward, native back, deep-link/cold
+  // load), so both selections live on the single main history timeline and are
+  // deep-linkable. Mirrors SplitView's URL-mirror effect, applied per level.
+  const appliedSectionRef = React.useRef<string | undefined>(undefined);
+  const appliedDetailRef = React.useRef<string | undefined>(undefined);
+  React.useEffect(() => {
+    if (!urlDriven) {
+      return undefined;
+    }
+    const applyPane = (
+      navigator: StateNavigator,
+      rootKey: string,
+      href: string | undefined
+    ) => {
+      if (!href) {
+        // No selection in the URL -> pane shows its placeholder.
+        if (navigator.stateContext.state?.key !== rootKey) {
+          navigator.navigate(rootKey);
+        }
+        return;
+      }
+      const targetUrl = rootKey + '/' + href;
+      try {
+        const parsed = navigator.parseLink(targetUrl);
+        if ((parsed as any)?.state?.screen) {
+          preloadScreen((parsed as any).state.screen, (parsed as any).data);
+        }
+      } catch {
+        // Unresolvable href (stale/foreign link) -> fall back to placeholder.
+        navigator.navigate(rootKey);
+        return;
+      }
+      navigator.navigateLink(targetUrl);
+    };
+    const syncPanesFromUrl = () => {
+      const data: any = mainNavigator.stateContext.data ?? {};
+      // Section first (it can empty the detail param), then detail on top.
+      if (sectionParam) {
+        const href: string | undefined = data[sectionParam];
+        if (appliedSectionRef.current !== href) {
+          appliedSectionRef.current = href;
+          applyPane(middleNavigator, middleRootKey, href);
+        }
+      }
+      if (detailParam) {
+        const href: string | undefined = data[detailParam];
+        if (appliedDetailRef.current !== href) {
+          appliedDetailRef.current = href;
+          applyPane(detailNavigator, detailRootKey, href);
+        }
+      }
+    };
+    // Initial derive (deep-link / cold load) + subscribe to future changes.
+    syncPanesFromUrl();
+    mainNavigator.onNavigate(syncPanesFromUrl);
+    return () => mainNavigator.offNavigate(syncPanesFromUrl);
+  }, [
+    urlDriven,
+    sectionParam,
+    detailParam,
+    mainNavigator,
+    middleNavigator,
+    detailNavigator,
+    middleRootKey,
+    detailRootKey,
+    preloadScreen,
+  ]);
 
   // Restore a deep-linked selection once, after the panes exist. Middle first
   // (which resets detail), then detail on top — mirroring the interactive
-  // order — so a shared URL reopens exactly where it pointed.
+  // order — so a shared URL reopens exactly where it pointed. Skipped when
+  // `sectionParam`/`detailParam` drive the panes from the URL instead.
   const didRestore = React.useRef(false);
   React.useEffect(() => {
-    if (didRestore.current || !initialSelection) {
+    if (didRestore.current || !initialSelection || urlDriven) {
       return;
     }
     didRestore.current = true;
@@ -382,6 +602,33 @@ function WideTripleSplitView({
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
+        // URL-driven mode: selections live on the MAIN navigator's history, so
+        // step IT back (the panes re-derive from the URL). Popping the panes
+        // directly would just be undone by the URL-mirror effect.
+        if (urlDriven) {
+          const data: any = mainNavigator.stateContext.data ?? {};
+          const hasSelection =
+            (sectionParam && data[sectionParam] != null) ||
+            (detailParam && data[detailParam] != null);
+          if (!hasSelection) {
+            return false;
+          }
+          if (mainNavigator.canNavigateBack(1)) {
+            mainNavigator.navigateBack(1);
+          } else {
+            // Only selection on the stack -> clear our params so back returns
+            // to the empty/placeholder panes.
+            const rest = { ...data };
+            if (sectionParam) {
+              delete rest[sectionParam];
+            }
+            if (detailParam) {
+              delete rest[detailParam];
+            }
+            mainNavigator.refresh(rest, 'replace');
+          }
+          return true;
+        }
         if (detailNavigator.canNavigateBack(1)) {
           detailNavigator.navigateBack(1);
           return true;
@@ -394,7 +641,14 @@ function WideTripleSplitView({
       }
     );
     return () => subscription.remove();
-  }, [detailNavigator, middleNavigator]);
+  }, [
+    detailNavigator,
+    middleNavigator,
+    urlDriven,
+    sectionParam,
+    detailParam,
+    mainNavigator,
+  ]);
 
   const renderMasterPlaceholder = () => masterPlaceholderRef.current ?? null;
   const renderDetailPlaceholder = () => detailPlaceholderRef.current ?? null;
@@ -453,39 +707,58 @@ function WideTripleSplitView({
         </RidgeNavigationContext.Provider>
       </View>
 
-      {/* Column 3 — detail */}
+      {/* Column 3 — detail. Wrapped in the pane ridge context (rootNavigator =
+          detailNavigator, navigationRoot incl. the pane rootKeys) so pushes
+          from INSIDE a detail screen (a sub-form card) resolve against the
+          detail pane's own root instead of the main app root — without this
+          they compute a screenKey the pane navigator has no state for and
+          dead-click. Mirrors how SplitView wraps its detail in splitRidgeValue.
+
+          When `detailParam` is set, those inner pushes route through
+          `middleSelect` (the same proxy the middle rows use): each becomes a new
+          `?detail=` history entry, so a sub-form is deep-linkable, back-
+          navigable and its in-app Terug steps back one level. */}
       <View style={[styles.detail, detailStyle]}>
-        <NavigationHandler stateNavigator={detailNavigator}>
-          {Platform.OS === 'web' ? (
-            <NavigationStack
-              underlayColor={theme.layout.backgroundColor}
-              backgroundColor={() => theme.layout.backgroundColor}
-              //@ts-ignore
-              renderWeb={(key: string) =>
-                key === detailRootKey ? renderDetailPlaceholder() : undefined
-              }
-              renderScene={(state: any, data: any) => (
-                <>
-                  <HiddenNavbarWithSwipeBack
-                    nativeHeader={state?.screen?.options?.nativeHeader}
-                  />
-                  <OptimizedContextProvider state={state} data={data}>
-                    {state.key === detailRootKey
-                      ? renderDetailPlaceholder()
-                      : state.renderScene()}
-                  </OptimizedContextProvider>
-                </>
-              )}
-            />
-          ) : (
-            <PaneScenes
-              navigator={detailNavigator}
-              rootKey={detailRootKey}
-              renderPlaceholder={renderDetailPlaceholder}
-              backgroundColor={theme.layout.backgroundColor}
-            />
-          )}
-        </NavigationHandler>
+        <RidgeNavigationContext.Provider value={middleRidgeValue}>
+          <NavigationHandler stateNavigator={detailNavigator}>
+            {Platform.OS === 'web' ? (
+              <NavigationStack
+                underlayColor={theme.layout.backgroundColor}
+                backgroundColor={() => theme.layout.backgroundColor}
+                // In detailParam mode, pushes from inside a detail screen (a
+                // sub-form card) route through `middleSelect` -> the main
+                // navigator URL, so the sub-form is a real `?detail=` history
+                // entry: deep-linkable, browser-Back- and Terug-navigable.
+                // @ts-ignore web-only prop (native detail uses PaneScenes).
+                stateNavigatorOverride={detailParam ? middleSelect : undefined}
+                //@ts-ignore
+                renderWeb={(key: string) =>
+                  key === detailRootKey ? renderDetailPlaceholder() : undefined
+                }
+                renderScene={(state: any, data: any) => (
+                  <>
+                    <HiddenNavbarWithSwipeBack
+                      nativeHeader={state?.screen?.options?.nativeHeader}
+                    />
+                    <OptimizedContextProvider state={state} data={data}>
+                      {state.key === detailRootKey
+                        ? renderDetailPlaceholder()
+                        : state.renderScene()}
+                    </OptimizedContextProvider>
+                  </>
+                )}
+              />
+            ) : (
+              <PaneScenes
+                navigator={detailNavigator}
+                rootKey={detailRootKey}
+                renderPlaceholder={renderDetailPlaceholder}
+                backgroundColor={theme.layout.backgroundColor}
+                linkNavigator={detailParam ? middleSelect : undefined}
+              />
+            )}
+          </NavigationHandler>
+        </RidgeNavigationContext.Provider>
       </View>
 
       {/* Floating sidebar overlay, painted on top of the content. */}

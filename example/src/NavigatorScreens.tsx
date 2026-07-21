@@ -68,6 +68,45 @@ export const HealthScreen = registerScreen(
   }
 );
 
+// Demo H — three-column workspace with URL-reflected section + detail
+// selections (TripleSplitView sectionParam/detailParam) and a detail sub-form.
+export const TripleWorkspaceScreen = registerScreen(
+  '/settings',
+  lazy(() => import('./TripleWorkspaceScreen')),
+  () => {},
+  {
+    title: 'Settings workspace',
+    description: 'Three-column, URL-reflected selection at every level',
+  }
+);
+export const TripleSectionScreen = registerScreen(
+  '/section/:key',
+  lazy(() => import('./TripleSectionScreen')),
+  () => {},
+  {
+    title: 'Section',
+    description: 'Middle column list',
+  }
+);
+export const TripleItemScreen = registerScreen(
+  '/entry/:id',
+  lazy(() => import('./TripleItemScreen')),
+  () => {},
+  {
+    title: 'Item',
+    description: 'Detail column',
+  }
+);
+export const TripleSubformScreen = registerScreen(
+  '/entry/:id/edit',
+  lazy(() => import('./TripleSubformScreen')),
+  () => {},
+  {
+    title: 'Edit item',
+    description: 'Sub-form pushed inside the detail column',
+  }
+);
+
 // Demo G — a full-screen edit that a split-detail push escapes into.
 export const PostEditScreen = registerScreen(
   '/post/:id/edit',

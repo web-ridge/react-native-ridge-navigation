@@ -167,6 +167,32 @@ function WideSplitView({
   const { preloadScreen } = outerOptimized;
   const { currentRootKey } = useCurrentRoot();
   const { currentTab } = useBottomTabIndex();
+
+  // In-app back for selectionParam mode. The selection (and any deeper drill
+  // pushed inside the detail pane) lives on the MAIN navigator's history as
+  // `refresh(..., 'add')` data entries — same state, changing query. Browser
+  // Back walks them via the History API; `mainNavigator.navigateBack` walks the
+  // CRUMB trail instead and would jump out of the split entirely. So in-app back
+  // must replicate a browser history back: step the History API on web (the
+  // detail pane re-derives from the resulting URL). Native falls back to the
+  // crumb navigator (best-effort; browser-history back is web-only).
+  const paneCanGoBack = React.useCallback(() => {
+    const data: any = mainNavigator.stateContext.data ?? {};
+    const hasSelection = selectionParam && data[selectionParam] != null;
+    return Boolean(hasSelection) || mainNavigator.canNavigateBack(1);
+  }, [mainNavigator, selectionParam]);
+  const paneGoBack = React.useCallback(
+    (n = 1) => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.history.go(-n);
+        return;
+      }
+      if (mainNavigator.canNavigateBack(n)) {
+        mainNavigator.navigateBack(n);
+      }
+    },
+    [mainNavigator]
+  );
   const fullScreenPush = React.useCallback(
     (screen: any, params: any, options?: { preload?: boolean }) => {
       if (options?.preload) {
@@ -253,6 +279,17 @@ function WideSplitView({
         if (prop === 'navigate') {
           return selectionParam ? selectViaUrl : selectDetail;
         }
+        // In selectionParam mode the selection (and any deeper drill pushed
+        // inside the detail pane) lives on the MAIN navigator's history. In-app
+        // back (BackLink/pop) must therefore step through that history — the
+        // pane re-derives from the resulting URL — so Terug matches browser Back
+        // and actually deselects instead of no-opping on the history-less pane.
+        if (selectionParam && prop === 'navigateBack') {
+          return paneGoBack;
+        }
+        if (selectionParam && prop === 'canNavigateBack') {
+          return () => paneCanGoBack();
+        }
         const value = target[prop];
         return typeof value === 'function' ? value.bind(target) : value;
       },
@@ -263,6 +300,8 @@ function WideSplitView({
     selectionParam,
     mainNavigator,
     encodeSelectionHref,
+    paneGoBack,
+    paneCanGoBack,
   ]);
 
   // URL-mirror: when `selectionParam` is set the pane is a pure function of the
@@ -407,6 +446,15 @@ function WideSplitView({
                 <NavigationStack
                   underlayColor={theme.layout.backgroundColor}
                   backgroundColor={() => theme.layout.backgroundColor}
+                  // In selectionParam mode, pushes from inside the detail pane
+                  // (a drill deeper) route through `masterNavigator` -> the main
+                  // navigator URL, so they become real `?<selectionParam>=`
+                  // history entries: deep-linkable, browser-Back- and Terug-
+                  // navigable instead of private history-less pane pushes.
+                  // @ts-ignore web-only prop (native detail uses PaneScenes).
+                  stateNavigatorOverride={
+                    selectionParam ? masterNavigator : undefined
+                  }
                   //@ts-ignore
                   renderWeb={(key: string) =>
                     key === rootKey ? renderPlaceholder() : undefined
@@ -436,6 +484,7 @@ function WideSplitView({
                   rootKey={rootKey}
                   renderPlaceholder={renderPlaceholder}
                   backgroundColor={theme.layout.backgroundColor}
+                  linkNavigator={selectionParam ? masterNavigator : undefined}
                 />
               )}
             </NavigationHandler>
@@ -509,11 +558,17 @@ function DetailPaneScenes({
   rootKey,
   renderPlaceholder,
   backgroundColor,
+  linkNavigator,
 }: {
   navigator: StateNavigator;
   rootKey: string;
   renderPlaceholder: () => React.ReactNode;
   backgroundColor: any;
+  /** When set (selectionParam mode), Links/pushes inside the rendered detail
+   *  scenes route through this navigator instead of the ambient one, so a drill
+   *  deeper into the pane becomes a main-navigator URL entry (deep-linkable +
+   *  back-navigable) rather than a private, history-less pane push. */
+  linkNavigator?: StateNavigator;
 }) {
   const [stateContext, setStateContext] = React.useState<
     StateNavigator['stateContext']
@@ -544,7 +599,11 @@ function DetailPaneScenes({
             style={[StyleSheet.absoluteFill, { backgroundColor }]}
             pointerEvents={isTop ? 'auto' : 'none'}
           >
-            <OptimizedContextProvider state={scene.state} data={scene.data}>
+            <OptimizedContextProvider
+              state={scene.state}
+              data={scene.data}
+              stateNavigatorOverride={linkNavigator}
+            >
               {scene.state.key === rootKey
                 ? renderPlaceholder()
                 : scene.state.renderScene()}
