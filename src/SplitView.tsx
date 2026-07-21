@@ -50,6 +50,12 @@ export type SplitViewProps = {
   masterTitle?: string;
   /** Large-title (native collapse on scroll). Defaults to true. */
   masterLargeTitle?: boolean;
+  /**
+   * Native bar content for the master's scoped navigation bar — pass a
+   * `<RightBar>`/`<LeftBar>` of `<BarButton>`s (SF Symbols / systemItems).
+   * Native only; ignored when `masterTitle` is unset or on web.
+   */
+  masterActions?: React.ReactNode;
 };
 
 /**
@@ -74,6 +80,7 @@ export default function SplitView({
   detailStyle,
   masterTitle,
   masterLargeTitle,
+  masterActions,
 }: SplitViewProps) {
   // Seed from the window width (available synchronously) so the split renders on
   // first paint instead of null-until-onLayout — no blank flash, and it works in
@@ -95,6 +102,7 @@ export default function SplitView({
           detailStyle={detailStyle}
           masterTitle={masterTitle}
           masterLargeTitle={masterLargeTitle}
+          masterActions={masterActions}
         >
           {children}
         </WideSplitView>
@@ -113,6 +121,7 @@ function WideSplitView({
   detailStyle,
   masterTitle,
   masterLargeTitle,
+  masterActions,
 }: Omit<SplitViewProps, 'breakingPointWidth'>) {
   const id = React.useId();
   const rootKey = 'splitViewProvider_' + id.replace(/:/g, '--');
@@ -236,6 +245,7 @@ function WideSplitView({
                 title={masterTitle}
                 largeTitle={masterLargeTitle ?? true}
                 backgroundColor={theme.layout.backgroundColor}
+                actions={masterActions}
               >
                 {children}
               </MasterPaneScene>
@@ -302,11 +312,13 @@ function MasterPaneScene({
   title,
   largeTitle,
   backgroundColor,
+  actions,
 }: {
   children: React.ReactNode;
   title: string;
   largeTitle: boolean;
   backgroundColor: any;
+  actions?: React.ReactNode;
 }) {
   const sceneNavigator = React.useMemo(() => {
     const navigator = new StateNavigator([
@@ -326,7 +338,9 @@ function MasterPaneScene({
         //@ts-ignore - renderScene signature comes from navigation-react-native
         renderScene={() => (
           <>
-            <NavigationBar hidden={false} title={title} largeTitle={largeTitle} />
+            <NavigationBar hidden={false} title={title} largeTitle={largeTitle}>
+              {actions}
+            </NavigationBar>
             {/*
              * Bound the master content to the scene so its scroll view has a
              * finite height. Without this the list lays out at its full content

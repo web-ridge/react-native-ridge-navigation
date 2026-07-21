@@ -25,6 +25,8 @@ export const HomeScreen = registerScreen(
   {
     title: 'Home',
     description: 'Home is where the heart is',
+    // Home renders its own CollapsingHeader (native UINavigationBar on iOS).
+    nativeHeader: true,
   }
 );
 export const AccountScreen = registerScreen(

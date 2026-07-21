@@ -7,17 +7,30 @@ export {
   default as NativeNavigationBar,
   type NativeNavigationSearch,
 } from './NativeNavigationBar';
-// Native header vocabulary (iOS/Android). Re-exported so screens can build
-// collapsing large-title / immersive colored headers and shared-element
-// transitions without reaching into navigation-react-native directly.
+// Native header vocabulary (iOS/Android). Re-exported through a platform-split
+// module (nativeBars.native / nativeBars.web) so screens can build collapsing
+// large-title / immersive colored headers, bar buttons and shared-element
+// transitions with one import — and importing them on web never pulls native
+// modules into the bundle.
 export {
   NavigationBar,
   SharedElement,
   CoordinatorLayout,
   CollapsingBar,
+  LeftBar,
+  RightBar,
+  BarButton,
   type NavigationBarProps,
   type SharedElementProps,
-} from 'navigation-react-native';
+  type BarButtonProps,
+} from './nativeBars';
+// Cross-platform iOS-styled header: native UINavigationBar, web DOM mirror
+// (CollapsingHeader.web.tsx). Same props/actions across platforms.
+export {
+  default as CollapsingHeader,
+  type CollapsingHeaderProps,
+  type HeaderAction,
+} from './CollapsingHeader';
 export {
   usePreloadResult,
   setPreloadResultTransformHook,

@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import {
+  BarButton,
+  LeftBar,
   NavigationBar,
+  RightBar,
   SharedElement,
   useModal,
   useParams,
@@ -44,6 +47,8 @@ function PostScreen() {
   const queryReference = usePreloadResult(routes.PostScreen);
   const { inModal } = useModal();
   const { id } = useParams(routes.PostScreen);
+  const [saved, setSaved] = React.useState(false);
+  const [shares, setShares] = React.useState(0);
 
   const { data } = useSuspenseQuery({
     queryKey: queryKeyPostScreen({ id }),
@@ -75,7 +80,31 @@ function PostScreen() {
         largeTitleColor="#FFFFFF"
         largeTitleFontWeight="800"
         backTitle="Posts"
-      />
+      >
+        {/* Demo D — native detail bar actions (SF Symbols + systemItem). */}
+        <LeftBar supplementBack>
+          <BarButton
+            testID="detailBookmark"
+            image={{ uri: saved ? 'bookmark.fill' : 'bookmark' }}
+            tintColor="#FFFFFF"
+            onPress={() => setSaved((s) => !s)}
+          />
+        </LeftBar>
+        <RightBar>
+          <BarButton
+            testID="detailShare"
+            systemItem="action"
+            tintColor="#FFFFFF"
+            onPress={() => setShares((n) => n + 1)}
+          />
+          <BarButton
+            testID="detailMore"
+            image={{ uri: 'ellipsis.circle' }}
+            tintColor="#FFFFFF"
+            onPress={() => setShares((n) => n + 1)}
+          />
+        </RightBar>
+      </TypedNavigationBar>
       <ScrollView
         style={styles.scroll}
         contentInsetAdjustmentBehavior="automatic"
@@ -103,6 +132,9 @@ function PostScreen() {
 
         <View style={styles.body}>
           <RouteChip path={`/post/${id}`} accent />
+          <Text style={styles.actionStatus}>
+            {saved ? 'Bookmarked' : 'Not bookmarked'} · Shared {shares}×
+          </Text>
           <Text muted style={styles.bodyText}>
             {data!.body}
           </Text>
@@ -171,6 +203,11 @@ const styles = StyleSheet.create({
     maxWidth: 640,
     width: '100%',
     alignSelf: 'center',
+  },
+  actionStatus: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: '600',
   },
   bodyText: {
     fontSize: 16,

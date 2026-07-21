@@ -5,7 +5,12 @@ import {
   TextInput as NativeTextInput,
   View,
 } from 'react-native';
-import { SplitView, usePreloadResult } from 'react-native-ridge-navigation';
+import {
+  BarButton,
+  RightBar,
+  SplitView,
+  usePreloadResult,
+} from 'react-native-ridge-navigation';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +33,7 @@ function PostsScreen() {
   const queryReference = usePreloadResult(routes.PostsScreen);
   const { top, left, right } = useSafeAreaInsets();
   const [search, setSearch] = React.useState('');
+  const [reversed, setReversed] = React.useState(false);
   const { data } = useSuspenseQuery({
     queryKey: queryKeyPostsScreen,
     queryFn: queryKeyPostsScreenPromise,
@@ -38,16 +44,32 @@ function PostsScreen() {
     return <Text style={styles.preloadError}>No preloaded result</Text>;
   }
 
-  const posts = search
+  const filtered = search
     ? (data || []).filter((post) =>
         post.title.toLowerCase().includes(search.toLowerCase())
       )
     : data || [];
+  const posts = reversed ? [...filtered].reverse() : filtered;
 
   return (
     <SplitView
       masterTitle="Posts"
       masterLargeTitle
+      // Demo D — native master bar actions (SF Symbol + systemItem).
+      masterActions={
+        <RightBar>
+          <BarButton
+            testID="masterSort"
+            image={{ uri: 'arrow.up.arrow.down' }}
+            onPress={() => setReversed((r) => !r)}
+          />
+          <BarButton
+            testID="masterAdd"
+            systemItem="add"
+            onPress={() => setSearch((s) => (s ? '' : 'qui'))}
+          />
+        </RightBar>
+      }
       detailPlaceholder={
         <View style={styles.placeholder}>
           <Ionicons name="reader-outline" size={40} color={theme.muted} />
