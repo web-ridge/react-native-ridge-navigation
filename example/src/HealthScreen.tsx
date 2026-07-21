@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { TripleSplitView } from 'react-native-ridge-navigation';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,7 +28,8 @@ function HealthScreen() {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = React.useState('summary');
 
-  const gradient = 'linear-gradient(160deg, #FF5E7E 0%, #FF2D55 45%, #D11450 100%)';
+  const gradient =
+    'linear-gradient(160deg, #FF5E7E 0%, #FF2D55 45%, #D11450 100%)';
 
   return (
     <TripleSplitView
@@ -121,9 +128,9 @@ function HealthScreen() {
           <ScrollView contentContainerStyle={{ padding: 24 }}>
             <Text style={styles.detailTitle}>Trends</Text>
             <Text muted style={styles.detailBody}>
-              Detail column. The sidebar on the left is a translucent glass panel
-              floating over the pink summary — the color visibly bleeds under it,
-              like Health on iOS 26.
+              Detail column. The sidebar on the left is a translucent glass
+              panel floating over the pink summary — the color visibly bleeds
+              under it, like Health on iOS 26.
             </Text>
           </ScrollView>
         </View>
