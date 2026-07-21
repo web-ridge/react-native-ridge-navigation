@@ -25,7 +25,9 @@ export default function Link<T extends BaseScreen>({
   refresh: isRefreshInsteadOfPush,
   ...rest
 }: LinkProps<T>) {
-  const { basePath, preloadedCache } = React.useContext(RidgeNavigationContext);
+  const { basePath, preloadedCache, rootNavigator } = React.useContext(
+    RidgeNavigationContext
+  );
   const { currentTab } = useBottomTabIndex();
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
@@ -155,8 +157,15 @@ export default function Link<T extends BaseScreen>({
     onHoverIn: onHoverIn,
     onPress: onPress,
   };
+  // Panes (SplitView / TripleSplitView columns, nested providers) run on a
+  // history-less navigator whose rootKey is a per-instance ephemeral id, so an
+  // href built from it (`/<paneRootKey>/…`) is not a real browser route: a hard
+  // navigation to it (reload / open-in-new-tab / cmd-click) 404s and the app
+  // falls back to the default root. Emit an onPress-only control instead, just
+  // like links inside a modal, so the ephemeral pane URL is never advertised.
+  const inEphemeralPane = rootNavigator?.historyManager?.disabled === true;
   let childrenProps: LinkRenderProps =
-    onCustomPress || inModal
+    onCustomPress || inModal || inEphemeralPane
       ? baseProps
       : {
           ...baseProps,
