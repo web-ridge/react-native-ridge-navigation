@@ -46,9 +46,7 @@ export default function CollapsingHeader({
             ? undefined
             : 'saturate(180%) blur(20px)',
           borderBottomColor:
-            immersive || progress > 0.5
-              ? 'rgba(0,0,0,0.12)'
-              : 'transparent',
+            immersive || progress > 0.5 ? 'rgba(0,0,0,0.12)' : 'transparent',
         }}
       >
         <span

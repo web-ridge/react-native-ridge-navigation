@@ -23,6 +23,7 @@ import useCurrentRoot from './useCurrentRoot';
 import useBottomTabIndex from './useBottomTabIndex';
 import {
   createNormalRoot,
+  generatePath,
   getScreenKey,
   makeVariablesNavigationFriendly,
   rootKeyAndPaths,
@@ -60,6 +61,25 @@ export type SplitViewProps = {
    * Native only; ignored when `masterTitle` is unset or on web.
    */
   masterActions?: React.ReactNode;
+  /**
+   * Opt in to making the detail SELECTION part of navigation state. When set to
+   * a query-param name (e.g. `"detail"`), selecting a detail from the master:
+   *
+   *  - reflects the selection in the URL of the MAIN navigator as a query param
+   *    (`…/overview?detail=post/1`), so it is deep-linkable and restored on a
+   *    cold reload,
+   *  - records it as a real entry on the MAIN navigator's single history
+   *    timeline, so browser Back/Forward (web) and the native back gesture step
+   *    back through selections — no second history stack to fight the main one.
+   *
+   * The detail pane becomes a pure mirror of that URL: it re-derives itself
+   * whenever the selection query changes (row tap, Back, Forward, deep link).
+   *
+   * Unset (default) keeps the original history-less behaviour exactly: the pane
+   * is a private selection with no URL/history footprint. Fully backward
+   * compatible.
+   */
+  selectionParam?: string;
 };
 
 /**
@@ -85,6 +105,7 @@ export default function SplitView({
   masterTitle,
   masterLargeTitle,
   masterActions,
+  selectionParam,
 }: SplitViewProps) {
   // Seed from the window width (available synchronously) so the split renders on
   // first paint instead of null-until-onLayout — no blank flash, and it works in
@@ -107,6 +128,7 @@ export default function SplitView({
           masterTitle={masterTitle}
           masterLargeTitle={masterLargeTitle}
           masterActions={masterActions}
+          selectionParam={selectionParam}
         >
           {children}
         </WideSplitView>
@@ -126,6 +148,7 @@ function WideSplitView({
   masterTitle,
   masterLargeTitle,
   masterActions,
+  selectionParam,
 }: Omit<SplitViewProps, 'breakingPointWidth'>) {
   const id = React.useId();
   const rootKey = 'splitViewProvider_' + id.replace(/:/g, '--');
@@ -187,9 +210,37 @@ function WideSplitView({
     return navigator;
   }, [SuspenseContainer, rootKey, screens]);
 
+  // Encode a pane route key + params (what a master row push carries) into the
+  // compact href stored in the main URL, e.g. key `…/post/:id` + {id:'1'} ->
+  // `post/1`. The href is relative to the pane rootKey so the reverse is just
+  // `rootKey + '/' + href`.
+  const encodeSelectionHref = React.useCallback(
+    (key: string, params?: any) => {
+      const template = key.startsWith(rootKey + '/')
+        ? key.slice(rootKey.length + 1)
+        : key;
+      return generatePath(template, params ?? {});
+    },
+    [rootKey]
+  );
+
   // Pushes from the master column select a new detail: they reset the pane to
   // [root, detail] instead of stacking on whatever was selected before.
+  //
+  // With `selectionParam`, selection instead flows through the MAIN navigator:
+  // a row push records the selection as a query param on the current main URL
+  // (history 'add'), and the pane is re-derived from that URL by the effect
+  // below. That keeps ONE history timeline (URL + browser/native Back) and
+  // avoids the pane driving itself out of sync with the URL.
   const masterNavigator = React.useMemo(() => {
+    const selectViaUrl = (key: string, params?: any) => {
+      const href = encodeSelectionHref(key, params);
+      const currentData = mainNavigator.stateContext.data ?? {};
+      mainNavigator.refresh(
+        { ...currentData, [selectionParam as string]: href },
+        'add'
+      );
+    };
     const selectDetail = (key: string, params?: any) => {
       const fluentNavigator = new StateNavigator(detailNavigator)
         .fluent()
@@ -200,13 +251,65 @@ function WideSplitView({
     return new Proxy(detailNavigator, {
       get(target: any, prop) {
         if (prop === 'navigate') {
-          return selectDetail;
+          return selectionParam ? selectViaUrl : selectDetail;
         }
         const value = target[prop];
         return typeof value === 'function' ? value.bind(target) : value;
       },
     }) as StateNavigator;
-  }, [detailNavigator, rootKey]);
+  }, [
+    detailNavigator,
+    rootKey,
+    selectionParam,
+    mainNavigator,
+    encodeSelectionHref,
+  ]);
+
+  // URL-mirror: when `selectionParam` is set the pane is a pure function of the
+  // main navigator's `?<selectionParam>=` query. Re-derive the pane whenever the
+  // main navigator navigates (row tap -> refresh, browser Back/Forward, native
+  // back, deep-link/cold-load), so the selection is deep-linkable and
+  // back-navigable through the single main history timeline.
+  const appliedHrefRef = React.useRef<string | undefined>(undefined);
+  React.useEffect(() => {
+    if (!selectionParam) {
+      return undefined;
+    }
+    const syncPaneFromUrl = () => {
+      const href: string | undefined =
+        mainNavigator.stateContext.data?.[selectionParam];
+      // Already reflecting this selection? Avoid a redundant pane re-render.
+      if (appliedHrefRef.current === href) {
+        return;
+      }
+      appliedHrefRef.current = href;
+      if (!href) {
+        // No selection in the URL -> pane shows its placeholder.
+        if (detailNavigator.stateContext.state?.key !== rootKey) {
+          detailNavigator.navigate(rootKey);
+        }
+        return;
+      }
+      const targetUrl = rootKey + '/' + href;
+      // Preload the detail screen so the pane renders without a Suspense gap,
+      // then select it in the pane.
+      try {
+        const parsed = detailNavigator.parseLink(targetUrl);
+        if (parsed?.state?.screen) {
+          preloadScreen(parsed.state.screen, parsed.data);
+        }
+      } catch {
+        // Unresolvable href (stale/foreign link) -> fall back to placeholder.
+        detailNavigator.navigate(rootKey);
+        return;
+      }
+      detailNavigator.navigateLink(targetUrl);
+    };
+    // Initial derive (deep-link / cold load) + subscribe to future changes.
+    syncPaneFromUrl();
+    mainNavigator.onNavigate(syncPaneFromUrl);
+    return () => mainNavigator.offNavigate(syncPaneFromUrl);
+  }, [selectionParam, mainNavigator, detailNavigator, rootKey, preloadScreen]);
 
   const navigationRootWithSplit = React.useMemo(
     () => ({
@@ -239,7 +342,7 @@ function WideSplitView({
   );
 
   // The detail pane's stack is invisible to the Android system back button,
-  // so pop the pane first before letting the main stack handle it.
+  // so handle it here before letting the main stack take over.
   React.useEffect(() => {
     if (Platform.OS !== 'android') {
       return undefined;
@@ -247,6 +350,25 @@ function WideSplitView({
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
+        // selectionParam mode: the selection lives on the MAIN navigator's
+        // history, so step IT back (the pane re-derives from the URL). Popping
+        // the pane directly would just be undone by the URL-mirror effect.
+        if (selectionParam) {
+          const data: any = mainNavigator.stateContext.data ?? {};
+          if (data[selectionParam] == null) {
+            return false;
+          }
+          if (mainNavigator.canNavigateBack(1)) {
+            mainNavigator.navigateBack(1);
+          } else {
+            // Only selection on the stack (nothing to go back to) -> clear it
+            // so back returns to the empty/placeholder pane.
+            const rest = { ...data };
+            delete rest[selectionParam];
+            mainNavigator.refresh(rest, 'replace');
+          }
+          return true;
+        }
         if (detailNavigator.canNavigateBack(1)) {
           detailNavigator.navigateBack(1);
           return true;
@@ -255,70 +377,70 @@ function WideSplitView({
       }
     );
     return () => subscription.remove();
-  }, [detailNavigator]);
+  }, [detailNavigator, selectionParam, mainNavigator]);
 
   const renderPlaceholder = () => detailPlaceholderRef.current ?? null;
 
   return (
     <FullScreenPushContext.Provider value={fullScreenPush}>
       <View style={styles.row}>
-      <RidgeNavigationContext.Provider value={splitRidgeValue}>
-        <OptimizedContext.Provider value={masterOptimizedValue}>
-          <View style={[styles.master, { width: masterWidth }, masterStyle]}>
-            {Platform.OS !== 'web' && masterTitle != null ? (
-              <MasterPaneScene
-                title={masterTitle}
-                largeTitle={masterLargeTitle ?? true}
-                backgroundColor={theme.layout.backgroundColor}
-                actions={masterActions}
-              >
-                {children}
-              </MasterPaneScene>
-            ) : (
-              children
-            )}
+        <RidgeNavigationContext.Provider value={splitRidgeValue}>
+          <OptimizedContext.Provider value={masterOptimizedValue}>
+            <View style={[styles.master, { width: masterWidth }, masterStyle]}>
+              {Platform.OS !== 'web' && masterTitle != null ? (
+                <MasterPaneScene
+                  title={masterTitle}
+                  largeTitle={masterLargeTitle ?? true}
+                  backgroundColor={theme.layout.backgroundColor}
+                  actions={masterActions}
+                >
+                  {children}
+                </MasterPaneScene>
+              ) : (
+                children
+              )}
+            </View>
+          </OptimizedContext.Provider>
+          <View style={[styles.detail, detailStyle]}>
+            <NavigationHandler stateNavigator={detailNavigator}>
+              {Platform.OS === 'web' ? (
+                <NavigationStack
+                  underlayColor={theme.layout.backgroundColor}
+                  backgroundColor={() => theme.layout.backgroundColor}
+                  //@ts-ignore
+                  renderWeb={(key: string) =>
+                    key === rootKey ? renderPlaceholder() : undefined
+                  }
+                  renderScene={(state: any, data: any) => {
+                    return (
+                      <>
+                        <HiddenNavbarWithSwipeBack
+                          nativeHeader={state?.screen?.options?.nativeHeader}
+                        />
+                        <OptimizedContextProvider state={state} data={data}>
+                          {state.key === rootKey
+                            ? renderPlaceholder()
+                            : state.renderScene()}
+                        </OptimizedContextProvider>
+                      </>
+                    );
+                  }}
+                />
+              ) : (
+                // An NVNavigationStack embedded at partial width does not
+                // present pushed scenes on the new architecture, so the pane
+                // keeps its own JS scene stack: every crumb stays mounted
+                // (scroll state survives), the top one is interactive.
+                <DetailPaneScenes
+                  navigator={detailNavigator}
+                  rootKey={rootKey}
+                  renderPlaceholder={renderPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                />
+              )}
+            </NavigationHandler>
           </View>
-        </OptimizedContext.Provider>
-        <View style={[styles.detail, detailStyle]}>
-          <NavigationHandler stateNavigator={detailNavigator}>
-            {Platform.OS === 'web' ? (
-              <NavigationStack
-                underlayColor={theme.layout.backgroundColor}
-                backgroundColor={() => theme.layout.backgroundColor}
-                //@ts-ignore
-                renderWeb={(key: string) =>
-                  key === rootKey ? renderPlaceholder() : undefined
-                }
-                renderScene={(state: any, data: any) => {
-                  return (
-                    <>
-                      <HiddenNavbarWithSwipeBack
-                        nativeHeader={state?.screen?.options?.nativeHeader}
-                      />
-                      <OptimizedContextProvider state={state} data={data}>
-                        {state.key === rootKey
-                          ? renderPlaceholder()
-                          : state.renderScene()}
-                      </OptimizedContextProvider>
-                    </>
-                  );
-                }}
-              />
-            ) : (
-              // An NVNavigationStack embedded at partial width does not
-              // present pushed scenes on the new architecture, so the pane
-              // keeps its own JS scene stack: every crumb stays mounted
-              // (scroll state survives), the top one is interactive.
-              <DetailPaneScenes
-                navigator={detailNavigator}
-                rootKey={rootKey}
-                renderPlaceholder={renderPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-              />
-            )}
-          </NavigationHandler>
-        </View>
-      </RidgeNavigationContext.Provider>
+        </RidgeNavigationContext.Provider>
       </View>
     </FullScreenPushContext.Provider>
   );
