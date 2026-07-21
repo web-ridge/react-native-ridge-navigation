@@ -257,7 +257,13 @@ function WideSplitView({
         return typeof value === 'function' ? value.bind(target) : value;
       },
     }) as StateNavigator;
-  }, [detailNavigator, rootKey, selectionParam, mainNavigator, encodeSelectionHref]);
+  }, [
+    detailNavigator,
+    rootKey,
+    selectionParam,
+    mainNavigator,
+    encodeSelectionHref,
+  ]);
 
   // URL-mirror: when `selectionParam` is set the pane is a pure function of the
   // main navigator's `?<selectionParam>=` query. Re-derive the pane whenever the
@@ -357,7 +363,8 @@ function WideSplitView({
           } else {
             // Only selection on the stack (nothing to go back to) -> clear it
             // so back returns to the empty/placeholder pane.
-            const { [selectionParam]: _omit, ...rest } = data;
+            const rest = { ...data };
+            delete rest[selectionParam];
             mainNavigator.refresh(rest, 'replace');
           }
           return true;
@@ -377,63 +384,63 @@ function WideSplitView({
   return (
     <FullScreenPushContext.Provider value={fullScreenPush}>
       <View style={styles.row}>
-      <RidgeNavigationContext.Provider value={splitRidgeValue}>
-        <OptimizedContext.Provider value={masterOptimizedValue}>
-          <View style={[styles.master, { width: masterWidth }, masterStyle]}>
-            {Platform.OS !== 'web' && masterTitle != null ? (
-              <MasterPaneScene
-                title={masterTitle}
-                largeTitle={masterLargeTitle ?? true}
-                backgroundColor={theme.layout.backgroundColor}
-                actions={masterActions}
-              >
-                {children}
-              </MasterPaneScene>
-            ) : (
-              children
-            )}
+        <RidgeNavigationContext.Provider value={splitRidgeValue}>
+          <OptimizedContext.Provider value={masterOptimizedValue}>
+            <View style={[styles.master, { width: masterWidth }, masterStyle]}>
+              {Platform.OS !== 'web' && masterTitle != null ? (
+                <MasterPaneScene
+                  title={masterTitle}
+                  largeTitle={masterLargeTitle ?? true}
+                  backgroundColor={theme.layout.backgroundColor}
+                  actions={masterActions}
+                >
+                  {children}
+                </MasterPaneScene>
+              ) : (
+                children
+              )}
+            </View>
+          </OptimizedContext.Provider>
+          <View style={[styles.detail, detailStyle]}>
+            <NavigationHandler stateNavigator={detailNavigator}>
+              {Platform.OS === 'web' ? (
+                <NavigationStack
+                  underlayColor={theme.layout.backgroundColor}
+                  backgroundColor={() => theme.layout.backgroundColor}
+                  //@ts-ignore
+                  renderWeb={(key: string) =>
+                    key === rootKey ? renderPlaceholder() : undefined
+                  }
+                  renderScene={(state: any, data: any) => {
+                    return (
+                      <>
+                        <HiddenNavbarWithSwipeBack
+                          nativeHeader={state?.screen?.options?.nativeHeader}
+                        />
+                        <OptimizedContextProvider state={state} data={data}>
+                          {state.key === rootKey
+                            ? renderPlaceholder()
+                            : state.renderScene()}
+                        </OptimizedContextProvider>
+                      </>
+                    );
+                  }}
+                />
+              ) : (
+                // An NVNavigationStack embedded at partial width does not
+                // present pushed scenes on the new architecture, so the pane
+                // keeps its own JS scene stack: every crumb stays mounted
+                // (scroll state survives), the top one is interactive.
+                <DetailPaneScenes
+                  navigator={detailNavigator}
+                  rootKey={rootKey}
+                  renderPlaceholder={renderPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                />
+              )}
+            </NavigationHandler>
           </View>
-        </OptimizedContext.Provider>
-        <View style={[styles.detail, detailStyle]}>
-          <NavigationHandler stateNavigator={detailNavigator}>
-            {Platform.OS === 'web' ? (
-              <NavigationStack
-                underlayColor={theme.layout.backgroundColor}
-                backgroundColor={() => theme.layout.backgroundColor}
-                //@ts-ignore
-                renderWeb={(key: string) =>
-                  key === rootKey ? renderPlaceholder() : undefined
-                }
-                renderScene={(state: any, data: any) => {
-                  return (
-                    <>
-                      <HiddenNavbarWithSwipeBack
-                        nativeHeader={state?.screen?.options?.nativeHeader}
-                      />
-                      <OptimizedContextProvider state={state} data={data}>
-                        {state.key === rootKey
-                          ? renderPlaceholder()
-                          : state.renderScene()}
-                      </OptimizedContextProvider>
-                    </>
-                  );
-                }}
-              />
-            ) : (
-              // An NVNavigationStack embedded at partial width does not
-              // present pushed scenes on the new architecture, so the pane
-              // keeps its own JS scene stack: every crumb stays mounted
-              // (scroll state survives), the top one is interactive.
-              <DetailPaneScenes
-                navigator={detailNavigator}
-                rootKey={rootKey}
-                renderPlaceholder={renderPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-              />
-            )}
-          </NavigationHandler>
-        </View>
-      </RidgeNavigationContext.Provider>
+        </RidgeNavigationContext.Provider>
       </View>
     </FullScreenPushContext.Provider>
   );

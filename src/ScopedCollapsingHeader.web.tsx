@@ -69,7 +69,9 @@ export default function ScopedCollapsingHeader({
             compactTitleOpacity > 0.5 ? 'rgba(0,0,0,0.18)' : 'transparent',
         }}
       >
-        {headerLeft ? <div style={styles.compactLeft}>{headerLeft as any}</div> : null}
+        {headerLeft ? (
+          <div style={styles.compactLeft}>{headerLeft as any}</div>
+        ) : null}
         <span
           style={{
             ...styles.compactTitle,
