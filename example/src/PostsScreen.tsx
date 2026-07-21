@@ -31,7 +31,7 @@ function PostsScreen() {
   useRenderLog('PostsScreen');
   const theme = useTheme();
   const queryReference = usePreloadResult(routes.PostsScreen);
-  const { top, left, right } = useSafeAreaInsets();
+  const { left, right } = useSafeAreaInsets();
   const [search, setSearch] = React.useState('');
   const [reversed, setReversed] = React.useState(false);
   const { data } = useSuspenseQuery({

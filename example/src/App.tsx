@@ -54,7 +54,7 @@ const theme = createSimpleTheme({
 
 const navigationRoot = {
   [NavigationRoots.RootHome]: createBottomTabsRoot(
-    [BottomRoots.Posts, BottomRoots.Home, BottomRoots.Account],
+    [BottomRoots.Home, BottomRoots.Posts, BottomRoots.Account],
     {
       breakingPointWidth: 600,
       components: {

@@ -17,22 +17,20 @@ export interface UseAuthState {
   resolving: undefined | false | true;
 }
 export const emptyAuthState = {
-  resolving: false as const,
-  // LAB: seed an authenticated session so the split screen launches without a
-  // manual sign-in tap (headless simulator can't tap). Revert for production.
-  user: {
-    id: 1,
-    name: 'Demo User',
-    username: 'demo',
-    email: 'demo@example.com',
-    phone: '',
-    website: '',
-  },
-  token: 'demo_LAB_TOKEN',
+  resolving: undefined,
+  user: null,
+  token: undefined,
 };
 
-// LAB: always start authenticated, ignoring any stale persisted null session.
 let initialState = emptyAuthState;
+try {
+  const item = storage.getString('auth');
+  if (item) {
+    initialState = JSON.parse(item);
+  }
+} catch (error) {
+  console.error('storage (auth)', { error });
+}
 
 const useAuthState = create<UseAuthState>(() => initialState || emptyAuthState);
 
