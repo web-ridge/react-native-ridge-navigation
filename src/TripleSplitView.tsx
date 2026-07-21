@@ -46,6 +46,15 @@ export type TripleSplitViewProps = {
   masterStyle?: StyleProp<ViewStyle>;
   detailStyle?: StyleProp<ViewStyle>;
   /**
+   * Health-app style: float the sidebar as an absolutely-positioned TRANSLUCENT
+   * glass panel ON TOP of the content columns, instead of reserving a column to
+   * its left. The middle/detail content then spans edge-to-edge from x=0, so a
+   * colored/gradient background visibly bleeds UNDER the sidebar. Make the
+   * sidebar surface translucent via `sidebarStyle` (and/or a native BlurView on
+   * iOS / `backdrop-filter` on web) for the frosted-glass look. Default false.
+   */
+  floatingSidebar?: boolean;
+  /**
    * Restore a previous middle/detail selection on mount — the hook that makes
    * the three columns deep-linkable. Paths are the registered `screen.path`
    * values (stable across reloads), NOT the internal per-instance pane keys.
@@ -95,6 +104,7 @@ export default function TripleSplitView({
   sidebarStyle,
   masterStyle,
   detailStyle,
+  floatingSidebar,
   initialSelection,
   onSelectionChange,
 }: TripleSplitViewProps) {
@@ -117,6 +127,7 @@ export default function TripleSplitView({
           sidebarStyle={sidebarStyle}
           masterStyle={masterStyle}
           detailStyle={detailStyle}
+          floatingSidebar={floatingSidebar}
           initialSelection={initialSelection}
           onSelectionChange={onSelectionChange}
         >
@@ -208,6 +219,7 @@ function WideTripleSplitView({
   sidebarStyle,
   masterStyle,
   detailStyle,
+  floatingSidebar,
   initialSelection,
   onSelectionChange,
 }: Omit<TripleSplitViewProps, 'sidebar' | 'breakingPointWidth'> & {
@@ -387,16 +399,31 @@ function WideTripleSplitView({
   const renderMasterPlaceholder = () => masterPlaceholderRef.current ?? null;
   const renderDetailPlaceholder = () => detailPlaceholderRef.current ?? null;
 
+  // Column 1 — sidebar. Floating (Health) = an absolute translucent overlay ON
+  // TOP of the content so the color bleeds under it; otherwise a normal column.
+  const sidebarNode = (
+    <RidgeNavigationContext.Provider value={sidebarRidgeValue}>
+      <OptimizedContext.Provider value={sidebarOptimizedValue}>
+        <View
+          style={[
+            floatingSidebar
+              ? [styles.floatingSidebar, { width: sidebarWidth }]
+              : { width: sidebarWidth },
+            sidebarStyle,
+          ]}
+        >
+          {children}
+        </View>
+      </OptimizedContext.Provider>
+    </RidgeNavigationContext.Provider>
+  );
+
   return (
     <View style={styles.row}>
-      {/* Column 1 — sidebar */}
-      <RidgeNavigationContext.Provider value={sidebarRidgeValue}>
-        <OptimizedContext.Provider value={sidebarOptimizedValue}>
-          <View style={[{ width: sidebarWidth }, sidebarStyle]}>
-            {children}
-          </View>
-        </OptimizedContext.Provider>
-      </RidgeNavigationContext.Provider>
+      {/* Normal layout: sidebar reserves the leftmost column. Floating layout:
+          the content spans from x=0 and the sidebar overlays it (rendered last,
+          below). */}
+      {!floatingSidebar && sidebarNode}
 
       {/* Column 2 — middle/list, whose pushes select the detail column.
           No NavigationHandler here on purpose: the middle scene stack is driven
@@ -460,6 +487,9 @@ function WideTripleSplitView({
           )}
         </NavigationHandler>
       </View>
+
+      {/* Floating sidebar overlay, painted on top of the content. */}
+      {floatingSidebar && sidebarNode}
     </View>
   );
 }
@@ -546,6 +576,14 @@ const styles = StyleSheet.create({
   },
   detail: {
     flex: 1,
+    overflow: 'hidden',
+  },
+  floatingSidebar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 2,
     overflow: 'hidden',
   },
 });

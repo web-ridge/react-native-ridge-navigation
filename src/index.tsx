@@ -7,6 +7,37 @@ export {
   default as NativeNavigationBar,
   type NativeNavigationSearch,
 } from './NativeNavigationBar';
+// Native header vocabulary (iOS/Android). Re-exported through a platform-split
+// module (nativeBars.native / nativeBars.web) so screens can build collapsing
+// large-title / immersive colored headers, bar buttons and shared-element
+// transitions with one import — and importing them on web never pulls native
+// modules into the bundle.
+export {
+  NavigationBar,
+  SharedElement,
+  CoordinatorLayout,
+  CollapsingBar,
+  LeftBar,
+  RightBar,
+  BarButton,
+  type NavigationBarProps,
+  type SharedElementProps,
+  type BarButtonProps,
+} from './nativeBars';
+// Cross-platform iOS-styled header: native UINavigationBar, web DOM mirror
+// (CollapsingHeader.web.tsx). Same props/actions across platforms.
+export {
+  default as CollapsingHeader,
+  type CollapsingHeaderProps,
+  type HeaderAction,
+} from './CollapsingHeader';
+// Column-scoped, Contacts-style immersive header that collapses on scroll and
+// keeps its gradient confined to its own pane (native uses JS + injected native
+// blur; web mirror uses backdrop-filter). For SplitView/TripleSplitView detail.
+export {
+  default as ScopedCollapsingHeader,
+  type ScopedCollapsingHeaderProps,
+} from './ScopedCollapsingHeader';
 export {
   usePreloadResult,
   setPreloadResultTransformHook,
@@ -41,6 +72,11 @@ export {
   default as SplitPaneContext,
   useIsInsideSplitPane,
 } from './contexts/SplitPaneContext';
+export {
+  default as FullScreenPushContext,
+  useFullScreenPush,
+  type FullScreenPush,
+} from './contexts/FullScreenPushContext';
 export { default as ModalBackHandler } from './ModalBackHandler';
 export { default as createLinkComponent } from './createLinkComponent';
 

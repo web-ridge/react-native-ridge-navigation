@@ -1,11 +1,22 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SharedElement } from 'react-native-ridge-navigation';
 import Text from './Text';
 import { interactiveText, useTheme } from './theme';
 
 export type ListItemProps = {
   title: string;
   description?: string;
+  /** Leading thumbnail. When `sharedName` is set it becomes the flight source. */
+  image?: ImageSourcePropType;
+  /** Shared-element name; must match the detail hero's SharedElement name. */
+  sharedName?: string;
   onPress?: (event: any) => void;
   onPressIn?: (event: any) => void;
   onHoverIn?: (event: any) => void;
@@ -18,6 +29,8 @@ export type ListItemProps = {
 export default function ListItem({
   title,
   description,
+  image,
+  sharedName,
   onPress,
   onPressIn,
   onHoverIn,
@@ -36,6 +49,11 @@ export default function ListItem({
         pressed && { backgroundColor: theme.chip },
       ]}
     >
+      {image ? (
+        <SharedElement name={sharedName ?? ''} style={styles.thumbWrap}>
+          <Image source={image} style={styles.thumb} resizeMode="cover" />
+        </SharedElement>
+      ) : null}
       <View style={styles.texts}>
         <Text variant="subtitle" numberOfLines={1} style={interactiveText}>
           {title}
@@ -62,6 +80,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 13,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  thumbWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginRight: 12,
+  },
+  thumb: {
+    width: 44,
+    height: 44,
   },
   texts: {
     flex: 1,

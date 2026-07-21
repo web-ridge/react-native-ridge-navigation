@@ -7127,6 +7127,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~57.0.2":
+  version: 57.0.2
+  resolution: "expo-blur@npm:57.0.2"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: b92f3071b6c38dd5a387cd25b70be47675bb929447e88bcc2deb13f3831bc77e9dede0d9153328eb370a2a5b6737a2f64ab772f4f20d63db045bbf76bd77e1e7
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~57.0.5, expo-constants@npm:~57.0.6":
   version: 57.0.6
   resolution: "expo-constants@npm:57.0.6"
@@ -12015,6 +12026,7 @@ __metadata:
     babel-plugin-react-compiler: ^1.0.0
     expo: ~57.0.7
     expo-atlas: ^0.4.0
+    expo-blur: ~57.0.2
     expo-linking: ~57.0.3
     expo-status-bar: ~57.0.1
     expo-system-ui: ~57.0.1

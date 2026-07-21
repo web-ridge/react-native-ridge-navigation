@@ -25,6 +25,8 @@ export const HomeScreen = registerScreen(
   {
     title: 'Home',
     description: 'Home is where the heart is',
+    // Home renders its own CollapsingHeader (native UINavigationBar on iOS).
+    nativeHeader: true,
   }
 );
 export const AccountScreen = registerScreen(
@@ -54,6 +56,38 @@ export const PostsScreen = registerScreen(
   }
 );
 
+// Demo F — Health-style translucent sidebar over immersive content
+// (TripleSplitView floatingSidebar). Renders its own native header.
+export const HealthScreen = registerScreen(
+  '/health',
+  lazy(() => import('./HealthScreen')),
+  () => {},
+  {
+    title: 'Health',
+    description: 'Translucent sidebar over immersive content',
+  }
+);
+
+// Demo G — a full-screen edit that a split-detail push escapes into.
+export const PostEditScreen = registerScreen(
+  '/post/:id/edit',
+  RequireAuthHOC(lazy(() => import('./PostEditScreen'))),
+  (params) => {
+    const { id } = params;
+    queryClient.prefetchQuery({
+      queryKey: queryKeyPostScreen({ id }),
+      queryFn: queryKeyPostScreenPromise({ id }),
+      staleTime: 3000,
+    });
+    return 'testQueryReference';
+  },
+  {
+    title: 'Edit post',
+    description: 'Edit a post full-screen',
+    nativeHeader: true,
+  }
+);
+
 export const PostScreen = registerScreen(
   '/post/:id',
   RequireAuthHOC(lazy(() => import('./PostScreen'))),
@@ -69,5 +103,11 @@ export const PostScreen = registerScreen(
   {
     title: 'Post',
     description: 'A post',
+    // Demo B: let the screen own a native (colored, collapsing) UINavigationBar
+    // instead of the hidden swipe-back bar.
+    nativeHeader: true,
+    // Demo C: fly the tapped row's thumbnail into this screen's hero on push.
+    // The name must match the source row's <SharedElement name={`item${id}`}>.
+    sharedElements: (_state: any, data: any) => `item${data?.id}`,
   }
 );

@@ -11,14 +11,19 @@ import {
 } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
 import NavigationStack from './navigation/NavigationStack';
+import NavigationBar from './navigation/NavigationBar';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import FullScreenPushContext from './contexts/FullScreenPushContext';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
+import useCurrentRoot from './useCurrentRoot';
+import useBottomTabIndex from './useBottomTabIndex';
 import {
   createNormalRoot,
+  getScreenKey,
   makeVariablesNavigationFriendly,
   rootKeyAndPaths,
 } from './navigationUtils';
@@ -37,6 +42,24 @@ export type SplitViewProps = {
   masterWidth?: number;
   masterStyle?: StyleProp<ViewStyle>;
   detailStyle?: StyleProp<ViewStyle>;
+  /**
+   * When set, the master column mounts its OWN native navigation bar
+   * (iPad-Mail style) scoped to the master column width. The master is a
+   * single, non-pushing scene, so — unlike the detail pane — an embedded
+   * native stack at partial width is safe here: it never pushes, so the
+   * new-architecture partial-width push limitation does not apply.
+   *
+   * Native only (iOS/Android). On web this is ignored; render your own header.
+   */
+  masterTitle?: string;
+  /** Large-title (native collapse on scroll). Defaults to true. */
+  masterLargeTitle?: boolean;
+  /**
+   * Native bar content for the master's scoped navigation bar — pass a
+   * `<RightBar>`/`<LeftBar>` of `<BarButton>`s (SF Symbols / systemItems).
+   * Native only; ignored when `masterTitle` is unset or on web.
+   */
+  masterActions?: React.ReactNode;
 };
 
 /**
@@ -59,6 +82,9 @@ export default function SplitView({
   masterWidth = 360,
   masterStyle,
   detailStyle,
+  masterTitle,
+  masterLargeTitle,
+  masterActions,
 }: SplitViewProps) {
   // Seed from the window width (available synchronously) so the split renders on
   // first paint instead of null-until-onLayout — no blank flash, and it works in
@@ -78,6 +104,9 @@ export default function SplitView({
           masterWidth={masterWidth}
           masterStyle={masterStyle}
           detailStyle={detailStyle}
+          masterTitle={masterTitle}
+          masterLargeTitle={masterLargeTitle}
+          masterActions={masterActions}
         >
           {children}
         </WideSplitView>
@@ -94,6 +123,9 @@ function WideSplitView({
   masterWidth,
   masterStyle,
   detailStyle,
+  masterTitle,
+  masterLargeTitle,
+  masterActions,
 }: Omit<SplitViewProps, 'breakingPointWidth'>) {
   const id = React.useId();
   const rootKey = 'splitViewProvider_' + id.replace(/:/g, '--');
@@ -102,6 +134,26 @@ function WideSplitView({
   const { screens, navigationRoot, SuspenseContainer } = ridge;
   const theme = outerOptimized.theme;
   const detailPlaceholderRef = useLatest(detailPlaceholder);
+
+  // Full-screen push (Demo G): pushes on the MAIN navigator that the split
+  // itself lives in, so the pushed screen escapes the split and presents at
+  // full width (native full-screen push / normal web route), with a back that
+  // returns to the split. Captured here because at this point the context still
+  // holds the main navigator (before the split overrides it below).
+  const mainNavigator = outerOptimized.stateNavigator;
+  const { preloadScreen } = outerOptimized;
+  const { currentRootKey } = useCurrentRoot();
+  const { currentTab } = useBottomTabIndex();
+  const fullScreenPush = React.useCallback(
+    (screen: any, params: any, options?: { preload?: boolean }) => {
+      if (options?.preload) {
+        preloadScreen(screen, params);
+      }
+      const screenKey = getScreenKey(currentRootKey!, currentTab, screen.path);
+      mainNavigator.navigate(screenKey, params, 'add');
+    },
+    [mainNavigator, preloadScreen, currentRootKey, currentTab]
+  );
 
   const detailNavigator = React.useMemo(() => {
     const stateInfos = [
@@ -208,10 +260,24 @@ function WideSplitView({
   const renderPlaceholder = () => detailPlaceholderRef.current ?? null;
 
   return (
-    <View style={styles.row}>
+    <FullScreenPushContext.Provider value={fullScreenPush}>
+      <View style={styles.row}>
       <RidgeNavigationContext.Provider value={splitRidgeValue}>
         <OptimizedContext.Provider value={masterOptimizedValue}>
-          <View style={[{ width: masterWidth }, masterStyle]}>{children}</View>
+          <View style={[styles.master, { width: masterWidth }, masterStyle]}>
+            {Platform.OS !== 'web' && masterTitle != null ? (
+              <MasterPaneScene
+                title={masterTitle}
+                largeTitle={masterLargeTitle ?? true}
+                backgroundColor={theme.layout.backgroundColor}
+                actions={masterActions}
+              >
+                {children}
+              </MasterPaneScene>
+            ) : (
+              children
+            )}
+          </View>
         </OptimizedContext.Provider>
         <View style={[styles.detail, detailStyle]}>
           <NavigationHandler stateNavigator={detailNavigator}>
@@ -253,7 +319,66 @@ function WideSplitView({
           </NavigationHandler>
         </View>
       </RidgeNavigationContext.Provider>
-    </View>
+      </View>
+    </FullScreenPushContext.Provider>
+  );
+}
+
+/**
+ * Hosts the master column inside its OWN one-scene native navigation stack so
+ * the UINavigationBar lays out in the master column's bounds (see
+ * NVNavigationStackView `layoutSubviews`, which sets the embedded
+ * UINavigationController's view frame to the RN view bounds). Because the scene
+ * never pushes — master row taps drive the DETAIL navigator instead — the
+ * partial-width push limitation that forces the detail pane onto a JS fallback
+ * does not apply here.
+ */
+function MasterPaneScene({
+  children,
+  title,
+  largeTitle,
+  backgroundColor,
+  actions,
+}: {
+  children: React.ReactNode;
+  title: string;
+  largeTitle: boolean;
+  backgroundColor: any;
+  actions?: React.ReactNode;
+}) {
+  const sceneNavigator = React.useMemo(() => {
+    const navigator = new StateNavigator([
+      { key: 'master', route: 'master', trackCrumbTrail: false },
+    ]);
+    navigator.historyManager.disabled = true;
+    navigator.historyManager.stop();
+    navigator.navigate('master');
+    return navigator;
+  }, []);
+
+  return (
+    <NavigationHandler stateNavigator={sceneNavigator}>
+      <NavigationStack
+        underlayColor={backgroundColor}
+        backgroundColor={() => backgroundColor}
+        //@ts-ignore - renderScene signature comes from navigation-react-native
+        renderScene={() => (
+          <>
+            <NavigationBar hidden={false} title={title} largeTitle={largeTitle}>
+              {actions}
+            </NavigationBar>
+            {/*
+             * Bound the master content to the scene so its scroll view has a
+             * finite height. Without this the list lays out at its full content
+             * height (clipped by the master column's overflow:hidden): it can't
+             * scroll, and UIKit never finds a collapsible content scroll view,
+             * so the large title stays permanently expanded.
+             */}
+            <View style={styles.masterContent}>{children}</View>
+          </>
+        )}
+      />
+    </NavigationHandler>
   );
 }
 
@@ -320,6 +445,12 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: 'row',
+  },
+  master: {
+    overflow: 'hidden',
+  },
+  masterContent: {
+    flex: 1,
   },
   paneScenes: {
     flex: 1,

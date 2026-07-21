@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import {
   BottomTabLink,
+  CollapsingHeader,
   fluentRootBottomTabs,
   fluentScreen,
   useNavigation,
@@ -21,15 +22,37 @@ function HomeScreen() {
   useRenderLog('HomeScreen');
   const theme = useTheme();
   const { push, fluent, preload } = useNavigation();
+  const [pinged, setPinged] = React.useState(0);
 
   return (
-    <ScrollView style={styles.root}>
+    <CollapsingHeader
+      title="Home"
+      // Same declarative actions render as native RightBar BarButtons (SF
+      // Symbol / systemItem) and as iOS-styled DOM buttons on web.
+      actions={[
+        {
+          key: 'homeSearch',
+          label: 'Search',
+          systemItem: 'search',
+          sfSymbol: 'magnifyingglass',
+          webGlyph: '⌕',
+          onPress: () => setPinged((p) => p + 1),
+        },
+        {
+          key: 'homeAdd',
+          label: 'New',
+          systemItem: 'add',
+          webGlyph: '+',
+          onPress: () => push(Routes.PostScreen, { id: '1' }),
+        },
+      ]}
+    >
       <View style={styles.content}>
         <Introduction />
 
         <View style={styles.currentRoute}>
           <Text variant="caption" muted style={styles.currentRouteLabel}>
-            You are here
+            You are here{pinged ? ` · search ${pinged}×` : ''}
           </Text>
           <RouteChip path="/home" accent />
         </View>
@@ -54,6 +77,15 @@ function HomeScreen() {
             path="/post/:id"
             onPressIn={() => preload(Routes.PostScreen, { id: '1' })}
             onPress={() => push(Routes.PostScreen, { id: '1' })}
+          />
+          <Card
+            icon="fitness-outline"
+            badge="NEW"
+            title="Translucent sidebar"
+            description="Health-style: a glass sidebar floating over an edge-to-edge colored hero — the color bleeds under it (TripleSplitView floatingSidebar)."
+            path="/health"
+            onPressIn={() => preload(Routes.HealthScreen, {})}
+            onPress={() => push(Routes.HealthScreen, {})}
           />
           <Card
             icon="link-outline"
@@ -128,12 +160,11 @@ function HomeScreen() {
           </View>
         </View>
       </View>
-    </ScrollView>
+    </CollapsingHeader>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
   content: {
     width: '100%',
     maxWidth: 860,
