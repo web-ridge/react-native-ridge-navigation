@@ -336,7 +336,7 @@ function WideSplitView({
   );
 
   // The detail pane's stack is invisible to the Android system back button,
-  // so pop the pane first before letting the main stack handle it.
+  // so handle it here before letting the main stack take over.
   React.useEffect(() => {
     if (Platform.OS !== 'android') {
       return undefined;
@@ -344,6 +344,24 @@ function WideSplitView({
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
+        // selectionParam mode: the selection lives on the MAIN navigator's
+        // history, so step IT back (the pane re-derives from the URL). Popping
+        // the pane directly would just be undone by the URL-mirror effect.
+        if (selectionParam) {
+          const data: any = mainNavigator.stateContext.data ?? {};
+          if (data[selectionParam] == null) {
+            return false;
+          }
+          if (mainNavigator.canNavigateBack(1)) {
+            mainNavigator.navigateBack(1);
+          } else {
+            // Only selection on the stack (nothing to go back to) -> clear it
+            // so back returns to the empty/placeholder pane.
+            const { [selectionParam]: _omit, ...rest } = data;
+            mainNavigator.refresh(rest, 'replace');
+          }
+          return true;
+        }
         if (detailNavigator.canNavigateBack(1)) {
           detailNavigator.navigateBack(1);
           return true;
@@ -352,7 +370,7 @@ function WideSplitView({
       }
     );
     return () => subscription.remove();
-  }, [detailNavigator]);
+  }, [detailNavigator, selectionParam, mainNavigator]);
 
   const renderPlaceholder = () => detailPlaceholderRef.current ?? null;
 
