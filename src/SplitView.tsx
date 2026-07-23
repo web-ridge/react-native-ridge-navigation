@@ -176,6 +176,11 @@ function WideSplitView({
   // must replicate a browser history back: step the History API on web (the
   // detail pane re-derives from the resulting URL). Native falls back to the
   // crumb navigator (best-effort; browser-history back is web-only).
+  // The applied selection hrefs, oldest→newest, mirroring the main navigator's
+  // selection history (undefined = the placeholder / no selection). Maintained
+  // by the URL-mirror effect below; consumed by `paneGoBack` so in-app back is
+  // a synchronous state step rather than an async `window.history.go(-1)`.
+  const selectionStackRef = React.useRef<Array<string | undefined>>([]);
   const paneCanGoBack = React.useCallback(() => {
     const data: any = mainNavigator.stateContext.data ?? {};
     const hasSelection = selectionParam && data[selectionParam] != null;
@@ -184,6 +189,26 @@ function WideSplitView({
   const paneGoBack = React.useCallback(
     (n = 1) => {
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        // Step the recorded selection history SYNCHRONOUSLY with a single
+        // `refresh('replace')` (URL + pane update in one commit). An async
+        // `window.history.go(-n)` leaves a window in which a concurrent
+        // re-render's `replaceState` (e.g. from a save mutation's refetch) can
+        // rewrite the URL back to the screen we are leaving, stranding the pane.
+        if (selectionParam) {
+          const stack = selectionStackRef.current;
+          const targetIndex = stack.length - 1 - n;
+          if (targetIndex >= 0) {
+            const targetHref = stack[targetIndex];
+            const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+            if (targetHref != null) {
+              next[selectionParam] = targetHref;
+            } else {
+              delete next[selectionParam];
+            }
+            mainNavigator.refresh(next, 'replace');
+            return;
+          }
+        }
         window.history.go(-n);
         return;
       }
@@ -191,7 +216,7 @@ function WideSplitView({
         mainNavigator.navigateBack(n);
       }
     },
-    [mainNavigator]
+    [mainNavigator, selectionParam]
   );
   const fullScreenPush = React.useCallback(
     (screen: any, params: any, options?: { preload?: boolean }) => {
@@ -317,6 +342,25 @@ function WideSplitView({
     const syncPaneFromUrl = () => {
       const href: string | undefined =
         mainNavigator.stateContext.data?.[selectionParam];
+      // Keep the selection-history stack in step with the URL so in-app back can
+      // step it synchronously (see paneGoBack). Every navigation funnels through
+      // here: an href already present below the top means we moved back to it
+      // (truncate to it); a new href is a push.
+      const stack = selectionStackRef.current;
+      if (stack.length === 0 || stack[stack.length - 1] !== href) {
+        let existing = -1;
+        for (let i = stack.length - 1; i >= 0; i -= 1) {
+          if (stack[i] === href) {
+            existing = i;
+            break;
+          }
+        }
+        if (existing === -1) {
+          stack.push(href);
+        } else {
+          stack.length = existing + 1;
+        }
+      }
       // Already reflecting this selection? Avoid a redundant pane re-render.
       if (appliedHrefRef.current === href) {
         return;

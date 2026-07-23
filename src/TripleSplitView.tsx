@@ -25,6 +25,35 @@ import {
   rootKeyAndPaths,
 } from './navigationUtils';
 
+/**
+ * A snapshot of the selection-relevant query params (section + detail hrefs).
+ * The selection-history stack (see below) records one of these per URL entry so
+ * in-app back can step it SYNCHRONOUSLY, rather than via an async
+ * `window.history.go(-1)` whose popstate can be clobbered by a concurrent
+ * re-render's URL normalization (e.g. the refetch a save mutation triggers),
+ * leaving the pane stuck on the screen it was meant to leave.
+ */
+type SelectionSnapshot = Record<string, string>;
+
+function selectionSnapshot(
+  data: Record<string, any> | undefined,
+  keys: Array<string | undefined>
+): SelectionSnapshot {
+  const snap: SelectionSnapshot = {};
+  for (const key of keys) {
+    if (key && data?.[key] != null) {
+      snap[key] = data[key];
+    }
+  }
+  return snap;
+}
+
+function sameSelection(a: SelectionSnapshot, b: SelectionSnapshot): boolean {
+  const ak = Object.keys(a);
+  const bk = Object.keys(b);
+  return ak.length === bk.length && ak.every((k) => a[k] === b[k]);
+}
+
 export type TripleSplitViewProps = {
   /**
    * Column 1 — the primary sidebar (a source list / category nav). Pushes made
@@ -256,6 +285,10 @@ function WideTripleSplitView({
   // history back: step the History API on web (the panes re-derive from the
   // resulting URL through the URL-mirror effect). Native has no browser
   // history; fall back to the crumb navigator (best-effort).
+  // The applied selection snapshots, oldest→newest, mirroring the main
+  // navigator's selection history. Maintained by the URL-mirror effect below;
+  // consumed by `paneGoBack` so in-app back is a synchronous state step.
+  const selectionStackRef = React.useRef<SelectionSnapshot[]>([]);
   const paneCanGoBack = React.useCallback(() => {
     const data: any = mainNavigator.stateContext.data ?? {};
     const hasSelection =
@@ -266,6 +299,31 @@ function WideTripleSplitView({
   const paneGoBack = React.useCallback(
     (n = 1) => {
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        // Step the recorded selection history SYNCHRONOUSLY: apply the target
+        // selection with a single `refresh('replace')` so the URL + panes
+        // update in one commit. An async `window.history.go(-n)` leaves a window
+        // in which a concurrent re-render's `replaceState` can rewrite the URL
+        // back to the screen we are leaving; a synchronous refresh closes it.
+        if (urlDriven) {
+          const stack = selectionStackRef.current;
+          const targetIndex = stack.length - 1 - n;
+          if (targetIndex >= 0) {
+            const target = stack[targetIndex]!;
+            const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+            for (const key of [sectionParam, detailParam]) {
+              if (!key) continue;
+              if (target[key] != null) {
+                next[key] = target[key];
+              } else {
+                delete next[key];
+              }
+            }
+            mainNavigator.refresh(next, 'replace');
+            return;
+          }
+        }
+        // No recorded selection to step back to (e.g. a cold deep-link) — step
+        // the real browser history instead.
         window.history.go(-n);
         return;
       }
@@ -273,7 +331,7 @@ function WideTripleSplitView({
         mainNavigator.navigateBack(n);
       }
     },
-    [mainNavigator]
+    [mainNavigator, urlDriven, sectionParam, detailParam]
   );
   const masterPlaceholderRef = useLatest(masterPlaceholder);
   const detailPlaceholderRef = useLatest(detailPlaceholder);
@@ -482,6 +540,28 @@ function WideTripleSplitView({
     };
     const syncPanesFromUrl = () => {
       const data: any = mainNavigator.stateContext.data ?? {};
+      // Keep the selection-history stack in step with the URL. Every navigation
+      // (row push, in-app back, browser Back/Forward, native back, deep link)
+      // funnels through here, so reconciling against the applied stack keeps it
+      // authoritative for `paneGoBack`: a snapshot already present below the top
+      // means we moved back to it (truncate to it); a new snapshot is a push.
+      const snap = selectionSnapshot(data, [sectionParam, detailParam]);
+      const stack = selectionStackRef.current;
+      const top = stack[stack.length - 1];
+      if (!top || !sameSelection(top, snap)) {
+        let existing = -1;
+        for (let i = stack.length - 1; i >= 0; i -= 1) {
+          if (sameSelection(stack[i]!, snap)) {
+            existing = i;
+            break;
+          }
+        }
+        if (existing === -1) {
+          stack.push(snap);
+        } else {
+          stack.length = existing + 1;
+        }
+      }
       // Section first (it can empty the detail param), then detail on top.
       if (sectionParam) {
         const href: string | undefined = data[sectionParam];
