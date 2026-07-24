@@ -18,7 +18,6 @@ import OptimizedContext, {
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import FullScreenPushContext from './contexts/FullScreenPushContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
-import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
 import useCurrentRoot from './useCurrentRoot';
 import useBottomTabIndex from './useBottomTabIndex';
@@ -276,6 +275,12 @@ function WideSplitView({
     [rootKey]
   );
 
+  // URL-mirror apply intent: master row taps REPLACE the detail selection
+  // (Mail: open another message). Pushes from INSIDE the detail STACK on top
+  // (Settings: drill into a sub-form). Browser Back/Forward leave intent null
+  // and re-derive from the pane crumb trail or a replace.
+  const applyIntentRef = React.useRef<'replace' | 'push' | null>(null);
+
   // Pushes from the master column select a new detail: they reset the pane to
   // [root, detail] instead of stacking on whatever was selected before.
   //
@@ -286,6 +291,7 @@ function WideSplitView({
   // avoids the pane driving itself out of sync with the URL.
   const masterNavigator = React.useMemo(() => {
     const selectViaUrl = (key: string, params?: any) => {
+      applyIntentRef.current = 'replace';
       const href = encodeSelectionHref(key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
       mainNavigator.refresh(
@@ -330,16 +336,73 @@ function WideSplitView({
     paneCanGoBack,
   ]);
 
+  // Detail-pane proxy: drills STACK on top of the current selection (and still
+  // record a main-URL history entry when selectionParam is set). Distinct from
+  // masterNavigator, which always replaces.
+  const detailStackNavigator = React.useMemo(() => {
+    const stackViaUrl = (key: string, params?: any) => {
+      applyIntentRef.current = 'push';
+      const href = encodeSelectionHref(key, params);
+      const currentData = mainNavigator.stateContext.data ?? {};
+      mainNavigator.refresh(
+        { ...currentData, [selectionParam as string]: href },
+        'add'
+      );
+    };
+    return new Proxy(detailNavigator, {
+      get(target: any, prop) {
+        if (prop === 'navigate') {
+          return selectionParam
+            ? stackViaUrl
+            : (key: string, params?: any) =>
+                detailNavigator.navigate(key, params);
+        }
+        if (selectionParam && prop === 'navigateBack') {
+          return paneGoBack;
+        }
+        if (selectionParam && prop === 'canNavigateBack') {
+          return () => paneCanGoBack();
+        }
+        const value = target[prop];
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }) as StateNavigator;
+  }, [
+    detailNavigator,
+    selectionParam,
+    mainNavigator,
+    encodeSelectionHref,
+    paneGoBack,
+    paneCanGoBack,
+  ]);
+
   // URL-mirror: when `selectionParam` is set the pane is a pure function of the
   // main navigator's `?<selectionParam>=` query. Re-derive the pane whenever the
   // main navigator navigates (row tap -> refresh, browser Back/Forward, native
   // back, deep-link/cold-load), so the selection is deep-linkable and
   // back-navigable through the single main history timeline.
+  //
+  // Master taps REPLACE the pane (fluent reset → one screen). Detail drills
+  // STACK (navigate on top of the existing crumb trail) so screens sit on top
+  // of each other — iOS Settings style — while still being URL-history-backed.
   const appliedHrefRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     if (!selectionParam) {
       return undefined;
     }
+    const replacePaneSelection = (key: string, params?: any) => {
+      const fluentNavigator = new StateNavigator(detailNavigator)
+        .fluent()
+        .navigate(rootKey)
+        .navigate(key, params);
+      detailNavigator.navigateLink(fluentNavigator.url);
+    };
+    const hrefOfScene = (state: any, data: any) => {
+      if (!state?.key || state.key === rootKey) {
+        return undefined;
+      }
+      return encodeSelectionHref(state.key, data);
+    };
     const syncPaneFromUrl = () => {
       const href: string | undefined =
         mainNavigator.stateContext.data?.[selectionParam];
@@ -364,8 +427,11 @@ function WideSplitView({
       }
       // Already reflecting this selection? Avoid a redundant pane re-render.
       if (appliedHrefRef.current === href) {
+        applyIntentRef.current = null;
         return;
       }
+      const intent = applyIntentRef.current;
+      applyIntentRef.current = null;
       appliedHrefRef.current = href;
       if (!href) {
         // No selection in the URL -> pane shows its placeholder.
@@ -375,10 +441,9 @@ function WideSplitView({
         return;
       }
       const targetUrl = rootKey + '/' + href;
-      // Preload the detail screen so the pane renders without a Suspense gap,
-      // then select it in the pane.
+      let parsed: { state?: any; data?: any } | null = null;
       try {
-        const parsed = detailNavigator.parseLink(targetUrl);
+        parsed = detailNavigator.parseLink(targetUrl);
         if (parsed?.state?.screen) {
           preloadScreen(parsed.state.screen, parsed.data);
         }
@@ -387,13 +452,58 @@ function WideSplitView({
         detailNavigator.navigate(rootKey);
         return;
       }
-      detailNavigator.navigateLink(targetUrl);
+      if (!parsed?.state) {
+        detailNavigator.navigate(rootKey);
+        return;
+      }
+
+      // Detail drill: stack the new screen on top of the current crumb trail so
+      // the previous detail stays mounted underneath (real navigation stack).
+      if (intent === 'push') {
+        detailNavigator.navigate(parsed.state.key, parsed.data);
+        return;
+      }
+
+      // Browser Back/Forward (or in-app back): if the target is already in the
+      // pane crumb trail, pop to it so stacked screens unmount correctly.
+      if (intent == null) {
+        const { crumbs, state, data } = detailNavigator.stateContext;
+        const scenes = [
+          ...crumbs.map((c) => ({ state: c.state, data: c.data })),
+          ...(state ? [{ state, data }] : []),
+        ];
+        let backDistance = -1;
+        for (let i = scenes.length - 1; i >= 0; i -= 1) {
+          if (hrefOfScene(scenes[i]!.state, scenes[i]!.data) === href) {
+            backDistance = scenes.length - 1 - i;
+            break;
+          }
+        }
+        if (backDistance === 0) {
+          return;
+        }
+        if (backDistance > 0) {
+          detailNavigator.navigateBack(backDistance);
+          return;
+        }
+      }
+
+      // Master selection / cold deep-link / unknown history step: reset the
+      // pane to [root, selection] so peer picks do not stack under each other.
+      replacePaneSelection(parsed.state.key, parsed.data);
     };
     // Initial derive (deep-link / cold load) + subscribe to future changes.
     syncPaneFromUrl();
     mainNavigator.onNavigate(syncPaneFromUrl);
     return () => mainNavigator.offNavigate(syncPaneFromUrl);
-  }, [selectionParam, mainNavigator, detailNavigator, rootKey, preloadScreen]);
+  }, [
+    selectionParam,
+    mainNavigator,
+    detailNavigator,
+    rootKey,
+    preloadScreen,
+    encodeSelectionHref,
+  ]);
 
   const navigationRootWithSplit = React.useMemo(
     () => ({
@@ -493,52 +603,31 @@ function WideSplitView({
           </OptimizedContext.Provider>
           <SplitPaneContext.Provider value="detail">
             <View style={[styles.detail, detailStyle]}>
+              {/*
+               * JS scene stack on every platform (including web). An embedded
+               * NavigationMotion stack was unreliable for history-less pane
+               * navigators — master→detail selection worked inconsistently and
+               * drills from inside the detail (invoice → contact, approval →
+               * hour) never stacked screens on top of each other. PaneScenes
+               * keeps every crumb mounted (scroll state survives) and the top
+               * scene interactive, matching native.
+               *
+               * Pushes from inside the detail use `detailStackNavigator` so a
+               * drill becomes a stacked pane scene + a main-URL history entry
+               * (deep-linkable + Back/Terug) rather than replacing the pane.
+               * NavigationHandler keeps ambient NavigationContext on the pane
+               * when selectionParam is unset.
+               */}
               <NavigationHandler stateNavigator={detailNavigator}>
-                {Platform.OS === 'web' ? (
-                  <NavigationStack
-                    underlayColor={theme.layout.backgroundColor}
-                    backgroundColor={() => theme.layout.backgroundColor}
-                    // In selectionParam mode, pushes from inside the detail pane
-                    // (a drill deeper) route through `masterNavigator` -> the main
-                    // navigator URL, so they become real `?<selectionParam>=`
-                    // history entries: deep-linkable, browser-Back- and Terug-
-                    // navigable instead of private history-less pane pushes.
-                    // @ts-ignore web-only prop (native detail uses PaneScenes).
-                    stateNavigatorOverride={
-                      selectionParam ? masterNavigator : undefined
-                    }
-                    //@ts-ignore
-                    renderWeb={(key: string) =>
-                      key === rootKey ? renderPlaceholder() : undefined
-                    }
-                    renderScene={(state: any, data: any) => {
-                      return (
-                        <>
-                          <HiddenNavbarWithSwipeBack
-                            nativeHeader={state?.screen?.options?.nativeHeader}
-                          />
-                          <OptimizedContextProvider state={state} data={data}>
-                            {state.key === rootKey
-                              ? renderPlaceholder()
-                              : state.renderScene()}
-                          </OptimizedContextProvider>
-                        </>
-                      );
-                    }}
-                  />
-                ) : (
-                  // An NVNavigationStack embedded at partial width does not
-                  // present pushed scenes on the new architecture, so the pane
-                  // keeps its own JS scene stack: every crumb stays mounted
-                  // (scroll state survives), the top one is interactive.
-                  <DetailPaneScenes
-                    navigator={detailNavigator}
-                    rootKey={rootKey}
-                    renderPlaceholder={renderPlaceholder}
-                    backgroundColor={theme.layout.backgroundColor}
-                    linkNavigator={selectionParam ? masterNavigator : undefined}
-                  />
-                )}
+                <DetailPaneScenes
+                  navigator={detailNavigator}
+                  rootKey={rootKey}
+                  renderPlaceholder={renderPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                  linkNavigator={
+                    selectionParam ? detailStackNavigator : undefined
+                  }
+                />
               </NavigationHandler>
             </View>
           </SplitPaneContext.Provider>

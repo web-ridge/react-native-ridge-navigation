@@ -10,13 +10,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { NavigationHandler } from 'navigation-react';
-import NavigationStack from './navigation/NavigationStack';
 import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
-import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
 import {
   createNormalRoot,
@@ -454,8 +452,14 @@ function WideTripleSplitView({
     paneCanGoBack,
   ]);
 
+  // Master (middle→detail) REPLACE vs detail-internal STACK intents, same as
+  // SplitView: middle-column row taps replace the detail; a push from inside
+  // the detail stacks a sub-form on top while still recording a URL entry.
+  const detailApplyIntentRef = React.useRef<'replace' | 'push' | null>(null);
+
   const middleSelect = React.useMemo(() => {
     const selectViaUrl = (key: string, params?: any) => {
+      detailApplyIntentRef.current = 'replace';
       const href = encodeHref(detailRootKey, key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
       mainNavigator.refresh(
@@ -502,21 +506,82 @@ function WideTripleSplitView({
     paneCanGoBack,
   ]);
 
+  // Detail-column proxy: drills STACK on top (URL + pane crumb trail).
+  const detailStackSelect = React.useMemo(() => {
+    const stackViaUrl = (key: string, params?: any) => {
+      detailApplyIntentRef.current = 'push';
+      const href = encodeHref(detailRootKey, key, params);
+      const currentData = mainNavigator.stateContext.data ?? {};
+      mainNavigator.refresh(
+        { ...currentData, [detailParam as string]: href },
+        'add'
+      );
+    };
+    return new Proxy(detailNavigator, {
+      get(target: any, prop) {
+        if (prop === 'navigate') {
+          return detailParam
+            ? stackViaUrl
+            : (key: string, params?: any) =>
+                detailNavigator.navigate(key, params);
+        }
+        if (detailParam && prop === 'navigateBack') {
+          return paneGoBack;
+        }
+        if (detailParam && prop === 'canNavigateBack') {
+          return () => paneCanGoBack();
+        }
+        const value = target[prop];
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }) as StateNavigator;
+  }, [
+    detailNavigator,
+    detailRootKey,
+    detailParam,
+    mainNavigator,
+    encodeHref,
+    paneGoBack,
+    paneCanGoBack,
+  ]);
+
   // URL-mirror: when a param is set the corresponding pane is a pure function of
   // the main navigator's query. Re-derive whenever the main navigator navigates
   // (row tap -> refresh, browser Back/Forward, native back, deep-link/cold
   // load), so both selections live on the single main history timeline and are
   // deep-linkable. Mirrors SplitView's URL-mirror effect, applied per level.
+  //
+  // Detail drills STACK (navigate on top of the crumb trail) so sub-forms sit
+  // on top of each other; middle-column row taps still REPLACE the detail.
   const appliedSectionRef = React.useRef<string | undefined>(undefined);
   const appliedDetailRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     if (!urlDriven) {
       return undefined;
     }
+    const replacePaneSelection = (
+      navigator: StateNavigator,
+      rootKey: string,
+      key: string,
+      params?: any
+    ) => {
+      const fluent = new StateNavigator(navigator)
+        .fluent()
+        .navigate(rootKey)
+        .navigate(key, params);
+      navigator.navigateLink(fluent.url);
+    };
+    const hrefOfScene = (rootKey: string, state: any, data: any) => {
+      if (!state?.key || state.key === rootKey) {
+        return undefined;
+      }
+      return encodeHref(rootKey, state.key, data);
+    };
     const applyPane = (
       navigator: StateNavigator,
       rootKey: string,
-      href: string | undefined
+      href: string | undefined,
+      intent: 'replace' | 'push' | null
     ) => {
       if (!href) {
         // No selection in the URL -> pane shows its placeholder.
@@ -526,8 +591,9 @@ function WideTripleSplitView({
         return;
       }
       const targetUrl = rootKey + '/' + href;
+      let parsed: { state?: any; data?: any } | null = null;
       try {
-        const parsed = navigator.parseLink(targetUrl);
+        parsed = navigator.parseLink(targetUrl);
         if ((parsed as any)?.state?.screen) {
           preloadScreen((parsed as any).state.screen, (parsed as any).data);
         }
@@ -536,7 +602,38 @@ function WideTripleSplitView({
         navigator.navigate(rootKey);
         return;
       }
-      navigator.navigateLink(targetUrl);
+      if (!parsed?.state) {
+        navigator.navigate(rootKey);
+        return;
+      }
+      if (intent === 'push') {
+        navigator.navigate(parsed.state.key, parsed.data);
+        return;
+      }
+      if (intent == null) {
+        const { crumbs, state, data } = navigator.stateContext;
+        const scenes = [
+          ...crumbs.map((c) => ({ state: c.state, data: c.data })),
+          ...(state ? [{ state, data }] : []),
+        ];
+        let backDistance = -1;
+        for (let i = scenes.length - 1; i >= 0; i -= 1) {
+          if (
+            hrefOfScene(rootKey, scenes[i]!.state, scenes[i]!.data) === href
+          ) {
+            backDistance = scenes.length - 1 - i;
+            break;
+          }
+        }
+        if (backDistance === 0) {
+          return;
+        }
+        if (backDistance > 0) {
+          navigator.navigateBack(backDistance);
+          return;
+        }
+      }
+      replacePaneSelection(navigator, rootKey, parsed.state.key, parsed.data);
     };
     const syncPanesFromUrl = () => {
       const data: any = mainNavigator.stateContext.data ?? {};
@@ -563,18 +660,21 @@ function WideTripleSplitView({
         }
       }
       // Section first (it can empty the detail param), then detail on top.
+      // Middle section selection always replaces (sidebar picks are peers).
       if (sectionParam) {
         const href: string | undefined = data[sectionParam];
         if (appliedSectionRef.current !== href) {
           appliedSectionRef.current = href;
-          applyPane(middleNavigator, middleRootKey, href);
+          applyPane(middleNavigator, middleRootKey, href, 'replace');
         }
       }
       if (detailParam) {
         const href: string | undefined = data[detailParam];
         if (appliedDetailRef.current !== href) {
+          const intent = detailApplyIntentRef.current;
+          detailApplyIntentRef.current = null;
           appliedDetailRef.current = href;
-          applyPane(detailNavigator, detailRootKey, href);
+          applyPane(detailNavigator, detailRootKey, href, intent);
         }
       }
     };
@@ -592,6 +692,7 @@ function WideTripleSplitView({
     middleRootKey,
     detailRootKey,
     preloadScreen,
+    encodeHref,
   ]);
 
   // Restore a deep-linked selection once, after the panes exist. Middle first
@@ -793,54 +894,24 @@ function WideTripleSplitView({
           they compute a screenKey the pane navigator has no state for and
           dead-click. Mirrors how SplitView wraps its detail in splitRidgeValue.
 
-          When `detailParam` is set, those inner pushes route through
-          `middleSelect` (the same proxy the middle rows use): each becomes a new
-          `?detail=` history entry, so a sub-form is deep-linkable, back-
-          navigable and its in-app Terug steps back one level. */}
+          JS scene stack on every platform (including web): NavigationMotion was
+          unreliable for history-less pane navigators and did not stack drills
+          on top of each other. PaneScenes keeps crumbs mounted.
+
+          When `detailParam` is set, inner pushes route through
+          `detailStackSelect`: each becomes a stacked pane scene + a new
+          `?detail=` history entry (deep-linkable, Back/Terug one level). */}
       <SplitPaneContext.Provider value="detail">
         <View style={[styles.detail, detailStyle]}>
           <RidgeNavigationContext.Provider value={middleRidgeValue}>
             <NavigationHandler stateNavigator={detailNavigator}>
-              {Platform.OS === 'web' ? (
-                <NavigationStack
-                  underlayColor={theme.layout.backgroundColor}
-                  backgroundColor={() => theme.layout.backgroundColor}
-                  // In detailParam mode, pushes from inside a detail screen (a
-                  // sub-form card) route through `middleSelect` -> the main
-                  // navigator URL, so the sub-form is a real `?detail=` history
-                  // entry: deep-linkable, browser-Back- and Terug-navigable.
-                  // @ts-ignore web-only prop (native detail uses PaneScenes).
-                  stateNavigatorOverride={
-                    detailParam ? middleSelect : undefined
-                  }
-                  //@ts-ignore
-                  renderWeb={(key: string) =>
-                    key === detailRootKey
-                      ? renderDetailPlaceholder()
-                      : undefined
-                  }
-                  renderScene={(state: any, data: any) => (
-                    <>
-                      <HiddenNavbarWithSwipeBack
-                        nativeHeader={state?.screen?.options?.nativeHeader}
-                      />
-                      <OptimizedContextProvider state={state} data={data}>
-                        {state.key === detailRootKey
-                          ? renderDetailPlaceholder()
-                          : state.renderScene()}
-                      </OptimizedContextProvider>
-                    </>
-                  )}
-                />
-              ) : (
-                <PaneScenes
-                  navigator={detailNavigator}
-                  rootKey={detailRootKey}
-                  renderPlaceholder={renderDetailPlaceholder}
-                  backgroundColor={theme.layout.backgroundColor}
-                  linkNavigator={detailParam ? middleSelect : undefined}
-                />
-              )}
+              <PaneScenes
+                navigator={detailNavigator}
+                rootKey={detailRootKey}
+                renderPlaceholder={renderDetailPlaceholder}
+                backgroundColor={theme.layout.backgroundColor}
+                linkNavigator={detailParam ? detailStackSelect : undefined}
+              />
             </NavigationHandler>
           </RidgeNavigationContext.Provider>
         </View>
@@ -853,8 +924,8 @@ function WideTripleSplitView({
 }
 
 /** Renders a history-less navigator's crumb stack as absolutely-stacked scenes
- *  (top interactive), used for the middle column on all platforms and the
- *  detail column on native (mirrors SplitView's DetailPaneScenes). */
+ *  (top interactive). Used for the middle column and the detail column on every
+ *  platform (mirrors SplitView's DetailPaneScenes). */
 function PaneScenes({
   navigator,
   rootKey,
