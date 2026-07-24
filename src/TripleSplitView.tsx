@@ -771,10 +771,9 @@ function WideTripleSplitView({
       <View style={[{ width: masterWidth }, masterStyle]}>
         <RidgeNavigationContext.Provider value={middleRidgeValue}>
           <OptimizedContext.Provider value={middleOptimizedValue}>
-            {/* SplitPaneContext lets entity list screens in the middle render
-                list-only (no nested SplitView) so their row pushes land in the
-                detail column instead of a split-inside-a-split. */}
-            <SplitPaneContext.Provider value={true}>
+            {/* Master/middle: role=master so entity lists drop nested SplitViews
+                and product headers suppress auto-Back on the list column. */}
+            <SplitPaneContext.Provider value="master">
               <PaneScenes
                 navigator={middleNavigator}
                 rootKey={middleRootKey}
@@ -798,48 +797,54 @@ function WideTripleSplitView({
           `middleSelect` (the same proxy the middle rows use): each becomes a new
           `?detail=` history entry, so a sub-form is deep-linkable, back-
           navigable and its in-app Terug steps back one level. */}
-      <View style={[styles.detail, detailStyle]}>
-        <RidgeNavigationContext.Provider value={middleRidgeValue}>
-          <NavigationHandler stateNavigator={detailNavigator}>
-            {Platform.OS === 'web' ? (
-              <NavigationStack
-                underlayColor={theme.layout.backgroundColor}
-                backgroundColor={() => theme.layout.backgroundColor}
-                // In detailParam mode, pushes from inside a detail screen (a
-                // sub-form card) route through `middleSelect` -> the main
-                // navigator URL, so the sub-form is a real `?detail=` history
-                // entry: deep-linkable, browser-Back- and Terug-navigable.
-                // @ts-ignore web-only prop (native detail uses PaneScenes).
-                stateNavigatorOverride={detailParam ? middleSelect : undefined}
-                //@ts-ignore
-                renderWeb={(key: string) =>
-                  key === detailRootKey ? renderDetailPlaceholder() : undefined
-                }
-                renderScene={(state: any, data: any) => (
-                  <>
-                    <HiddenNavbarWithSwipeBack
-                      nativeHeader={state?.screen?.options?.nativeHeader}
-                    />
-                    <OptimizedContextProvider state={state} data={data}>
-                      {state.key === detailRootKey
-                        ? renderDetailPlaceholder()
-                        : state.renderScene()}
-                    </OptimizedContextProvider>
-                  </>
-                )}
-              />
-            ) : (
-              <PaneScenes
-                navigator={detailNavigator}
-                rootKey={detailRootKey}
-                renderPlaceholder={renderDetailPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-                linkNavigator={detailParam ? middleSelect : undefined}
-              />
-            )}
-          </NavigationHandler>
-        </RidgeNavigationContext.Provider>
-      </View>
+      <SplitPaneContext.Provider value="detail">
+        <View style={[styles.detail, detailStyle]}>
+          <RidgeNavigationContext.Provider value={middleRidgeValue}>
+            <NavigationHandler stateNavigator={detailNavigator}>
+              {Platform.OS === 'web' ? (
+                <NavigationStack
+                  underlayColor={theme.layout.backgroundColor}
+                  backgroundColor={() => theme.layout.backgroundColor}
+                  // In detailParam mode, pushes from inside a detail screen (a
+                  // sub-form card) route through `middleSelect` -> the main
+                  // navigator URL, so the sub-form is a real `?detail=` history
+                  // entry: deep-linkable, browser-Back- and Terug-navigable.
+                  // @ts-ignore web-only prop (native detail uses PaneScenes).
+                  stateNavigatorOverride={
+                    detailParam ? middleSelect : undefined
+                  }
+                  //@ts-ignore
+                  renderWeb={(key: string) =>
+                    key === detailRootKey
+                      ? renderDetailPlaceholder()
+                      : undefined
+                  }
+                  renderScene={(state: any, data: any) => (
+                    <>
+                      <HiddenNavbarWithSwipeBack
+                        nativeHeader={state?.screen?.options?.nativeHeader}
+                      />
+                      <OptimizedContextProvider state={state} data={data}>
+                        {state.key === detailRootKey
+                          ? renderDetailPlaceholder()
+                          : state.renderScene()}
+                      </OptimizedContextProvider>
+                    </>
+                  )}
+                />
+              ) : (
+                <PaneScenes
+                  navigator={detailNavigator}
+                  rootKey={detailRootKey}
+                  renderPlaceholder={renderDetailPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                  linkNavigator={detailParam ? middleSelect : undefined}
+                />
+              )}
+            </NavigationHandler>
+          </RidgeNavigationContext.Provider>
+        </View>
+      </SplitPaneContext.Provider>
 
       {/* Floating sidebar overlay, painted on top of the content. */}
       {floatingSidebar && sidebarNode}

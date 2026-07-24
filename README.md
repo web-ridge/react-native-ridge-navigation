@@ -556,7 +556,27 @@ Set `floatingSidebar` to render the sidebar as an **absolutely-positioned transl
 />
 ```
 
-Entity list screens rendered in the middle column can read `useIsInsideSplitPane()` (via the `SplitPaneContext` the split provides) to render list-only — so their row pushes land in the detail column instead of nesting a split inside a split.
+**Pane role context.** Wide `SplitView` / `TripleSplitView` columns publish a role via `SplitPaneContext`:
+
+| Role | Where | Typical use |
+|------|--------|-------------|
+| `'master'` | SplitView master, TripleSplitView middle | List-only UI (no nested split); product headers suppress automatic Back so only the detail column paints “Back” for selection history |
+| `'detail'` | Detail column | Keep automatic Back when the stack can pop |
+| `null` | Outside a wide split | Full-screen / narrow breakpoint |
+
+```tsx
+import {
+  useIsInsideSplitPane, // true only for master (backward-compatible)
+  useSplitPaneRole,     // 'master' | 'detail' | null
+} from 'react-native-ridge-navigation';
+
+// Entity list: drop nested SplitView when already in a master column
+if (useIsInsideSplitPane()) return <ListOnly />;
+
+// Product header leading policy
+const role = useSplitPaneRole();
+const hideAutoBack = role === 'master';
+```
 
 ### `CollapsingHeader` — one API, native bar + web mirror
 

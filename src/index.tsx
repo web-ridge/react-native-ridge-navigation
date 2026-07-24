@@ -71,6 +71,8 @@ export {
 export {
   default as SplitPaneContext,
   useIsInsideSplitPane,
+  useSplitPaneRole,
+  type SplitPaneRole,
 } from './contexts/SplitPaneContext';
 export {
   default as FullScreenPushContext,

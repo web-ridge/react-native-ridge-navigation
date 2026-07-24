@@ -17,6 +17,7 @@ import OptimizedContext, {
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import FullScreenPushContext from './contexts/FullScreenPushContext';
+import SplitPaneContext from './contexts/SplitPaneContext';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import useLatest from './useLatest';
 import useCurrentRoot from './useCurrentRoot';
@@ -469,70 +470,78 @@ function WideSplitView({
       <View style={styles.row}>
         <RidgeNavigationContext.Provider value={splitRidgeValue}>
           <OptimizedContext.Provider value={masterOptimizedValue}>
-            <View style={[styles.master, { width: masterWidth }, masterStyle]}>
-              {Platform.OS !== 'web' && masterTitle != null ? (
-                <MasterPaneScene
-                  title={masterTitle}
-                  largeTitle={masterLargeTitle ?? true}
-                  backgroundColor={theme.layout.backgroundColor}
-                  actions={masterActions}
-                >
-                  {children}
-                </MasterPaneScene>
-              ) : (
-                children
-              )}
-            </View>
+            {/* Master list column — role lets product chrome hide auto-Back and
+                lets entity lists drop nested SplitViews. */}
+            <SplitPaneContext.Provider value="master">
+              <View
+                style={[styles.master, { width: masterWidth }, masterStyle]}
+              >
+                {Platform.OS !== 'web' && masterTitle != null ? (
+                  <MasterPaneScene
+                    title={masterTitle}
+                    largeTitle={masterLargeTitle ?? true}
+                    backgroundColor={theme.layout.backgroundColor}
+                    actions={masterActions}
+                  >
+                    {children}
+                  </MasterPaneScene>
+                ) : (
+                  children
+                )}
+              </View>
+            </SplitPaneContext.Provider>
           </OptimizedContext.Provider>
-          <View style={[styles.detail, detailStyle]}>
-            <NavigationHandler stateNavigator={detailNavigator}>
-              {Platform.OS === 'web' ? (
-                <NavigationStack
-                  underlayColor={theme.layout.backgroundColor}
-                  backgroundColor={() => theme.layout.backgroundColor}
-                  // In selectionParam mode, pushes from inside the detail pane
-                  // (a drill deeper) route through `masterNavigator` -> the main
-                  // navigator URL, so they become real `?<selectionParam>=`
-                  // history entries: deep-linkable, browser-Back- and Terug-
-                  // navigable instead of private history-less pane pushes.
-                  // @ts-ignore web-only prop (native detail uses PaneScenes).
-                  stateNavigatorOverride={
-                    selectionParam ? masterNavigator : undefined
-                  }
-                  //@ts-ignore
-                  renderWeb={(key: string) =>
-                    key === rootKey ? renderPlaceholder() : undefined
-                  }
-                  renderScene={(state: any, data: any) => {
-                    return (
-                      <>
-                        <HiddenNavbarWithSwipeBack
-                          nativeHeader={state?.screen?.options?.nativeHeader}
-                        />
-                        <OptimizedContextProvider state={state} data={data}>
-                          {state.key === rootKey
-                            ? renderPlaceholder()
-                            : state.renderScene()}
-                        </OptimizedContextProvider>
-                      </>
-                    );
-                  }}
-                />
-              ) : (
-                // An NVNavigationStack embedded at partial width does not
-                // present pushed scenes on the new architecture, so the pane
-                // keeps its own JS scene stack: every crumb stays mounted
-                // (scroll state survives), the top one is interactive.
-                <DetailPaneScenes
-                  navigator={detailNavigator}
-                  rootKey={rootKey}
-                  renderPlaceholder={renderPlaceholder}
-                  backgroundColor={theme.layout.backgroundColor}
-                  linkNavigator={selectionParam ? masterNavigator : undefined}
-                />
-              )}
-            </NavigationHandler>
-          </View>
+          <SplitPaneContext.Provider value="detail">
+            <View style={[styles.detail, detailStyle]}>
+              <NavigationHandler stateNavigator={detailNavigator}>
+                {Platform.OS === 'web' ? (
+                  <NavigationStack
+                    underlayColor={theme.layout.backgroundColor}
+                    backgroundColor={() => theme.layout.backgroundColor}
+                    // In selectionParam mode, pushes from inside the detail pane
+                    // (a drill deeper) route through `masterNavigator` -> the main
+                    // navigator URL, so they become real `?<selectionParam>=`
+                    // history entries: deep-linkable, browser-Back- and Terug-
+                    // navigable instead of private history-less pane pushes.
+                    // @ts-ignore web-only prop (native detail uses PaneScenes).
+                    stateNavigatorOverride={
+                      selectionParam ? masterNavigator : undefined
+                    }
+                    //@ts-ignore
+                    renderWeb={(key: string) =>
+                      key === rootKey ? renderPlaceholder() : undefined
+                    }
+                    renderScene={(state: any, data: any) => {
+                      return (
+                        <>
+                          <HiddenNavbarWithSwipeBack
+                            nativeHeader={state?.screen?.options?.nativeHeader}
+                          />
+                          <OptimizedContextProvider state={state} data={data}>
+                            {state.key === rootKey
+                              ? renderPlaceholder()
+                              : state.renderScene()}
+                          </OptimizedContextProvider>
+                        </>
+                      );
+                    }}
+                  />
+                ) : (
+                  // An NVNavigationStack embedded at partial width does not
+                  // present pushed scenes on the new architecture, so the pane
+                  // keeps its own JS scene stack: every crumb stays mounted
+                  // (scroll state survives), the top one is interactive.
+                  <DetailPaneScenes
+                    navigator={detailNavigator}
+                    rootKey={rootKey}
+                    renderPlaceholder={renderPlaceholder}
+                    backgroundColor={theme.layout.backgroundColor}
+                    linkNavigator={selectionParam ? masterNavigator : undefined}
+                  />
+                )}
+              </NavigationHandler>
+            </View>
+          </SplitPaneContext.Provider>
         </RidgeNavigationContext.Provider>
       </View>
     </FullScreenPushContext.Provider>
