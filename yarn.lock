@@ -3135,6 +3135,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jest/create-cache-key-function@npm:^29.7.0":
+  version: 29.7.0
+  resolution: "@jest/create-cache-key-function@npm:29.7.0"
+  dependencies:
+    "@jest/types": ^29.6.3
+  checksum: 681bc761fa1d6fa3dd77578d444f97f28296ea80755e90e46d1c8fa68661b9e67f54dd38b988742db636d26cf160450dc6011892cec98b3a7ceb58cad8ff3aae
+  languageName: node
+  linkType: hard
+
 "@jest/environment@npm:^29.7.0":
   version: 29.7.0
   resolution: "@jest/environment@npm:29.7.0"
@@ -3778,6 +3787,21 @@ __metadata:
   version: 0.86.0
   resolution: "@react-native/gradle-plugin@npm:0.86.0"
   checksum: bb391f42d54a8555226aed1fda87eae61d6e21375775824753a0c907f2d4b8b9c476bc065d80292fa6ee3cec21a97e1cc367dd38278837cef06f0db0adba5f6d
+  languageName: node
+  linkType: hard
+
+"@react-native/jest-preset@npm:0.86.0":
+  version: 0.86.0
+  resolution: "@react-native/jest-preset@npm:0.86.0"
+  dependencies:
+    "@jest/create-cache-key-function": ^29.7.0
+    "@react-native/js-polyfills": 0.86.0
+    babel-jest: ^29.7.0
+    jest-environment-node: ^29.7.0
+    regenerator-runtime: ^0.13.2
+  peerDependencies:
+    react: ^19.2.3
+  checksum: 7e525485238091ce9bd38809cf6f81b4a7db84af407cd6ce973d2f3c45179d5eb4216abd5308bed520bdbcceec472ce2e268781f0a01966ae78f90c5c4708bb5
   languageName: node
   linkType: hard
 
@@ -12050,6 +12074,7 @@ __metadata:
     "@commitlint/config-conventional": ^17.0.2
     "@evilmartians/lefthook": ^1.5.0
     "@react-native/eslint-config": ^0.86.0
+    "@react-native/jest-preset": 0.86.0
     "@types/color": ^3.0.3
     "@types/jest": ^29.5.5
     "@types/react": ^19.2.0

@@ -3,15 +3,11 @@ import type { BaseScreen, LinkProps, LinkRenderProps } from './navigationUtils';
 
 import type { MouseEvent, GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
-import { isStalePreload } from './Link.shared';
+import { isStalePreload, shouldHandleWebLinkPress } from './Link.shared';
 import { generatePath } from './navigationUtils';
 import useModal from './useModal';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import useBottomTabIndex from './useBottomTabIndex';
-
-function isModifiedEvent(event: React.MouseEvent) {
-  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-}
 
 export default function Link<T extends BaseScreen>({
   to,
@@ -84,12 +80,7 @@ export default function Link<T extends BaseScreen>({
 
       const nativeEvent = event.nativeEvent as any as React.MouseEvent;
 
-      if (
-        !event.defaultPrevented && // onClick prevented default
-        nativeEvent.button === 0 && // Ignore everything but left clicks
-        // (!target || target === '_self') && // Let browser handle "target=_blank" etc.
-        !isModifiedEvent(nativeEvent) // Ignore clicks with modifier keys
-      ) {
+      if (shouldHandleWebLinkPress(event, nativeEvent)) {
         event.preventDefault();
         const options = {
           preload:
@@ -117,6 +108,7 @@ export default function Link<T extends BaseScreen>({
       hasPreloadedData,
       replace,
       push,
+      fullScreen,
     ]
   );
 

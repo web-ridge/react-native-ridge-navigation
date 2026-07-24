@@ -11,6 +11,32 @@ export function isStalePreload(lastPreloadedAt: number | null | undefined) {
   return Date.now() - lastPreloadedAt > staleTimeInSeconds * 1000;
 }
 
+type WebLinkNativeEvent = {
+  altKey?: boolean;
+  button?: number;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+};
+
+export function shouldHandleWebLinkPress(
+  event: { defaultPrevented?: boolean },
+  nativeEvent: WebLinkNativeEvent
+) {
+  return (
+    !event.defaultPrevented &&
+    // Accessibility activation and some WKWebView presses omit `button`.
+    // Reject only an explicitly non-primary mouse button.
+    (nativeEvent.button == null || nativeEvent.button === 0) &&
+    !(
+      nativeEvent.metaKey ||
+      nativeEvent.altKey ||
+      nativeEvent.ctrlKey ||
+      nativeEvent.shiftKey
+    )
+  );
+}
+
 export function extractLinkProps<T extends BaseScreen>(
   props: Omit<LinkProps<T>, 'children'>
 ) {
