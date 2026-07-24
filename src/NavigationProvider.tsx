@@ -31,6 +31,7 @@ import BottomTabIndexProvider from './contexts/BottomTabIndexProvider';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
 import { useNavigationUrl } from './useNavigationUrl';
+import { getRootPreloadScreens } from './rootPreloadPolicy';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -110,19 +111,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         );
         return;
       }
-      switch (root.type) {
-        case 'bottomTabs':
-          root.children.forEach((tab) => {
-            preloadElement(tab.child);
-            preloadScreen(tab.child, {});
-          });
-          break;
-        case 'normal':
-          if (root.child) {
-            preloadElement(root.child);
-            preloadScreen(root.child, {});
-          }
-      }
+      getRootPreloadScreens(root).forEach((screen) => {
+        preloadElement(screen);
+        preloadScreen(screen, {});
+      });
     },
     [navigationRoot, preloadElement, preloadScreen]
   );

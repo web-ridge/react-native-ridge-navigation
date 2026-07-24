@@ -11,6 +11,7 @@ import useBottomTabIndex from './useBottomTabIndex';
 import { Platform } from 'react-native';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import { useFullScreenPush } from './contexts/FullScreenPushContext';
+import { getRootPreloadScreens } from './rootPreloadPolicy';
 
 type NavigateOptions = {
   preload?: boolean;
@@ -77,11 +78,16 @@ export default function useNavigation() {
 
   const switchRoot = React.useCallback(
     (rootKey: string, preloadSetting = true) => {
-      if (preloadSetting) {
-        preloadRoot(rootKey);
+      const root = navigationRoot[rootKey];
+      if (preloadSetting && root) {
+        getRootPreloadScreens(root, { includeInitialTab: true }).forEach(
+          (screen) => {
+            preloadElement(screen);
+            preloadScreen(screen, {});
+          }
+        );
       }
 
-      const root = navigationRoot[rootKey];
       const screenKey = Platform.select({
         web: getScreenKey(
           rootKey,
@@ -94,7 +100,7 @@ export default function useNavigation() {
       });
       rootNavigator.start(screenKey);
     },
-    [preloadRoot, navigationRoot, rootNavigator]
+    [navigationRoot, preloadElement, preloadScreen, rootNavigator]
   );
 
   const refresh = React.useCallback(
