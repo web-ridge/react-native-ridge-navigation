@@ -280,6 +280,65 @@ function WideSplitView({
   // (Settings: drill into a sub-form). Browser Back/Forward leave intent null
   // and re-derive from the pane crumb trail or a replace.
   const applyIntentRef = React.useRef<'replace' | 'push' | null>(null);
+  // Selection href the pane is already showing, so the URL-sync effect below can
+  // tell "the URL changed" from "we changed the URL to match the pane".
+  const appliedHrefRef = React.useRef<string | undefined>(undefined);
+
+  // `replace()` inside the pane (create screens swapping themselves for the
+  // record they just created) goes through `navigateLink`, not `navigate`. In
+  // selectionParam mode the pane is a mirror of the main URL, so applying such a
+  // link to the pane alone leaves the address bar on the screen the user just
+  // left: reloading a freshly created entity lands back on its empty "new" form.
+  //
+  // Apply the link to the pane exactly as before, then mirror the scene it
+  // resolves to into the main URL. `appliedHrefRef` is primed so the sync effect
+  // recognises the pane as already up to date and does not re-derive it.
+  const navigateLinkMirroringUrl = React.useCallback(
+    (url: string, historyAction?: 'add' | 'replace' | 'none') => {
+      if (!selectionParam) {
+        detailNavigator.navigateLink(url, historyAction);
+        return;
+      }
+      let href: string | undefined;
+      try {
+        const parsed = detailNavigator.parseLink(url);
+        href =
+          parsed?.state?.key && parsed.state.key !== rootKey
+            ? encodeSelectionHref(parsed.state.key, parsed.data)
+            : undefined;
+      } catch {
+        // Unresolvable link: let the pane deal with it and leave the URL alone.
+        detailNavigator.navigateLink(url, historyAction);
+        return;
+      }
+      detailNavigator.navigateLink(url, historyAction);
+      appliedHrefRef.current = href;
+      // A replaced screen must not stay reachable through in-app back either, so
+      // drop its selection-history entry before the effect records the new one —
+      // that keeps this stack in step with the browser history it mirrors.
+      if (historyAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
+      const currentData = mainNavigator.stateContext.data ?? {};
+      const next: Record<string, any> = { ...currentData };
+      if (href) {
+        next[selectionParam] = href;
+      } else {
+        delete next[selectionParam];
+      }
+      mainNavigator.refresh(
+        next,
+        historyAction === 'replace' ? 'replace' : 'add'
+      );
+    },
+    [
+      detailNavigator,
+      encodeSelectionHref,
+      mainNavigator,
+      rootKey,
+      selectionParam,
+    ]
+  );
 
   // Pushes from the master column select a new detail: they reset the pane to
   // [root, detail] instead of stacking on whatever was selected before.
@@ -290,13 +349,20 @@ function WideSplitView({
   // below. That keeps ONE history timeline (URL + browser/native Back) and
   // avoids the pane driving itself out of sync with the URL.
   const masterNavigator = React.useMemo(() => {
-    const selectViaUrl = (key: string, params?: any) => {
+    const selectViaUrl = (
+      key: string,
+      params?: any,
+      historyAction?: 'add' | 'replace' | 'none'
+    ) => {
       applyIntentRef.current = 'replace';
       const href = encodeSelectionHref(key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
+      if (historyAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
       mainNavigator.refresh(
         { ...currentData, [selectionParam as string]: href },
-        'add'
+        historyAction === 'replace' ? 'replace' : 'add'
       );
     };
     const selectDetail = (key: string, params?: any) => {
@@ -310,6 +376,9 @@ function WideSplitView({
       get(target: any, prop) {
         if (prop === 'navigate') {
           return selectionParam ? selectViaUrl : selectDetail;
+        }
+        if (selectionParam && prop === 'navigateLink') {
+          return navigateLinkMirroringUrl;
         }
         // In selectionParam mode the selection (and any deeper drill pushed
         // inside the detail pane) lives on the MAIN navigator's history. In-app
@@ -332,6 +401,7 @@ function WideSplitView({
     selectionParam,
     mainNavigator,
     encodeSelectionHref,
+    navigateLinkMirroringUrl,
     paneGoBack,
     paneCanGoBack,
   ]);
@@ -340,13 +410,20 @@ function WideSplitView({
   // record a main-URL history entry when selectionParam is set). Distinct from
   // masterNavigator, which always replaces.
   const detailStackNavigator = React.useMemo(() => {
-    const stackViaUrl = (key: string, params?: any) => {
-      applyIntentRef.current = 'push';
+    const stackViaUrl = (
+      key: string,
+      params?: any,
+      historyAction?: 'add' | 'replace' | 'none'
+    ) => {
+      applyIntentRef.current = historyAction === 'replace' ? 'replace' : 'push';
       const href = encodeSelectionHref(key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
+      if (historyAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
       mainNavigator.refresh(
         { ...currentData, [selectionParam as string]: href },
-        'add'
+        historyAction === 'replace' ? 'replace' : 'add'
       );
     };
     return new Proxy(detailNavigator, {
@@ -356,6 +433,9 @@ function WideSplitView({
             ? stackViaUrl
             : (key: string, params?: any) =>
                 detailNavigator.navigate(key, params);
+        }
+        if (selectionParam && prop === 'navigateLink') {
+          return navigateLinkMirroringUrl;
         }
         if (selectionParam && prop === 'navigateBack') {
           return paneGoBack;
@@ -372,6 +452,7 @@ function WideSplitView({
     selectionParam,
     mainNavigator,
     encodeSelectionHref,
+    navigateLinkMirroringUrl,
     paneGoBack,
     paneCanGoBack,
   ]);
@@ -385,7 +466,6 @@ function WideSplitView({
   // Master taps REPLACE the pane (fluent reset → one screen). Detail drills
   // STACK (navigate on top of the existing crumb trail) so screens sit on top
   // of each other — iOS Settings style — while still being URL-history-backed.
-  const appliedHrefRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     if (!selectionParam) {
       return undefined;
