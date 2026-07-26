@@ -6,7 +6,11 @@ import type { GestureResponderEvent } from 'react-native';
 import useNavigation from './useNavigation';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import { generatePath } from './navigationUtils';
-import { isStalePreload } from './Link.shared';
+import {
+  isStalePreload,
+  shouldHandleNativeLinkPress,
+  type NativePressPoint,
+} from './Link.shared';
 
 export default function Link<T extends BaseScreen>({
   to,
@@ -21,6 +25,7 @@ export default function Link<T extends BaseScreen>({
   ...rest
 }: LinkProps<T>) {
   const isPushing = React.useRef<boolean>(false);
+  const pressOrigin = React.useRef<NativePressPoint | null>(null);
   const { push, replace, refresh, preload, preloadElement } = useNavigation();
   const { preloadedCache } = React.useContext(RidgeNavigationContext);
   const preloadPath = generatePath(to.path, params);
@@ -43,6 +48,15 @@ export default function Link<T extends BaseScreen>({
   }, [preloadElement, to]);
   const onPress = React.useCallback(
     async (event: GestureResponderEvent) => {
+      const shouldNavigate = shouldHandleNativeLinkPress(
+        pressOrigin.current,
+        event.nativeEvent
+      );
+      pressOrigin.current = null;
+      if (!shouldNavigate) {
+        return;
+      }
+
       // we don't want to go to another screen but we do want preloading
       // behaviour of the Link component :)
       // e.g. a modal with same data dependencies as the list screen
@@ -88,6 +102,10 @@ export default function Link<T extends BaseScreen>({
   const onPressInExternal = rest?.onPressIn || undefined;
   const onPressIn = React.useCallback(
     (e: GestureResponderEvent) => {
+      pressOrigin.current = {
+        pageX: e.nativeEvent.pageX,
+        pageY: e.nativeEvent.pageY,
+      };
       preloadElementInner();
       preloadData();
       onPressInExternal?.(e);
@@ -100,6 +118,6 @@ export default function Link<T extends BaseScreen>({
   }
   return children({
     onPress: onPress,
-    onPressIn: rest.onPressIn || onPressIn,
+    onPressIn,
   });
 }

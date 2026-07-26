@@ -1,4 +1,33 @@
-import { shouldHandleWebLinkPress } from './Link.shared';
+import {
+  shouldHandleNativeLinkPress,
+  shouldHandleWebLinkPress,
+} from './Link.shared';
+
+describe('shouldHandleNativeLinkPress', () => {
+  it('handles a tap within native press tolerance', () => {
+    expect(
+      shouldHandleNativeLinkPress(
+        { pageX: 100, pageY: 200 },
+        { pageX: 108, pageY: 207 }
+      )
+    ).toBe(true);
+  });
+
+  it('ignores a press released after a scroll gesture', () => {
+    expect(
+      shouldHandleNativeLinkPress(
+        { pageX: 100, pageY: 200 },
+        { pageX: 145, pageY: 203 }
+      )
+    ).toBe(false);
+  });
+
+  it('handles accessibility activation without a press origin', () => {
+    expect(shouldHandleNativeLinkPress(null, { pageX: 0, pageY: 0 })).toBe(
+      true
+    );
+  });
+});
 
 describe('shouldHandleWebLinkPress', () => {
   it.each([undefined, 0])(

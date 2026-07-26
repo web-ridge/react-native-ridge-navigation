@@ -19,6 +19,28 @@ type WebLinkNativeEvent = {
   shiftKey?: boolean;
 };
 
+export type NativePressPoint = {
+  pageX: number;
+  pageY: number;
+};
+
+const nativePressMovementTolerance = 12;
+
+export function shouldHandleNativeLinkPress(
+  origin: NativePressPoint | null,
+  release: NativePressPoint
+) {
+  if (!origin) {
+    // Accessibility activation can dispatch `onPress` without `onPressIn`.
+    return true;
+  }
+
+  return (
+    Math.hypot(release.pageX - origin.pageX, release.pageY - origin.pageY) <=
+    nativePressMovementTolerance
+  );
+}
+
 export function shouldHandleWebLinkPress(
   event: { defaultPrevented?: boolean },
   nativeEvent: WebLinkNativeEvent
