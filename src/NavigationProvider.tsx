@@ -309,6 +309,17 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         setNavigationReady(true);
       } else {
         const timerId = setTimeout(() => {
+          // Expo Linking also reports URLs written by this navigator. A newer
+          // local navigation may already have replaced that URL during this
+          // debounce window; replaying the stale event would jump the user back
+          // one screen. Real browser/deep-link events still match the current
+          // history entry and continue through openUrl.
+          if (
+            Platform.OS === 'web' &&
+            rootNavigator.historyManager.getCurrentUrl() !== goToUrl
+          ) {
+            return;
+          }
           openUrl(goToUrl, true);
         }, 50);
         return () => {
@@ -325,7 +336,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
     }
 
     return undefined;
-  }, [goToUrl, initialDefaultUrl, openUrl]);
+  }, [goToUrl, initialDefaultUrl, openUrl, rootNavigator]);
 
   if (!navigationReady) {
     return null;
