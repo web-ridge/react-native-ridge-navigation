@@ -179,6 +179,15 @@ export default function useNavigation() {
         options?.toBottomTab || currentTab,
         screen.path
       );
+      // Split views proxy `navigate()` so the selected detail remains a pure
+      // function of the main URL. Going through a locally-built fluent link on
+      // web bypasses that proxy and can leave the pane empty while the address
+      // bar still points at the replaced screen (for example /add after a
+      // successful create). Let the navigator/proxy perform the replacement.
+      if (Platform.OS === 'web') {
+        stateNavigator.navigate(screenKey, params, 'replace');
+        return;
+      }
       const { crumbs } = stateNavigator.stateContext;
       if (crumbs.length > 0) {
         // Use fluent API to build URL that replaces current screen in the
