@@ -163,7 +163,15 @@ function WideSplitView({
   // full width (native full-screen push / normal web route), with a back that
   // returns to the split. Captured here because at this point the context still
   // holds the main navigator (before the split overrides it below).
-  const mainNavigator = outerOptimized.stateNavigator;
+  // On web, NavigationHandler exposes a short-lived async wrapper through
+  // OptimizedContext. Holding that wrapper as the URL owner lets an older
+  // transition replay stale query data after a rapid pane drill. The root
+  // navigator is the stable owner of the browser URL; native still needs the
+  // current nested/tab navigator that actually hosts the split.
+  const mainNavigator =
+    Platform.OS === 'web'
+      ? outerOptimized.rootNavigator
+      : outerOptimized.stateNavigator;
   const { preloadScreen } = outerOptimized;
   const { currentRootKey } = useCurrentRoot();
   const { currentTab } = useBottomTabIndex();

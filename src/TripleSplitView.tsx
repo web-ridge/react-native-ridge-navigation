@@ -270,7 +270,14 @@ function WideTripleSplitView({
   // The MAIN navigator the split itself lives on. With `sectionParam`/
   // `detailParam` set, selections flow through it (URL query + single history
   // timeline) instead of staying private to the panes — see below.
-  const mainNavigator = outerOptimized.stateNavigator;
+  // Web URL-backed panes must target the stable root navigator. The ambient
+  // state navigator is a transient NavigationHandler wrapper and can commit an
+  // older selection after a fast drill. Native keeps its current nested/tab
+  // navigator because that is the stack which hosts the split.
+  const mainNavigator =
+    Platform.OS === 'web'
+      ? outerOptimized.rootNavigator
+      : outerOptimized.stateNavigator;
   const { preloadScreen } = outerOptimized;
   const urlDriven = Boolean(sectionParam || detailParam);
 
