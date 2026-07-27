@@ -50,7 +50,8 @@ export default function Link<T extends BaseScreen>({
     async (event: GestureResponderEvent) => {
       const shouldNavigate = shouldHandleNativeLinkPress(
         pressOrigin.current,
-        event.nativeEvent
+        event.nativeEvent,
+        Boolean(toBottomTab)
       );
       pressOrigin.current = null;
       if (!shouldNavigate) {

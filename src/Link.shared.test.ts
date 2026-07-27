@@ -27,6 +27,16 @@ describe('shouldHandleNativeLinkPress', () => {
       true
     );
   });
+
+  it('does not swallow fixed bottom-tab presses when responder coordinates drift', () => {
+    expect(
+      shouldHandleNativeLinkPress(
+        { pageX: 100, pageY: 50 },
+        { pageX: 132, pageY: 51 },
+        true
+      )
+    ).toBe(true);
+  });
 });
 
 describe('shouldHandleWebLinkPress', () => {

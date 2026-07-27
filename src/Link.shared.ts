@@ -28,10 +28,14 @@ const nativePressMovementTolerance = 12;
 
 export function shouldHandleNativeLinkPress(
   origin: NativePressPoint | null,
-  release: NativePressPoint
+  release: NativePressPoint,
+  isFixedNavigation = false
 ) {
-  if (!origin) {
+  if (isFixedNavigation || !origin) {
     // Accessibility activation can dispatch `onPress` without `onPressIn`.
+    // Fixed navigation (for example a bottom tab bar) is not embedded in a
+    // scroll view, so once Pressable emits `onPress` it must not be rejected
+    // by responder-coordinate drift on iPadOS.
     return true;
   }
 
