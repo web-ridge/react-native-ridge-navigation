@@ -40,6 +40,10 @@ function NavigationStack({
             key={key}
             accessible={active}
             aria-hidden={!active}
+            // A restored crumb scene can sit later in DOM order than the
+            // active scene; without this its (hidden) chrome swallows clicks
+            // meant for the screen the user actually sees.
+            pointerEvents={active ? 'auto' : 'none'}
             style={[
               StyleSheet.absoluteFill,
               styles.stack,
