@@ -20,6 +20,7 @@ import BottomTabBadgesContext from './contexts/BottomTabBadgesContext';
 import useCurrentRoot from './useCurrentRoot';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshContext from './contexts/BottomTabRefreshContext';
+import { NavigationBackGestureProvider } from './contexts/RidgeNavigationContext';
 
 // The app patches navigation-react-native with the iOS 26 UISearchTab prop;
 // keep Ridge buildable against the upstream package types as well.
@@ -113,7 +114,7 @@ const TabBarItemStack = React.memo(
           sharedElements={getSharedElementsForState}
           renderScene={(state, data) => {
             return (
-              <>
+              <NavigationBackGestureProvider>
                 <HiddenNavbarWithSwipeBack
                   nativeHeader={state?.screen?.options?.nativeHeader}
                 />
@@ -121,7 +122,7 @@ const TabBarItemStack = React.memo(
                 <OptimizedContextProvider state={state} data={data}>
                   {state.renderScene()}
                 </OptimizedContextProvider>
-              </>
+              </NavigationBackGestureProvider>
             );
           }}
         />

@@ -32,6 +32,7 @@ import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
 import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
 import { useNavigationUrl } from './useNavigationUrl';
 import { getRootPreloadScreens } from './rootPreloadPolicy';
+import { NavigationBackGestureProvider } from './contexts/RidgeNavigationContext';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -373,14 +374,14 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
               // unmountStyle={() => ''}
               renderScene={(state, data) => {
                 return (
-                  <>
+                  <NavigationBackGestureProvider>
                     <HiddenNavbarWithSwipeBack
                       nativeHeader={state?.screen?.options?.nativeHeader}
                     />
                     <OptimizedContextProvider state={state} data={data}>
                       <OptimizedRenderScene renderScene={state.renderScene} />
                     </OptimizedContextProvider>
-                  </>
+                  </NavigationBackGestureProvider>
                 );
               }}
             />

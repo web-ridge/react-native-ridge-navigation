@@ -606,6 +606,30 @@ import { CollapsingHeader } from 'react-native-ridge-navigation';
 
 Register the screen with `nativeHeader: true` so the library hides its default swipe-back bar and lets the screen own the header.
 
+### Preventing native back gestures for unsaved forms
+
+`useUnloading` can cancel a navigation attempt, but iOS starts its interactive
+pop gesture before an asynchronous confirmation can finish. Disable that native
+gesture while a scene has unsaved changes and keep the confirmation in the
+navigation lifecycle:
+
+```tsx
+import {
+  usePreventNativeBackGesture,
+  useUnloading,
+} from 'react-native-ridge-navigation';
+
+usePreventNativeBackGesture(isDirty);
+useUnloading((event) => {
+  if (!isDirty) return;
+  // Cancel this navigation attempt and show the product confirmation.
+});
+```
+
+The blocker is scoped to the rendered scene and supports multiple forms in the
+same scene. It only changes the native interactive-pop gesture; header buttons,
+links, and programmatic navigation continue through the normal lifecycle.
+
 ### Immersive colored headers (App Store style)
 
 Pass `barTintColor` for a solid immersive header (`CollapsingHeader` forwards `tintColor` to `titleColor` and `largeTitleColor` for you). If you drop to the raw `NavigationBar`, note the large-title color props exist in the Obj-C `NVNavigationBar` but are **missing from the shipped `.d.ts`** — cast to reach them:
@@ -763,4 +787,3 @@ MIT
 - Simple translations in React (
   Native): [react-ridge-translations](https://github.com/web-ridge/react-ridge-translations)
 - Simple global state management in React (Native): [react-ridge-state](https://github.com/web-ridge/react-ridge-state)
-

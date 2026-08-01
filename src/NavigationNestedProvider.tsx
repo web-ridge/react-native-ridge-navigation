@@ -13,6 +13,7 @@ import {
 import { StateNavigator } from 'navigation';
 import { Text } from 'react-native';
 import HiddenNavbarWithSwipeBack from './HiddenNavbarWithSwipeBack';
+import { NavigationBackGestureProvider } from './contexts/RidgeNavigationContext';
 
 function NavigationNestedProvider({ children }: { children: any }) {
   const id = React.useId();
@@ -83,14 +84,14 @@ function NavigationNestedProvider({ children }: { children: any }) {
           renderWeb={(key) => (key === rootKey ? children : undefined)}
           renderScene={(state, data) => {
             return (
-              <>
+              <NavigationBackGestureProvider>
                 <HiddenNavbarWithSwipeBack
                   nativeHeader={state?.screen?.options?.nativeHeader}
                 />
                 <OptimizedContextProvider state={state} data={data}>
                   {state.key === rootKey ? children : state.renderScene()}
                 </OptimizedContextProvider>
-              </>
+              </NavigationBackGestureProvider>
             );
           }}
         />

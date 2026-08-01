@@ -80,6 +80,7 @@ export {
   type FullScreenPush,
 } from './contexts/FullScreenPushContext';
 export { default as ModalBackHandler } from './ModalBackHandler';
+export { usePreventNativeBackGesture } from './contexts/RidgeNavigationContext';
 export { default as createLinkComponent } from './createLinkComponent';
 
 export {
