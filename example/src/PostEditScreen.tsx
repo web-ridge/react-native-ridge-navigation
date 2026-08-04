@@ -46,7 +46,11 @@ function PostEditScreen() {
         backTitle="Post"
       >
         <RightBar>
-          <BarButton testID="editDone" systemItem="done" onPress={() => pop()} />
+          <BarButton
+            testID="editDone"
+            systemItem="done"
+            onPress={() => pop()}
+          />
         </RightBar>
       </NavigationBar>
       <ScrollView
