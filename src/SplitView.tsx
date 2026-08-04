@@ -228,7 +228,7 @@ function WideSplitView({
   );
   const fullScreenPush = React.useCallback(
     (screen: any, params: any, options?: { preload?: boolean }) => {
-      if (options?.preload) {
+      if (options?.preload ?? true) {
         preloadScreen(screen, params);
       }
       const screenKey = getScreenKey(currentRootKey!, currentTab, screen.path);

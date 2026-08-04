@@ -14,6 +14,13 @@ import { useFullScreenPush } from './contexts/FullScreenPushContext';
 import { getRootPreloadScreens } from './rootPreloadPolicy';
 
 type NavigateOptions = {
+  /**
+   * Run the screen's preload before navigating, so data fetching overlaps the
+   * transition instead of starting after it. Defaults to true — a screen that
+   * suspends without a preload renders an empty scene on native. Pass false
+   * only when the target screen must not fetch (for example, a screen whose
+   * preload would clobber state the caller just prepared).
+   */
   preload?: boolean;
   toBottomTab?: BottomTabType;
   /**
@@ -109,7 +116,7 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
-      if (options?.preload) {
+      if (options?.preload ?? true) {
         preload(screen, params);
       }
       stateNavigator.refresh(params, 'replace');
@@ -124,7 +131,7 @@ export default function useNavigation() {
       options?: NavigateOptions,
       historyAction?: 'add' | 'replace' | 'none'
     ) => {
-      if (options?.preload) {
+      if (options?.preload ?? true) {
         preload(screen, params);
       }
 
@@ -165,7 +172,7 @@ export default function useNavigation() {
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
-      if (options?.preload) {
+      if (options?.preload ?? true) {
         preload(screen, params);
       }
 
