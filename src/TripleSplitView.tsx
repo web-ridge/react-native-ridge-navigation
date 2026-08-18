@@ -17,6 +17,10 @@ import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
+  resolveSelectionHistoryAction,
+  type SelectionHistory,
+} from './selectionHistory';
+import {
   createNormalRoot,
   generatePath,
   makeVariablesNavigationFriendly,
@@ -105,9 +109,9 @@ export type TripleSplitViewProps = {
    *  - reflects the selection in the URL of the MAIN navigator as a query param
    *    (`…/more?section=werknemers`), so it is deep-linkable and restored on a
    *    cold reload,
-   *  - records it as a real entry on the MAIN navigator's single history
-   *    timeline, so browser Back/Forward (web) and the native back gesture step
-   *    back through selections — no second history stack to fight the main one.
+   *  - keeps it on the MAIN navigator's single history timeline. Peer picks
+   *    replace the current entry by default; `selectionHistory="push"` opts into
+   *    browser/native Back and Forward stepping through previous selections.
    *
    * Switching to another section also drops any `detailParam` from the URL, so
    * the detail column empties (iPad Mail: changing mailbox clears the message).
@@ -120,12 +124,19 @@ export type TripleSplitViewProps = {
    * Opt in to making the MIDDLE→DETAIL selection (which item is open) part of
    * navigation state. When set to a query-param name (e.g. `"detail"`),
    * selecting an item from the middle column reflects it in the MAIN URL
-   * (`…/more?section=werknemers&detail=user/42`), records a history entry, and
-   * re-derives the detail pane from that URL — so it is deep-linkable,
-   * back/forward-navigable and cold-restorable, exactly like SplitView's
-   * `selectionParam`.
+   * (`…/more?section=werknemers&detail=user/42`) and re-derives the detail pane
+   * from that URL — so it is deep-linkable and cold-restorable, exactly like
+   * SplitView's `selectionParam`. Peer picks replace history by default;
+   * `selectionHistory="push"` opts into replaying them with Back/Forward.
    */
   detailParam?: string;
+  /**
+   * How peer selections from the sidebar and middle column affect navigation
+   * history. Defaults to `replace`; use `push` when Back/Forward should replay
+   * previously selected sections/items. Narrow layouts and detail drill-downs
+   * keep their normal push behaviour.
+   */
+  selectionHistory?: SelectionHistory;
 };
 
 /** One column's current selection: the registered screen path plus its params,
@@ -166,6 +177,7 @@ export default function TripleSplitView({
   onSelectionChange,
   sectionParam,
   detailParam,
+  selectionHistory = 'replace',
 }: TripleSplitViewProps) {
   // Seed from window width so it renders on first paint (no null-until-onLayout
   // flash / background-tab breakage); onLayout refines the container width.
@@ -191,6 +203,7 @@ export default function TripleSplitView({
           onSelectionChange={onSelectionChange}
           sectionParam={sectionParam}
           detailParam={detailParam}
+          selectionHistory={selectionHistory}
         >
           {sidebar}
         </WideTripleSplitView>
@@ -254,6 +267,7 @@ function WideTripleSplitView({
   onSelectionChange,
   sectionParam,
   detailParam,
+  selectionHistory,
 }: Omit<TripleSplitViewProps, 'sidebar' | 'breakingPointWidth'> & {
   children: React.ReactNode;
 }) {
@@ -405,12 +419,17 @@ function WideTripleSplitView({
   //
   // With `sectionParam`/`detailParam`, that selection instead flows through the
   // MAIN navigator: a row push records the selection as a query param on the
-  // current main URL (history 'add'), and the pane is re-derived from that URL
-  // by the effect below. One history timeline (URL + browser/native Back),
-  // deep-linkable and back-navigable — the panes never drive themselves out of
-  // sync with the URL. Unset params keep the original history-less behaviour.
+  // current main URL, and the pane is re-derived from that URL by the effect
+  // below. Peer selections replace by default; selectionHistory="push" makes
+  // them separate entries. Either way the panes never drive themselves out of
+  // sync with the single URL timeline. Unset params keep the original
+  // history-less behaviour.
   const sidebarSelect = React.useMemo(() => {
-    const selectViaUrl = (key: string, params?: any) => {
+    const selectViaUrl = (
+      key: string,
+      params?: any,
+      historyAction?: 'add' | 'replace' | 'none'
+    ) => {
       const href = encodeHref(middleRootKey, key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
       const next: any = { ...currentData, [sectionParam as string]: href };
@@ -418,7 +437,14 @@ function WideTripleSplitView({
       if (detailParam) {
         delete next[detailParam];
       }
-      mainNavigator.refresh(next, 'add');
+      const resolvedHistoryAction = resolveSelectionHistoryAction(
+        historyAction,
+        selectionHistory
+      );
+      if (resolvedHistoryAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
+      mainNavigator.refresh(next, resolvedHistoryAction);
     };
     const selectLocal = (key: string, params?: any) => {
       const fluent = new StateNavigator(middleNavigator)
@@ -452,6 +478,7 @@ function WideTripleSplitView({
     middleRootKey,
     sectionParam,
     detailParam,
+    selectionHistory,
     mainNavigator,
     encodeHref,
     onMiddleSelected,
@@ -465,13 +492,24 @@ function WideTripleSplitView({
   const detailApplyIntentRef = React.useRef<'replace' | 'push' | null>(null);
 
   const middleSelect = React.useMemo(() => {
-    const selectViaUrl = (key: string, params?: any) => {
+    const selectViaUrl = (
+      key: string,
+      params?: any,
+      historyAction?: 'add' | 'replace' | 'none'
+    ) => {
       detailApplyIntentRef.current = 'replace';
       const href = encodeHref(detailRootKey, key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
+      const resolvedHistoryAction = resolveSelectionHistoryAction(
+        historyAction,
+        selectionHistory
+      );
+      if (resolvedHistoryAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
       mainNavigator.refresh(
         { ...currentData, [detailParam as string]: href },
-        'add'
+        resolvedHistoryAction
       );
     };
     const selectLocal = (key: string, params?: any) => {
@@ -506,6 +544,7 @@ function WideTripleSplitView({
     detailNavigator,
     detailRootKey,
     detailParam,
+    selectionHistory,
     mainNavigator,
     encodeHref,
     reportSelection,
@@ -515,13 +554,21 @@ function WideTripleSplitView({
 
   // Detail-column proxy: drills STACK on top (URL + pane crumb trail).
   const detailStackSelect = React.useMemo(() => {
-    const stackViaUrl = (key: string, params?: any) => {
-      detailApplyIntentRef.current = 'push';
+    const stackViaUrl = (
+      key: string,
+      params?: any,
+      historyAction?: 'add' | 'replace' | 'none'
+    ) => {
+      detailApplyIntentRef.current =
+        historyAction === 'replace' ? 'replace' : 'push';
       const href = encodeHref(detailRootKey, key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
+      if (historyAction === 'replace') {
+        selectionStackRef.current.pop();
+      }
       mainNavigator.refresh(
         { ...currentData, [detailParam as string]: href },
-        'add'
+        historyAction === 'replace' ? 'replace' : 'add'
       );
     };
     return new Proxy(detailNavigator, {

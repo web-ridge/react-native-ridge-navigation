@@ -62,6 +62,7 @@ export { default as useNavigation } from './useNavigation';
 export { default as NavigationProvider } from './NavigationProvider';
 export { default as NavigationNestedProvider } from './NavigationNestedProvider';
 export { default as SplitView, type SplitViewProps } from './SplitView';
+export type { SelectionHistory } from './selectionHistory';
 export {
   default as TripleSplitView,
   type TripleSplitViewProps,

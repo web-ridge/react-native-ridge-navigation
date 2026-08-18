@@ -38,6 +38,10 @@ function TripleWorkspaceScreen() {
       // Opt in to URL-reflected selections at both levels.
       sectionParam="section"
       detailParam="detail"
+      // This demo intentionally replays peer selections with Back/Forward.
+      // The library default is `replace`, which is more natural for most
+      // master/detail workspaces.
+      selectionHistory="push"
       sidebar={
         <ScrollView
           style={[styles.sidebar, { borderRightColor: theme.border }]}
