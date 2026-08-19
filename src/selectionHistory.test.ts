@@ -1,5 +1,6 @@
 import {
   consumePaneApplyIntent,
+  resolvePaneBackAction,
   resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
   shouldPreloadMirroredSelection,
@@ -30,6 +31,42 @@ describe('resolveSelectionBackTargetIndex', () => {
 
   it('falls back to the outer navigator without an earlier selection', () => {
     expect(resolveSelectionBackTargetIndex(1)).toBeNull();
+  });
+});
+
+describe('resolvePaneBackAction', () => {
+  it('consumes the pushed web entry before the following Back leaves the split', () => {
+    const entries = ['pipeline', 'supplier:retour', 'supplier:retour/review'];
+    let currentIndex = 2;
+    const applyBrowserBack = (selectionStackLength: number) => {
+      const action = resolvePaneBackAction(selectionStackLength, 1, true);
+      expect(action).toEqual({ type: 'browser', distance: 1 });
+      if (action.type === 'browser') {
+        currentIndex -= action.distance;
+      }
+    };
+
+    applyBrowserBack(2);
+    expect(entries[currentIndex]).toBe('supplier:retour');
+    expect(entries).toEqual([
+      'pipeline',
+      'supplier:retour',
+      'supplier:retour/review',
+    ]);
+
+    applyBrowserBack(1);
+    expect(entries[currentIndex]).toBe('pipeline');
+  });
+
+  it('keeps native pane Back synchronous before falling back to the outer navigator', () => {
+    expect(resolvePaneBackAction(2)).toEqual({
+      type: 'selection',
+      targetIndex: 0,
+    });
+    expect(resolvePaneBackAction(1)).toEqual({
+      type: 'outer',
+      distance: 1,
+    });
   });
 });
 

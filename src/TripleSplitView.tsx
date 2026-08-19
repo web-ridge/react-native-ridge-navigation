@@ -18,7 +18,7 @@ import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
   consumePaneApplyIntent,
-  resolveSelectionBackTargetIndex,
+  resolvePaneBackAction,
   resolveSelectionHistoryAction,
   shouldPreloadMirroredSelection,
   type PaneApplyIntent,
@@ -33,11 +33,9 @@ import {
 
 /**
  * A snapshot of the selection-relevant query params (section + detail hrefs).
- * The selection-history stack (see below) records one of these per URL entry so
- * in-app back can step it SYNCHRONOUSLY, rather than via an async
- * `window.history.go(-1)` whose popstate can be clobbered by a concurrent
- * re-render's URL normalization (e.g. the refetch a save mutation triggers),
- * leaving the pane stuck on the screen it was meant to leave.
+ * The selection-history stack (see below) records one of these per URL entry.
+ * Native in-app Back uses it synchronously; web consumes the corresponding
+ * browser-history entry so the next outer Back cannot land on a duplicate URL.
  */
 type SelectionSnapshot = Record<string, string>;
 
@@ -304,11 +302,12 @@ function WideTripleSplitView({
   // entry created by `refresh(..., 'add')` — the state stays put, only the
   // query data changes. Browser Back walks those data entries via the History
   // API, but `mainNavigator.navigateBack` walks the CRUMB trail instead and
-  // would jump out of the whole split. So in-app back must step the recorded
-  // pane-selection history before falling back to the outer crumb navigator.
+  // would jump out of the whole split. Web must consume the real browser entry;
+  // native steps the recorded pane selection before falling back to the outer
+  // crumb navigator.
   // The applied selection snapshots, oldest→newest, mirroring the main
   // navigator's selection history. Maintained by the URL-mirror effect below;
-  // consumed by `paneGoBack` so in-app back is a synchronous state step.
+  // consumed by native `paneGoBack` for its synchronous state step.
   const selectionStackRef = React.useRef<SelectionSnapshot[]>([]);
   const paneCanGoBack = React.useCallback(() => {
     const data: any = mainNavigator.stateContext.data ?? {};
@@ -319,35 +318,37 @@ function WideTripleSplitView({
   }, [mainNavigator, sectionParam, detailParam]);
   const paneGoBack = React.useCallback(
     (n = 1) => {
-      // Apply the previous selection with one synchronous refresh. On native
-      // this keeps Back inside the pane stack; on web it also avoids an async
-      // popstate race with URL normalization.
-      if (urlDriven) {
-        const stack = selectionStackRef.current;
-        const targetIndex = resolveSelectionBackTargetIndex(stack.length, n);
-        if (targetIndex != null) {
-          const target = stack[targetIndex]!;
-          const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
-          for (const key of [sectionParam, detailParam]) {
-            if (!key) continue;
-            if (target[key] != null) {
-              next[key] = target[key];
-            } else {
-              delete next[key];
-            }
-          }
-          mainNavigator.refresh(next, 'replace');
-          return;
-        }
-      }
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        // No recorded selection to step back to (e.g. a cold deep-link) — step
-        // the real browser history instead.
-        window.history.go(-n);
+      const stack = selectionStackRef.current;
+      const action = resolvePaneBackAction(
+        urlDriven ? stack.length : 0,
+        n,
+        Platform.OS === 'web' && typeof window !== 'undefined'
+      );
+      if (action.type === 'browser') {
+        window.history.go(-action.distance);
         return;
       }
-      if (mainNavigator.canNavigateBack(n)) {
-        mainNavigator.navigateBack(n);
+      // Native has no browser timeline to consume. Keep its synchronous pane
+      // refresh so nested detail Back stays inside the three-column workspace.
+      if (action.type === 'selection') {
+        if (!urlDriven) {
+          return;
+        }
+        const target = stack[action.targetIndex]!;
+        const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+        for (const key of [sectionParam, detailParam]) {
+          if (!key) continue;
+          if (target[key] != null) {
+            next[key] = target[key];
+          } else {
+            delete next[key];
+          }
+        }
+        mainNavigator.refresh(next, 'replace');
+        return;
+      }
+      if (mainNavigator.canNavigateBack(action.distance)) {
+        mainNavigator.navigateBack(action.distance);
       }
     },
     [mainNavigator, urlDriven, sectionParam, detailParam]

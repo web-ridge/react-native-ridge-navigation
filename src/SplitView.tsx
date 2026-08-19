@@ -20,7 +20,7 @@ import FullScreenPushContext from './contexts/FullScreenPushContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
-  resolveSelectionBackTargetIndex,
+  resolvePaneBackAction,
   resolveSelectionHistoryAction,
   type SelectionHistory,
 } from './selectionHistory';
@@ -202,11 +202,12 @@ function WideSplitView({
   // Back walks them via the History API; `mainNavigator.navigateBack` walks the
   // CRUMB trail instead and would jump out of the split entirely. So in-app back
   // must replicate a pane-history back before falling back to the outer crumb
-  // navigator. The recorded selection stack works on both web and native.
+  // navigator. Web consumes the real browser entry; native uses the recorded
+  // selection stack because it has no browser timeline.
   // The applied selection hrefs, oldest→newest, mirroring the main navigator's
   // selection history (undefined = the placeholder / no selection). Maintained
-  // by the URL-mirror effect below; consumed by `paneGoBack` so in-app back is
-  // a synchronous state step rather than an async `window.history.go(-1)`.
+  // by the URL-mirror effect below; consumed by native `paneGoBack` so it can
+  // apply the previous pane selection synchronously.
   const selectionStackRef = React.useRef<Array<string | undefined>>([]);
   const paneCanGoBack = React.useCallback(() => {
     const data: any = mainNavigator.stateContext.data ?? {};
@@ -215,31 +216,34 @@ function WideSplitView({
   }, [mainNavigator, selectionParam]);
   const paneGoBack = React.useCallback(
     (n = 1) => {
-      // Step the recorded selection history SYNCHRONOUSLY with a single
-      // `refresh('replace')` (URL + pane update in one commit). On native this
-      // prevents a detail drill's Back button from popping the entire split;
-      // on web it also avoids an async popstate race with URL normalization.
-      if (selectionParam) {
-        const stack = selectionStackRef.current;
-        const targetIndex = resolveSelectionBackTargetIndex(stack.length, n);
-        if (targetIndex != null) {
-          const targetHref = stack[targetIndex];
-          const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
-          if (targetHref != null) {
-            next[selectionParam] = targetHref;
-          } else {
-            delete next[selectionParam];
-          }
-          mainNavigator.refresh(next, 'replace');
-          return;
-        }
-      }
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.history.go(-n);
+      const stack = selectionStackRef.current;
+      const action = resolvePaneBackAction(
+        selectionParam ? stack.length : 0,
+        n,
+        Platform.OS === 'web' && typeof window !== 'undefined'
+      );
+      if (action.type === 'browser') {
+        window.history.go(-action.distance);
         return;
       }
-      if (mainNavigator.canNavigateBack(n)) {
-        mainNavigator.navigateBack(n);
+      // Native has no browser timeline to consume. Keep its synchronous pane
+      // refresh so a nested detail Back never pops the entire split.
+      if (action.type === 'selection') {
+        if (!selectionParam) {
+          return;
+        }
+        const targetHref = stack[action.targetIndex];
+        const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+        if (targetHref != null) {
+          next[selectionParam] = targetHref;
+        } else {
+          delete next[selectionParam];
+        }
+        mainNavigator.refresh(next, 'replace');
+        return;
+      }
+      if (mainNavigator.canNavigateBack(action.distance)) {
+        mainNavigator.navigateBack(action.distance);
       }
     },
     [mainNavigator, selectionParam]
