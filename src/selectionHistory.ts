@@ -2,6 +2,27 @@ export type SelectionHistory = 'replace' | 'push';
 
 export type NavigationHistoryAction = 'add' | 'replace' | 'none';
 
+export type PaneApplyIntent = 'replace' | 'push' | null;
+
+/**
+ * Pane selections initiated locally already ran their screen preload before
+ * updating the URL. Consume that one-shot intent when the URL mirror catches
+ * up, so a later external URL/Back/Forward change is treated as cold again.
+ */
+export function consumePaneApplyIntent(intentRef: {
+  current: PaneApplyIntent;
+}): PaneApplyIntent {
+  const intent = intentRef.current;
+  intentRef.current = null;
+  return intent;
+}
+
+export function shouldPreloadMirroredSelection(
+  intent: PaneApplyIntent
+): boolean {
+  return intent == null;
+}
+
 /**
  * Returns the earlier URL-backed pane selection for an in-app Back action.
  * An index (rather than the value) is returned because `undefined` is itself a

@@ -1,6 +1,8 @@
 import {
+  consumePaneApplyIntent,
   resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
+  shouldPreloadMirroredSelection,
 } from './selectionHistory';
 
 describe('resolveSelectionHistoryAction', () => {
@@ -28,5 +30,23 @@ describe('resolveSelectionBackTargetIndex', () => {
 
   it('falls back to the outer navigator without an earlier selection', () => {
     expect(resolveSelectionBackTargetIndex(1)).toBeNull();
+  });
+});
+
+describe('mirrored pane preload intent', () => {
+  it('preloads cold URL, Back and Forward selections', () => {
+    expect(shouldPreloadMirroredSelection(null)).toBe(true);
+  });
+
+  it('skips the duplicate preload for a local selection exactly once', () => {
+    const intentRef = { current: 'replace' as const };
+
+    expect(
+      shouldPreloadMirroredSelection(consumePaneApplyIntent(intentRef))
+    ).toBe(false);
+    expect(intentRef.current).toBeNull();
+    expect(
+      shouldPreloadMirroredSelection(consumePaneApplyIntent(intentRef))
+    ).toBe(true);
   });
 });
