@@ -17,8 +17,11 @@ import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
+  consumePaneApplyIntent,
   resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
+  shouldPreloadMirroredSelection,
+  type PaneApplyIntent,
   type SelectionHistory,
 } from './selectionHistory';
 import {
@@ -421,12 +424,16 @@ function WideTripleSplitView({
   // them separate entries. Either way the panes never drive themselves out of
   // sync with the single URL timeline. Unset params keep the original
   // history-less behaviour.
+  const sectionApplyIntentRef = React.useRef<PaneApplyIntent>(null);
+  const detailApplyIntentRef = React.useRef<PaneApplyIntent>(null);
+
   const sidebarSelect = React.useMemo(() => {
     const selectViaUrl = (
       key: string,
       params?: any,
       historyAction?: 'add' | 'replace' | 'none'
     ) => {
+      sectionApplyIntentRef.current = 'replace';
       const href = encodeHref(middleRootKey, key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
       const next: any = { ...currentData, [sectionParam as string]: href };
@@ -486,8 +493,6 @@ function WideTripleSplitView({
   // Master (middle→detail) REPLACE vs detail-internal STACK intents, same as
   // SplitView: middle-column row taps replace the detail; a push from inside
   // the detail stacks a sub-form on top while still recording a URL entry.
-  const detailApplyIntentRef = React.useRef<'replace' | 'push' | null>(null);
-
   const middleSelect = React.useMemo(() => {
     const selectViaUrl = (
       key: string,
@@ -645,7 +650,10 @@ function WideTripleSplitView({
       let parsed: { state?: any; data?: any } | null = null;
       try {
         parsed = navigator.parseLink(targetUrl);
-        if (intent == null && (parsed as any)?.state?.screen) {
+        if (
+          shouldPreloadMirroredSelection(intent) &&
+          (parsed as any)?.state?.screen
+        ) {
           preloadScreen((parsed as any).state.screen, (parsed as any).data);
         }
       } catch {
@@ -715,15 +723,15 @@ function WideTripleSplitView({
       if (sectionParam) {
         const href: string | undefined = data[sectionParam];
         if (appliedSectionRef.current !== href) {
+          const intent = consumePaneApplyIntent(sectionApplyIntentRef);
           appliedSectionRef.current = href;
-          applyPane(middleNavigator, middleRootKey, href, 'replace');
+          applyPane(middleNavigator, middleRootKey, href, intent);
         }
       }
       if (detailParam) {
         const href: string | undefined = data[detailParam];
         if (appliedDetailRef.current !== href) {
-          const intent = detailApplyIntentRef.current;
-          detailApplyIntentRef.current = null;
+          const intent = consumePaneApplyIntent(detailApplyIntentRef);
           appliedDetailRef.current = href;
           applyPane(detailNavigator, detailRootKey, href, intent);
         }
