@@ -12,6 +12,8 @@ import {
   type NativePressPoint,
 } from './Link.shared';
 
+const elementPreloadWaitInMs = 250;
+
 export default function Link<T extends BaseScreen>({
   to,
   toBottomTab,
@@ -43,9 +45,10 @@ export default function Link<T extends BaseScreen>({
     lastPreloadedAt.current = Date.now();
     preload(to, params);
   }, [hasPreloadedData, preload, to, params]);
-  const preloadElementInner = React.useCallback(() => {
-    preloadElement(to);
-  }, [preloadElement, to]);
+  const preloadElementInner = React.useCallback(
+    () => preloadElement(to),
+    [preloadElement, to]
+  );
   const onPress = React.useCallback(
     async (event: GestureResponderEvent) => {
       const shouldNavigate = shouldHandleNativeLinkPress(
@@ -70,20 +73,31 @@ export default function Link<T extends BaseScreen>({
         return;
       }
       isPushing.current = true;
-      const options = {
-        preload: isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
-        toBottomTab,
-        fullScreen,
-      };
+      try {
+        // Give the preload started on press-in a small head start. Never make
+        // navigation wait indefinitely for a lazy chunk: after the budget,
+        // Suspense owns the visible loading state.
+        await Promise.race([
+          preloadElementInner(),
+          new Promise((resolve) => setTimeout(resolve, elementPreloadWaitInMs)),
+        ]);
+        const options = {
+          preload:
+            isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
+          toBottomTab,
+          fullScreen,
+        };
 
-      if (isRefreshInsteadOfPush) {
-        refresh(to, params, options);
-      } else if (isReplaceInsteadOfPush) {
-        replace(to, params, options);
-      } else {
-        push(to, params, options);
+        if (isRefreshInsteadOfPush) {
+          refresh(to, params, options);
+        } else if (isReplaceInsteadOfPush) {
+          replace(to, params, options);
+        } else {
+          push(to, params, options);
+        }
+      } finally {
+        isPushing.current = false;
       }
-      isPushing.current = false;
     },
     [
       toBottomTab,
@@ -97,6 +111,7 @@ export default function Link<T extends BaseScreen>({
       replace,
       push,
       fullScreen,
+      preloadElementInner,
     ]
   );
 

@@ -90,7 +90,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   const preloadElement = React.useCallback(
     async <T extends BaseScreen>(screen: T) => {
       try {
-        (screen.element as PreloadableComponent<any>)?.preload?.();
+        return await (screen.element as PreloadableComponent<any>)?.preload?.();
       } catch (error) {
         console.log(
           '[react-native-ridge-navigation] error while preloading element',
@@ -98,6 +98,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
           error
         );
       }
+      return undefined;
     },
     []
   );
@@ -112,7 +113,11 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         );
         return;
       }
-      getRootPreloadScreens(root).forEach((screen) => {
+      getRootPreloadScreens(root, {
+        // Native tab stacks mount eagerly. Preload every root screen before
+        // those mounted scenes read their route data; web remains URL-aware.
+        includeAllTabs: root.type === 'bottomTabs' && Platform.OS !== 'web',
+      }).forEach((screen) => {
         preloadElement(screen);
         preloadScreen(screen, {});
       });
@@ -271,7 +276,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       let root = navigationRoot[fluentParams.rootKey]!;
       const tab =
         fluentParams.tab || (root as RootChildBottomTabs)?.children?.[0];
-      let fluentNavigator = new StateNavigator(rootNavigator)
+      let fluentNavigator = createHistorylessClone(rootNavigator)
         .fluent()
         .navigate(
           root.type === 'bottomTabs'
@@ -390,6 +395,13 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       </BottomTabBadgeProvider>
     </RidgeNavigationContext.Provider>
   );
+}
+
+function createHistorylessClone(navigator: StateNavigator) {
+  const clone = new StateNavigator(navigator);
+  clone.historyManager.disabled = true;
+  clone.historyManager.stop();
+  return clone;
 }
 
 const OptimizedRenderScene = React.memo(

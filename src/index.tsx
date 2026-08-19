@@ -1,6 +1,7 @@
 export { default as BackLink } from './BackLink';
 export { default as SwitchRoot } from './SwitchRoot';
 export { default as Link } from './Link';
+export { default as Redirect } from './Redirect';
 export { default as BottomTabLink } from './BottomTabLink';
 export { default as Head } from './Head';
 export {

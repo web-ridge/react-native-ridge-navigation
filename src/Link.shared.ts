@@ -24,7 +24,10 @@ export type NativePressPoint = {
   pageY: number;
 };
 
-const nativePressMovementTolerance = 12;
+// A scene can still move underneath the finger while a native transition
+// settles. Keep a normal tap valid during that short drift; ScrollView and
+// Pressable already cancel actual scroll gestures before the link sees them.
+const nativePressMovementTolerance = 32;
 
 export function shouldHandleNativeLinkPress(
   origin: NativePressPoint | null,

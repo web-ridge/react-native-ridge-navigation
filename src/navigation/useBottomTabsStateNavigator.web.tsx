@@ -7,6 +7,8 @@ export function useBottomTabsStateNavigator(key: string) {
   return React.useMemo(
     () => {
       const navigator = new StateNavigator(stateNavigator);
+      navigator.historyManager.disabled = true;
+      navigator.historyManager.stop();
       navigator.start(key);
       return navigator;
     },

@@ -10,6 +10,8 @@ export function useBottomTabsStateNavigator(startKey: string) {
   const navigator = React.useRef(
     (function () {
       const n = new StateNavigator(stateNavigator);
+      n.historyManager.disabled = true;
+      n.historyManager.stop();
       n.start(startKey);
       return n;
     })()

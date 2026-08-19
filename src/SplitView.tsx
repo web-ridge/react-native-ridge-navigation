@@ -397,7 +397,7 @@ function WideSplitView({
       );
     };
     const selectDetail = (key: string, params?: any) => {
-      const fluentNavigator = new StateNavigator(detailNavigator)
+      const fluentNavigator = createHistorylessClone(detailNavigator)
         .fluent()
         .navigate(rootKey)
         .navigate(key, params);
@@ -503,7 +503,7 @@ function WideSplitView({
       return undefined;
     }
     const replacePaneSelection = (key: string, params?: any) => {
-      const fluentNavigator = new StateNavigator(detailNavigator)
+      const fluentNavigator = createHistorylessClone(detailNavigator)
         .fluent()
         .navigate(rootKey)
         .navigate(key, params);
@@ -556,7 +556,7 @@ function WideSplitView({
       let parsed: { state?: any; data?: any } | null = null;
       try {
         parsed = detailNavigator.parseLink(targetUrl);
-        if (parsed?.state?.screen) {
+        if (intent == null && parsed?.state?.screen) {
           preloadScreen(parsed.state.screen, parsed.data);
         }
       } catch {
@@ -871,6 +871,13 @@ function DetailPaneScenes({
 
 function EmptyElement() {
   return null;
+}
+
+function createHistorylessClone(navigator: StateNavigator) {
+  const clone = new StateNavigator(navigator);
+  clone.historyManager.disabled = true;
+  clone.historyManager.stop();
+  return clone;
 }
 
 const styles = StyleSheet.create({
