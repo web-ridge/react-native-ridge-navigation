@@ -13,6 +13,15 @@ describe('shouldHandleNativeLinkPress', () => {
     ).toBe(true);
   });
 
+  it('handles transition drift without requiring a second tap', () => {
+    expect(
+      shouldHandleNativeLinkPress(
+        { pageX: 100, pageY: 200 },
+        { pageX: 126, pageY: 203 }
+      )
+    ).toBe(true);
+  });
+
   it('ignores a press released after a scroll gesture', () => {
     expect(
       shouldHandleNativeLinkPress(

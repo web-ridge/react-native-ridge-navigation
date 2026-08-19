@@ -444,7 +444,7 @@ function WideTripleSplitView({
       mainNavigator.refresh(next, resolvedHistoryAction);
     };
     const selectLocal = (key: string, params?: any) => {
-      const fluent = new StateNavigator(middleNavigator)
+      const fluent = createHistorylessClone(middleNavigator)
         .fluent()
         .navigate(middleRootKey)
         .navigate(key, params);
@@ -510,7 +510,7 @@ function WideTripleSplitView({
       );
     };
     const selectLocal = (key: string, params?: any) => {
-      const fluent = new StateNavigator(detailNavigator)
+      const fluent = createHistorylessClone(detailNavigator)
         .fluent()
         .navigate(detailRootKey)
         .navigate(key, params);
@@ -616,7 +616,7 @@ function WideTripleSplitView({
       key: string,
       params?: any
     ) => {
-      const fluent = new StateNavigator(navigator)
+      const fluent = createHistorylessClone(navigator)
         .fluent()
         .navigate(rootKey)
         .navigate(key, params);
@@ -645,7 +645,7 @@ function WideTripleSplitView({
       let parsed: { state?: any; data?: any } | null = null;
       try {
         parsed = navigator.parseLink(targetUrl);
-        if ((parsed as any)?.state?.screen) {
+        if (intent == null && (parsed as any)?.state?.screen) {
           preloadScreen((parsed as any).state.screen, (parsed as any).data);
         }
       } catch {
@@ -1040,6 +1040,13 @@ function PaneScenes({
 
 function EmptyElement() {
   return null;
+}
+
+function createHistorylessClone(navigator: StateNavigator) {
+  const clone = new StateNavigator(navigator);
+  clone.historyManager.disabled = true;
+  clone.historyManager.stop();
+  return clone;
 }
 
 const styles = StyleSheet.create({

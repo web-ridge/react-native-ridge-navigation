@@ -2,6 +2,7 @@ import type { BaseScreen, Root } from './navigationUtils';
 
 export type RootPreloadOptions = {
   includeInitialTab?: boolean;
+  includeAllTabs?: boolean;
 };
 
 /**
@@ -14,6 +15,9 @@ export function getRootPreloadScreens(
   options: RootPreloadOptions = {}
 ): BaseScreen[] {
   if (root.type === 'bottomTabs') {
+    if (options.includeAllTabs) {
+      return root.children.map((tab) => tab.child);
+    }
     const initialScreen = root.children[0]?.child;
     return options.includeInitialTab && initialScreen ? [initialScreen] : [];
   }
