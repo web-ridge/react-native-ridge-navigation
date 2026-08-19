@@ -54,8 +54,8 @@ function PostsScreen() {
   return (
     <SplitView
       // Make the detail SELECTION part of navigation state: reflected in the
-      // main URL as `?detail=post/<id>`, deep-linkable, and back-navigable via
-      // browser Back/Forward and the native back gesture.
+      // main URL as `?detail=post/<id>` and deep-linkable. Peer row selections
+      // replace by default, so Back leaves Posts instead of replaying rows.
       selectionParam="detail"
       masterTitle="Posts"
       masterLargeTitle

@@ -19,6 +19,10 @@ import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import FullScreenPushContext from './contexts/FullScreenPushContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
+import {
+  resolveSelectionHistoryAction,
+  type SelectionHistory,
+} from './selectionHistory';
 import useCurrentRoot from './useCurrentRoot';
 import useBottomTabIndex from './useBottomTabIndex';
 import {
@@ -68,9 +72,9 @@ export type SplitViewProps = {
    *  - reflects the selection in the URL of the MAIN navigator as a query param
    *    (`…/overview?detail=post/1`), so it is deep-linkable and restored on a
    *    cold reload,
-   *  - records it as a real entry on the MAIN navigator's single history
-   *    timeline, so browser Back/Forward (web) and the native back gesture step
-   *    back through selections — no second history stack to fight the main one.
+   *  - keeps it on the MAIN navigator's single history timeline. Peer picks
+   *    replace the current entry by default; `selectionHistory="push"` opts into
+   *    browser/native Back and Forward stepping through previous selections.
    *
    * The detail pane becomes a pure mirror of that URL: it re-derives itself
    * whenever the selection query changes (row tap, Back, Forward, deep link).
@@ -80,6 +84,18 @@ export type SplitViewProps = {
    * compatible.
    */
   selectionParam?: string;
+  /**
+   * How peer selections from the master column affect navigation history.
+   *
+   * `replace` (default) keeps the current selection deep-linkable while Back
+   * leaves the split instead of replaying previously selected rows. `push`
+   * opts into Back/Forward navigation through peer selections.
+   *
+   * Only applies to wide, URL-backed (`selectionParam`) splits. Narrow layouts
+   * keep their normal full-screen push behaviour, and drill-downs from inside
+   * the detail pane always push.
+   */
+  selectionHistory?: SelectionHistory;
 };
 
 /**
@@ -106,6 +122,7 @@ export default function SplitView({
   masterLargeTitle,
   masterActions,
   selectionParam,
+  selectionHistory = 'replace',
 }: SplitViewProps) {
   // Seed from the window width (available synchronously) so the split renders on
   // first paint instead of null-until-onLayout — no blank flash, and it works in
@@ -129,6 +146,7 @@ export default function SplitView({
           masterLargeTitle={masterLargeTitle}
           masterActions={masterActions}
           selectionParam={selectionParam}
+          selectionHistory={selectionHistory}
         >
           {children}
         </WideSplitView>
@@ -149,6 +167,7 @@ function WideSplitView({
   masterLargeTitle,
   masterActions,
   selectionParam,
+  selectionHistory,
 }: Omit<SplitViewProps, 'breakingPointWidth'>) {
   const id = React.useId();
   const rootKey = 'splitViewProvider_' + id.replace(/:/g, '--');
@@ -352,10 +371,11 @@ function WideSplitView({
   // [root, detail] instead of stacking on whatever was selected before.
   //
   // With `selectionParam`, selection instead flows through the MAIN navigator:
-  // a row push records the selection as a query param on the current main URL
-  // (history 'add'), and the pane is re-derived from that URL by the effect
-  // below. That keeps ONE history timeline (URL + browser/native Back) and
-  // avoids the pane driving itself out of sync with the URL.
+  // a row push records the selection as a query param on the current main URL,
+  // and the pane is re-derived from that URL by the effect below. Peer picks
+  // replace by default; selectionHistory="push" makes them separate entries.
+  // Both modes keep ONE URL timeline and avoid the pane driving itself out of
+  // sync with it.
   const masterNavigator = React.useMemo(() => {
     const selectViaUrl = (
       key: string,
@@ -365,12 +385,16 @@ function WideSplitView({
       applyIntentRef.current = 'replace';
       const href = encodeSelectionHref(key, params);
       const currentData = mainNavigator.stateContext.data ?? {};
-      if (historyAction === 'replace') {
+      const resolvedHistoryAction = resolveSelectionHistoryAction(
+        historyAction,
+        selectionHistory
+      );
+      if (resolvedHistoryAction === 'replace') {
         selectionStackRef.current.pop();
       }
       mainNavigator.refresh(
         { ...currentData, [selectionParam as string]: href },
-        historyAction === 'replace' ? 'replace' : 'add'
+        resolvedHistoryAction
       );
     };
     const selectDetail = (key: string, params?: any) => {
@@ -407,6 +431,7 @@ function WideSplitView({
     detailNavigator,
     rootKey,
     selectionParam,
+    selectionHistory,
     mainNavigator,
     encodeSelectionHref,
     navigateLinkMirroringUrl,

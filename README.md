@@ -483,6 +483,8 @@ Both split components seed their width from `useWindowDimensions()` so they rend
 
 The mechanism is a **history-less `StateNavigator` per pane**: a push from the master column *selects* a new detail (it resets the pane to `[root, detail]` instead of stacking), while a push from *inside* a detail scene stacks deeper into that pane. `TripleSplitView` applies the same trick twice — sidebar pushes select the middle column (and reset the detail), middle pushes select the detail column.
 
+When `selectionParam` (or `sectionParam` / `detailParam`) mirrors pane selection into the main URL, peer selections **replace history by default**. The URL stays deep-linkable, but Back leaves the workspace instead of replaying every row the user inspected. Detail drill-downs still push. Set `selectionHistory="push"` only when Back/Forward should deliberately replay peer selections. Below the breakpoint this option has no effect: ordinary single-column navigation keeps pushing as usual.
+
 ### `SplitView` — master/detail with a per-column native bar
 
 The master column can mount its **own** native `UINavigationBar` scoped to the column (iPad Mail style) — it does **not** span into the detail pane. This works because the master is a single, non-pushing scene (row taps drive the *detail* navigator), so an embedded native nav stack at column width is safe — the new-architecture "no push at partial width" limitation never applies to a scene that never pushes.
@@ -507,7 +509,7 @@ import { SplitView, RightBar, BarButton } from 'react-native-ridge-navigation';
 </SplitView>
 ```
 
-Props: `masterTitle`, `masterLargeTitle`, `masterActions`, `detailPlaceholder`, `breakingPointWidth` (default 700), `masterWidth` (default 360), `masterStyle`, `detailStyle`.
+Props: `masterTitle`, `masterLargeTitle`, `masterActions`, `detailPlaceholder`, `breakingPointWidth` (default 700), `masterWidth` (default 360), `masterStyle`, `detailStyle`, `selectionParam`, `selectionHistory` (`"replace"` by default; `"push"` opts into selection history).
 
 - **Bar buttons — two mechanisms, both confirmed:** an SF Symbol via `image={{ uri: 'name' }}` (maps to `UIImage systemImageNamed:`), or a UIKit `systemItem` string (`'add'`, `'action'`, `'edit'`, …).
 - **Collapse gotcha (handled by the library, but replicate it in your list):** the master list must be **height-bound** so it produces a real scroll view. `MasterPaneScene` already wraps children in a `flex: 1` view; on top of that give your `FlatList`/`ScrollView` `contentInsetAdjustmentBehavior="automatic"` (iOS). Without a finite height the list lays out at full content height (clipped by the column's `overflow: hidden`), never scrolls, and UIKit never binds a collapsible content scroll view — so the large title stays permanently expanded.
