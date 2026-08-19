@@ -17,6 +17,7 @@ import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
+  resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
   type SelectionHistory,
 } from './selectionHistory';
@@ -300,10 +301,8 @@ function WideTripleSplitView({
   // entry created by `refresh(..., 'add')` — the state stays put, only the
   // query data changes. Browser Back walks those data entries via the History
   // API, but `mainNavigator.navigateBack` walks the CRUMB trail instead and
-  // would jump out of the whole split. So in-app back must replicate a browser
-  // history back: step the History API on web (the panes re-derive from the
-  // resulting URL through the URL-mirror effect). Native has no browser
-  // history; fall back to the crumb navigator (best-effort).
+  // would jump out of the whole split. So in-app back must step the recorded
+  // pane-selection history before falling back to the outer crumb navigator.
   // The applied selection snapshots, oldest→newest, mirroring the main
   // navigator's selection history. Maintained by the URL-mirror effect below;
   // consumed by `paneGoBack` so in-app back is a synchronous state step.
@@ -317,30 +316,28 @@ function WideTripleSplitView({
   }, [mainNavigator, sectionParam, detailParam]);
   const paneGoBack = React.useCallback(
     (n = 1) => {
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        // Step the recorded selection history SYNCHRONOUSLY: apply the target
-        // selection with a single `refresh('replace')` so the URL + panes
-        // update in one commit. An async `window.history.go(-n)` leaves a window
-        // in which a concurrent re-render's `replaceState` can rewrite the URL
-        // back to the screen we are leaving; a synchronous refresh closes it.
-        if (urlDriven) {
-          const stack = selectionStackRef.current;
-          const targetIndex = stack.length - 1 - n;
-          if (targetIndex >= 0) {
-            const target = stack[targetIndex]!;
-            const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
-            for (const key of [sectionParam, detailParam]) {
-              if (!key) continue;
-              if (target[key] != null) {
-                next[key] = target[key];
-              } else {
-                delete next[key];
-              }
+      // Apply the previous selection with one synchronous refresh. On native
+      // this keeps Back inside the pane stack; on web it also avoids an async
+      // popstate race with URL normalization.
+      if (urlDriven) {
+        const stack = selectionStackRef.current;
+        const targetIndex = resolveSelectionBackTargetIndex(stack.length, n);
+        if (targetIndex != null) {
+          const target = stack[targetIndex]!;
+          const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+          for (const key of [sectionParam, detailParam]) {
+            if (!key) continue;
+            if (target[key] != null) {
+              next[key] = target[key];
+            } else {
+              delete next[key];
             }
-            mainNavigator.refresh(next, 'replace');
-            return;
           }
+          mainNavigator.refresh(next, 'replace');
+          return;
         }
+      }
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         // No recorded selection to step back to (e.g. a cold deep-link) — step
         // the real browser history instead.
         window.history.go(-n);

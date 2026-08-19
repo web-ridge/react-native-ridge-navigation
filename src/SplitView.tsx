@@ -20,6 +20,7 @@ import FullScreenPushContext from './contexts/FullScreenPushContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
 import {
+  resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
   type SelectionHistory,
 } from './selectionHistory';
@@ -200,9 +201,8 @@ function WideSplitView({
   // `refresh(..., 'add')` data entries — same state, changing query. Browser
   // Back walks them via the History API; `mainNavigator.navigateBack` walks the
   // CRUMB trail instead and would jump out of the split entirely. So in-app back
-  // must replicate a browser history back: step the History API on web (the
-  // detail pane re-derives from the resulting URL). Native falls back to the
-  // crumb navigator (best-effort; browser-history back is web-only).
+  // must replicate a pane-history back before falling back to the outer crumb
+  // navigator. The recorded selection stack works on both web and native.
   // The applied selection hrefs, oldest→newest, mirroring the main navigator's
   // selection history (undefined = the placeholder / no selection). Maintained
   // by the URL-mirror effect below; consumed by `paneGoBack` so in-app back is
@@ -215,27 +215,26 @@ function WideSplitView({
   }, [mainNavigator, selectionParam]);
   const paneGoBack = React.useCallback(
     (n = 1) => {
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        // Step the recorded selection history SYNCHRONOUSLY with a single
-        // `refresh('replace')` (URL + pane update in one commit). An async
-        // `window.history.go(-n)` leaves a window in which a concurrent
-        // re-render's `replaceState` (e.g. from a save mutation's refetch) can
-        // rewrite the URL back to the screen we are leaving, stranding the pane.
-        if (selectionParam) {
-          const stack = selectionStackRef.current;
-          const targetIndex = stack.length - 1 - n;
-          if (targetIndex >= 0) {
-            const targetHref = stack[targetIndex];
-            const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
-            if (targetHref != null) {
-              next[selectionParam] = targetHref;
-            } else {
-              delete next[selectionParam];
-            }
-            mainNavigator.refresh(next, 'replace');
-            return;
+      // Step the recorded selection history SYNCHRONOUSLY with a single
+      // `refresh('replace')` (URL + pane update in one commit). On native this
+      // prevents a detail drill's Back button from popping the entire split;
+      // on web it also avoids an async popstate race with URL normalization.
+      if (selectionParam) {
+        const stack = selectionStackRef.current;
+        const targetIndex = resolveSelectionBackTargetIndex(stack.length, n);
+        if (targetIndex != null) {
+          const targetHref = stack[targetIndex];
+          const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+          if (targetHref != null) {
+            next[selectionParam] = targetHref;
+          } else {
+            delete next[selectionParam];
           }
+          mainNavigator.refresh(next, 'replace');
+          return;
         }
+      }
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         window.history.go(-n);
         return;
       }
