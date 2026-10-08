@@ -6,6 +6,7 @@ import {
 } from './navigationUtils';
 
 import * as React from 'react';
+import { type ColorValue, StyleSheet, View } from 'react-native';
 import TabBar from './navigation/TabBar';
 import TabBarItem from './navigation/TabBarItem';
 import { NavigationHandler } from 'navigation-react';
@@ -38,6 +39,19 @@ export default function BottomTabsStack() {
   const { setBottomTabIndex, bottomTabIndex } = React.useContext(
     BottomTabIndexContext
   );
+  // Render a tab's screens only once that tab has been shown. Every tab used
+  // to render its root screen at launch, so hidden tabs ran their queries and
+  // paginated prefetches while the user waited for the first one. The native
+  // stack itself must still mount (the tab bar needs its navigation
+  // controller); only the scene content waits. Root data is still preloaded,
+  // so the first switch to a tab stays fast.
+  const activeTabIndex = bottomTabIndex ?? 0;
+  const [visitedTabs, setVisitedTabs] = React.useState<ReadonlySet<number>>(
+    () => new Set([activeTabIndex])
+  );
+  if (!visitedTabs.has(activeTabIndex)) {
+    setVisitedTabs(new Set([...visitedTabs, activeTabIndex]));
+  }
 
   if (root.type !== 'bottomTabs') {
     return null;
@@ -76,17 +90,37 @@ export default function BottomTabsStack() {
               searchTab={tab.searchTab}
               testID={`bottomTab-${tab.child.path}`}
             >
-              <TabBarItemStack
-                tab={tab}
-                rootKey={currentRootKey}
-                nativeAccessory={NativeAccessory}
-              />
+              <TabVisitedContext.Provider
+                value={visitedTabs.has(index) || index === activeTabIndex}
+              >
+                <TabBarItemStack
+                  tab={tab}
+                  rootKey={currentRootKey}
+                  nativeAccessory={NativeAccessory}
+                />
+              </TabVisitedContext.Provider>
             </NativeTabBarItem>
           );
         })}
       </TabBar>
     </>
   );
+}
+
+const TabVisitedContext = React.createContext(true);
+
+function TabSceneGate({
+  backgroundColor,
+  children,
+}: {
+  backgroundColor: ColorValue;
+  children: React.ReactNode;
+}) {
+  const visited = React.useContext(TabVisitedContext);
+  if (!visited) {
+    return <View style={[StyleSheet.absoluteFill, { backgroundColor }]} />;
+  }
+  return <>{children}</>;
 }
 
 const TabBarItemStack = React.memo(
@@ -119,9 +153,11 @@ const TabBarItemStack = React.memo(
                   nativeHeader={state?.screen?.options?.nativeHeader}
                 />
                 {NativeAccessory ? <NativeAccessory /> : null}
-                <OptimizedContextProvider state={state} data={data}>
-                  {state.renderScene()}
-                </OptimizedContextProvider>
+                <TabSceneGate backgroundColor={layout.backgroundColor}>
+                  <OptimizedContextProvider state={state} data={data}>
+                    {state.renderScene()}
+                  </OptimizedContextProvider>
+                </TabSceneGate>
               </NavigationBackGestureProvider>
             );
           }}
