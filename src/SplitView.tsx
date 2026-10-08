@@ -1,3 +1,4 @@
+import { paneNavigatorProxyKey } from './replaceUrl';
 import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
@@ -409,6 +410,9 @@ function WideSplitView({
     };
     return new Proxy(detailNavigator, {
       get(target: any, prop) {
+        if (prop === paneNavigatorProxyKey) {
+          return true;
+        }
         if (prop === 'navigate') {
           return selectionParam ? selectViaUrl : selectDetail;
         }
@@ -464,6 +468,9 @@ function WideSplitView({
     };
     return new Proxy(detailNavigator, {
       get(target: any, prop) {
+        if (prop === paneNavigatorProxyKey) {
+          return true;
+        }
         if (prop === 'navigate') {
           return selectionParam
             ? stackViaUrl

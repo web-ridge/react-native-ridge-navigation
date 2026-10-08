@@ -57,6 +57,7 @@ export { default as useIsFocused } from './useIsFocused';
 export { default as useParams } from './useParams';
 export { default as useBottomTabBadges } from './useBottomTabBadges';
 export { default as useBottomTabIndex } from './useBottomTabIndex';
+export { useSwitchToBottomTab } from './useBottomTabIndex';
 export { default as useModal } from './useModal';
 
 export { default as useNavigation } from './useNavigation';

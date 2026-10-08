@@ -12,8 +12,6 @@ import {
   type NativePressPoint,
 } from './Link.shared';
 
-const elementPreloadWaitInMs = 250;
-
 export default function Link<T extends BaseScreen>({
   to,
   toBottomTab,
@@ -74,13 +72,6 @@ export default function Link<T extends BaseScreen>({
       }
       isPushing.current = true;
       try {
-        // Give the preload started on press-in a small head start. Never make
-        // navigation wait indefinitely for a lazy chunk: after the budget,
-        // Suspense owns the visible loading state.
-        await Promise.race([
-          preloadElementInner(),
-          new Promise((resolve) => setTimeout(resolve, elementPreloadWaitInMs)),
-        ]);
         const options = {
           preload:
             isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
@@ -111,7 +102,6 @@ export default function Link<T extends BaseScreen>({
       replace,
       push,
       fullScreen,
-      preloadElementInner,
     ]
   );
 
