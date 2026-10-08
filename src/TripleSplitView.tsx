@@ -1,3 +1,4 @@
+import { paneNavigatorProxyKey } from './replaceUrl';
 import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
@@ -14,8 +15,11 @@ import OptimizedContext, {
   OptimizedContextProvider,
 } from './contexts/OptimizedContext';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
+import FullScreenPushContext from './contexts/FullScreenPushContext';
 import SplitPaneContext from './contexts/SplitPaneContext';
 import useLatest from './useLatest';
+import useCurrentRoot from './useCurrentRoot';
+import useBottomTabIndex from './useBottomTabIndex';
 import {
   consumePaneApplyIntent,
   resolvePaneBackAction,
@@ -27,6 +31,7 @@ import {
 import {
   createNormalRoot,
   generatePath,
+  getScreenKey,
   makeVariablesNavigationFriendly,
   rootKeyAndPaths,
 } from './navigationUtils';
@@ -295,7 +300,20 @@ function WideTripleSplitView({
       ? outerOptimized.rootNavigator
       : outerOptimized.stateNavigator;
   const { preloadScreen } = outerOptimized;
+  const { currentRootKey } = useCurrentRoot();
+  const { currentTab } = useBottomTabIndex();
   const urlDriven = Boolean(sectionParam || detailParam);
+
+  const fullScreenPush = React.useCallback(
+    (screen: any, params: any, options?: { preload?: boolean }) => {
+      if (options?.preload ?? true) {
+        preloadScreen(screen, params);
+      }
+      const screenKey = getScreenKey(currentRootKey!, currentTab, screen.path);
+      mainNavigator.navigate(screenKey, params, 'add');
+    },
+    [mainNavigator, preloadScreen, currentRootKey, currentTab]
+  );
 
   // In-app back for URL-selection mode. Each selection level (section, detail,
   // and any sub-form drilled inside the detail) is a MAIN-navigator history
@@ -461,6 +479,9 @@ function WideTripleSplitView({
     };
     return new Proxy(middleNavigator, {
       get(target: any, prop) {
+        if (prop === paneNavigatorProxyKey) {
+          return true;
+        }
         if (prop === 'navigate') {
           return sectionParam ? selectViaUrl : selectLocal;
         }
@@ -525,6 +546,9 @@ function WideTripleSplitView({
     };
     return new Proxy(detailNavigator, {
       get(target: any, prop) {
+        if (prop === paneNavigatorProxyKey) {
+          return true;
+        }
         if (prop === 'navigate') {
           return detailParam ? selectViaUrl : selectLocal;
         }
@@ -576,6 +600,9 @@ function WideTripleSplitView({
     };
     return new Proxy(detailNavigator, {
       get(target: any, prop) {
+        if (prop === paneNavigatorProxyKey) {
+          return true;
+        }
         if (prop === 'navigate') {
           return detailParam
             ? stackViaUrl
@@ -914,13 +941,14 @@ function WideTripleSplitView({
   );
 
   return (
-    <View style={styles.row}>
-      {/* Normal layout: sidebar reserves the leftmost column. Floating layout:
+    <FullScreenPushContext.Provider value={fullScreenPush}>
+      <View style={styles.row}>
+        {/* Normal layout: sidebar reserves the leftmost column. Floating layout:
           the content spans from x=0 and the sidebar overlays it (rendered last,
           below). */}
-      {!floatingSidebar && sidebarNode}
+        {!floatingSidebar && sidebarNode}
 
-      {/* Column 2 — middle/list, whose pushes select the detail column.
+        {/* Column 2 — middle/list, whose pushes select the detail column.
           No NavigationHandler here on purpose: the middle scene stack is driven
           by the middleNavigator prop, and the Links inside must push through
           `middleSelect` (reset the detail column) — passed as linkNavigator so
@@ -929,25 +957,25 @@ function WideTripleSplitView({
           column's own NavigationHandler for ownership of detailNavigator and
           leave the middle showing only its placeholder. Mirrors how SplitView's
           master renders its children with no handler at all. */}
-      <View style={[{ width: masterWidth }, masterStyle]}>
-        <RidgeNavigationContext.Provider value={middleRidgeValue}>
-          <OptimizedContext.Provider value={middleOptimizedValue}>
-            {/* Master/middle: role=master so entity lists drop nested SplitViews
+        <View style={[{ width: masterWidth }, masterStyle]}>
+          <RidgeNavigationContext.Provider value={middleRidgeValue}>
+            <OptimizedContext.Provider value={middleOptimizedValue}>
+              {/* Master/middle: role=master so entity lists drop nested SplitViews
                 and product headers suppress auto-Back on the list column. */}
-            <SplitPaneContext.Provider value="master">
-              <PaneScenes
-                navigator={middleNavigator}
-                rootKey={middleRootKey}
-                renderPlaceholder={renderMasterPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-                linkNavigator={middleSelect}
-              />
-            </SplitPaneContext.Provider>
-          </OptimizedContext.Provider>
-        </RidgeNavigationContext.Provider>
-      </View>
+              <SplitPaneContext.Provider value="master">
+                <PaneScenes
+                  navigator={middleNavigator}
+                  rootKey={middleRootKey}
+                  renderPlaceholder={renderMasterPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                  linkNavigator={middleSelect}
+                />
+              </SplitPaneContext.Provider>
+            </OptimizedContext.Provider>
+          </RidgeNavigationContext.Provider>
+        </View>
 
-      {/* Column 3 — detail. Wrapped in the pane ridge context (rootNavigator =
+        {/* Column 3 — detail. Wrapped in the pane ridge context (rootNavigator =
           detailNavigator, navigationRoot incl. the pane rootKeys) so pushes
           from INSIDE a detail screen (a sub-form card) resolve against the
           detail pane's own root instead of the main app root — without this
@@ -961,25 +989,26 @@ function WideTripleSplitView({
           When `detailParam` is set, inner pushes route through
           `detailStackSelect`: each becomes a stacked pane scene + a new
           `?detail=` history entry (deep-linkable, Back/Terug one level). */}
-      <SplitPaneContext.Provider value="detail">
-        <View style={[styles.detail, detailStyle]}>
-          <RidgeNavigationContext.Provider value={middleRidgeValue}>
-            <NavigationHandler stateNavigator={detailNavigator}>
-              <PaneScenes
-                navigator={detailNavigator}
-                rootKey={detailRootKey}
-                renderPlaceholder={renderDetailPlaceholder}
-                backgroundColor={theme.layout.backgroundColor}
-                linkNavigator={detailParam ? detailStackSelect : undefined}
-              />
-            </NavigationHandler>
-          </RidgeNavigationContext.Provider>
-        </View>
-      </SplitPaneContext.Provider>
+        <SplitPaneContext.Provider value="detail">
+          <View style={[styles.detail, detailStyle]}>
+            <RidgeNavigationContext.Provider value={middleRidgeValue}>
+              <NavigationHandler stateNavigator={detailNavigator}>
+                <PaneScenes
+                  navigator={detailNavigator}
+                  rootKey={detailRootKey}
+                  renderPlaceholder={renderDetailPlaceholder}
+                  backgroundColor={theme.layout.backgroundColor}
+                  linkNavigator={detailParam ? detailStackSelect : undefined}
+                />
+              </NavigationHandler>
+            </RidgeNavigationContext.Provider>
+          </View>
+        </SplitPaneContext.Provider>
 
-      {/* Floating sidebar overlay, painted on top of the content. */}
-      {floatingSidebar && sidebarNode}
-    </View>
+        {/* Floating sidebar overlay, painted on top of the content. */}
+        {floatingSidebar && sidebarNode}
+      </View>
+    </FullScreenPushContext.Provider>
   );
 }
 

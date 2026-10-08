@@ -1,3 +1,4 @@
+import { buildReplaceUrl, isPaneNavigatorProxy } from './replaceUrl';
 import * as React from 'react';
 import {
   type BaseScreen,
@@ -7,7 +8,7 @@ import {
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
 import OptimizedContext from './contexts/OptimizedContext';
-import useBottomTabIndex from './useBottomTabIndex';
+import { useBottomTabActions } from './useBottomTabIndex';
 import { Platform } from 'react-native';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import { useFullScreenPush } from './contexts/FullScreenPushContext';
@@ -43,7 +44,7 @@ export default function useNavigation() {
   const fullScreenPush = useFullScreenPush();
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
-  const { currentTab, switchToTab } = useBottomTabIndex();
+  const { getCurrentTab, switchToTab } = useBottomTabActions();
 
   const preload = React.useCallback(
     async <T extends BaseScreen>(
@@ -142,12 +143,12 @@ export default function useNavigation() {
       }
       const screenKey = getScreenKey(
         currentRootKey!,
-        options?.toBottomTab || currentTab,
+        options?.toBottomTab || getCurrentTab(),
         screen.path
       );
       stateNavigator.navigate(screenKey, params, historyAction);
     },
-    [currentRootKey, currentTab, stateNavigator, preload, switchToTab]
+    [currentRootKey, getCurrentTab, stateNavigator, preload, switchToTab]
   );
 
   const push = React.useCallback(
@@ -183,34 +184,73 @@ export default function useNavigation() {
       }
       const screenKey = getScreenKey(
         currentRootKey!,
-        options?.toBottomTab || currentTab,
+        options?.toBottomTab || getCurrentTab(),
         screen.path
       );
       // Split views proxy `navigate()` so the selected detail remains a pure
       // function of the main URL. Going through a locally-built fluent link on
       // web bypasses that proxy and can leave the pane empty while the address
       // bar still points at the replaced screen (for example /add after a
-      // successful create). Let the navigator/proxy perform the replacement.
-      if (Platform.OS === 'web') {
+      // successful create). Let the proxy perform the replacement.
+      // On native a pane with crumbs already took the crumb-preserving link
+      // below, so only the cases that went through the proxy before still do.
+      if (
+        isPaneNavigatorProxy(stateNavigator) &&
+        (Platform.OS === 'web' ||
+          stateNavigator.stateContext.crumbs.length === 0)
+      ) {
         stateNavigator.navigate(screenKey, params, 'replace');
         return;
       }
-      const { crumbs } = stateNavigator.stateContext;
-      if (crumbs.length > 0) {
-        // Use fluent API to build URL that replaces current screen in the
-        // crumb stack (navigateBack(1) + navigate), then apply with 'replace'
-        // historyAction so the browser history entry is also replaced.
-        const url = stateNavigator
-          .fluent(true)
-          .navigateBack(1)
-          .navigate(screenKey, params).url;
-        stateNavigator.navigateLink(url, 'replace');
-      } else {
-        // No crumbs (at root of stack) — just navigate with replace.
-        stateNavigator.navigate(screenKey, params, 'replace');
+      // Everywhere else: keep the crumb trail and swap only the current scene.
+      // A plain navigate(..., 'replace') would push the current scene onto the
+      // crumb trail (see buildReplaceUrl).
+      stateNavigator.navigateLink(
+        buildReplaceUrl(stateNavigator, screenKey, params),
+        'replace'
+      );
+    },
+    [currentRootKey, getCurrentTab, preload, stateNavigator, switchToTab]
+  );
+
+  // Replace the whole stack of the current tab in ONE navigation: back to the
+  // tab's first screen, then `screens` on top (the last one is shown). Back
+  // then walks these screens, never the screens of a flow that just finished
+  // (for example the steps of a wizard). Built from the real crumbs, so the
+  // tab root is the state the user came from. Falls back to `replace` with
+  // the last screen when the stack cannot be built.
+  const resetTo = React.useCallback(
+    (
+      screens: { screen: BaseScreen; params: Record<string, unknown> }[],
+      options?: { preload?: boolean }
+    ) => {
+      const last = screens[screens.length - 1];
+      if (!last) {
+        return;
+      }
+      if (options?.preload ?? true) {
+        preload(last.screen, last.params as never);
+      }
+      const tab = getCurrentTab();
+      try {
+        const { crumbs } = stateNavigator.stateContext;
+        let link =
+          crumbs.length > 0
+            ? stateNavigator.fluent(true).navigateBack(crumbs.length)
+            : stateNavigator.fluent(false);
+        for (const { screen, params } of screens) {
+          link = link.navigate(
+            getScreenKey(currentRootKey!, tab, screen.path),
+            params
+          );
+        }
+        stateNavigator.navigateLink(link.url, 'replace');
+      } catch (e) {
+        console.log('[react-native-ridge-navigation] resetTo failed', e);
+        replace(last.screen, last.params as never, { preload: false });
       }
     },
-    [currentRootKey, currentTab, preload, stateNavigator, switchToTab]
+    [currentRootKey, getCurrentTab, preload, replace, stateNavigator]
   );
 
   return {
@@ -224,6 +264,7 @@ export default function useNavigation() {
     switchRoot,
     push,
     replace,
+    resetTo,
     refresh,
     theme,
     canNavigateBack,

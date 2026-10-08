@@ -1,3 +1,4 @@
+import { shouldReplayLinkingUrl } from './linkingReplay';
 import * as React from 'react';
 import { StateNavigator } from 'navigation';
 import {
@@ -315,14 +316,18 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         setNavigationReady(true);
       } else {
         const timerId = setTimeout(() => {
-          // Expo Linking also reports URLs written by this navigator. A newer
-          // local navigation may already have replaced that URL during this
-          // debounce window; replaying the stale event would jump the user back
-          // one screen. Real browser/deep-link events still match the current
-          // history entry and continue through openUrl.
+          // Expo Linking also reports URLs written by this navigator; see
+          // shouldReplayLinkingUrl for when such an event is stale.
           if (
-            Platform.OS === 'web' &&
-            rootNavigator.historyManager.getCurrentUrl() !== goToUrl
+            !shouldReplayLinkingUrl({
+              isWeb: Platform.OS === 'web',
+              eventUrl: goToUrl,
+              currentHistoryUrl:
+                Platform.OS === 'web'
+                  ? rootNavigator.historyManager.getCurrentUrl()
+                  : undefined,
+              currentStateUrl: rootNavigator.stateContext.url,
+            })
           ) {
             return;
           }

@@ -52,12 +52,15 @@ function NavigationStack({
               },
             ]}
           >
-            {active && (
+            {/* Only a titled screen may own the document title: a nested
+                stack (e.g. inside a modal) starts on an untitled root, and its
+                empty <title> hoisted first blanked the window title. */}
+            {active && title ? (
               <Head>
-                <title>{title || ''}</title>
+                <title>{title}</title>
                 <meta name="description" content={description || ''} />
               </Head>
-            )}
+            ) : null}
             <OptimizedContextProvider
               state={state}
               data={data}
