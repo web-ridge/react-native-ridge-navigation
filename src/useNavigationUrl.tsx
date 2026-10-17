@@ -33,7 +33,18 @@ export function useNavigationUrl({
     const defaultRoot = navigationRoot[defaultRootKey]!;
     return '/' + getPathFromRoot(defaultRoot, undefined, defaultRootKey);
   }, [navigationRoot]);
-  const initialUrl = useUrl() || initialDefaultUrl;
+  const currentUrl = useUrl();
+  const firstUrl = React.useRef(currentUrl);
+  // Web: only the URL the app was opened on is a deep link. Every later
+  // window.location is a write of this navigator itself (push/replace) or a
+  // browser back/forward that its history manager already handles. Reading it
+  // again on a re-render replayed it through goToUrl; a web navigation writes
+  // the URL only once the destination has rendered, so a re-render during that
+  // window (the goToUrl reset below, a colour-scheme change) navigated back to
+  // the screen the user was leaving and cancelled the click.
+  const initialUrl =
+    (Platform.OS === 'web' ? firstUrl.current : currentUrl) ||
+    initialDefaultUrl;
   const [goToUrl, setGoToUrl] = React.useState<string | undefined>(initialUrl);
   React.useEffect(() => {
     setGoToUrl(initialUrl);
