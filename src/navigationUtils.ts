@@ -269,6 +269,16 @@ export function getRootKeyFromPath(path: string) {
 export function getBottomTabKeyFromPath(path: string) {
   return splitPath(path)?.[1];
 }
+
+// A link to a path no tab owns (an unknown host, a sidebar-only route on a
+// phone) selects the first tab; -1 would reach the native tab bar.
+export function tabIndexOrFirst(
+  tabs: readonly BottomTabType[],
+  tabKey: string | undefined
+): number {
+  const index = tabs.findIndex((tab) => tab.path === '/' + tabKey);
+  return index === -1 ? 0 : index;
+}
 export function getPaths(path: string, hasBottomTabs: boolean) {
   const paths = splitPath(path);
   // 0 = rootKey

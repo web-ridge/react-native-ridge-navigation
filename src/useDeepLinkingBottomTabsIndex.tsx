@@ -1,6 +1,10 @@
 import * as React from 'react';
 import useCurrentRoot from './useCurrentRoot';
-import { getBottomTabKeyFromPath, getPathFromUrl } from './navigationUtils';
+import {
+  getBottomTabKeyFromPath,
+  tabIndexOrFirst,
+  getPathFromUrl,
+} from './navigationUtils';
 
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 
@@ -18,9 +22,7 @@ export default function useDeepLinkingBottomTabsIndex() {
     }
     const path = getPathFromUrl(goToUrl);
     const currentTabKey = getBottomTabKeyFromPath(path);
-    return (
-      children.findIndex((child) => child.path === '/' + currentTabKey) || 0
-    );
+    return tabIndexOrFirst(children, currentTabKey);
   }, [children, goToUrl]);
   const [bottomTabIndex, setBottomTabIndex] = React.useState(initialIndex || 0);
   React.useEffect(() => {

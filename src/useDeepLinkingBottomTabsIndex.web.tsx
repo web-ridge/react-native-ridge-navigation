@@ -2,7 +2,7 @@ import * as React from 'react';
 import useNavigation from './useNavigation';
 import OptimizedContext from './contexts/OptimizedContext';
 import useCurrentRoot from './useCurrentRoot';
-import { getBottomTabKeyFromPath } from './navigationUtils';
+import { getBottomTabKeyFromPath, tabIndexOrFirst } from './navigationUtils';
 
 export default function useDeepLinkingBottomTabsIndex() {
   const { push } = useNavigation();
@@ -15,8 +15,7 @@ export default function useDeepLinkingBottomTabsIndex() {
   const stateKey = stateNavigator.stateContext.state.key;
   const currentTabKey = getBottomTabKeyFromPath(stateKey);
 
-  const bottomTabIndex =
-    children.findIndex((child) => child.path === '/' + currentTabKey) || 0;
+  const bottomTabIndex = tabIndexOrFirst(children, currentTabKey);
   const setBottomTabIndex = React.useCallback(
     (index: number) => {
       const tab = children?.[index];
