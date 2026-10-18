@@ -24,6 +24,7 @@ import {
   consumePaneApplyIntent,
   resolvePaneBackAction,
   resolveSelectionHistoryAction,
+  stepPaneDrillBack,
   shouldPreloadMirroredSelection,
   type PaneApplyIntent,
   type SelectionHistory,
@@ -334,16 +335,48 @@ function WideTripleSplitView({
       (detailParam && data[detailParam] != null);
     return Boolean(hasSelection) || mainNavigator.canNavigateBack(1);
   }, [mainNavigator, sectionParam, detailParam]);
+  const masterPlaceholderRef = useLatest(masterPlaceholder);
+  const detailPlaceholderRef = useLatest(detailPlaceholder);
+
+  // Third column: the detail navigator.
+  const detailNavigator = useScopedPaneNavigator(
+    screens,
+    SuspenseContainer,
+    detailRootKey
+  );
+  // Second column: the middle/list navigator.
+  const middleNavigator = useScopedPaneNavigator(
+    screens,
+    SuspenseContainer,
+    middleRootKey
+  );
   const paneGoBack = React.useCallback(
     (n = 1) => {
       const stack = selectionStackRef.current;
+      const data: any = mainNavigator.stateContext.data ?? {};
+      const selectedKey =
+        detailParam && data[detailParam] != null
+          ? detailParam
+          : sectionParam && data[sectionParam] != null
+            ? sectionParam
+            : undefined;
       const action = resolvePaneBackAction(
         urlDriven ? stack.length : 0,
         n,
-        Platform.OS === 'web' && typeof window !== 'undefined'
+        Platform.OS === 'web' && typeof window !== 'undefined',
+        Boolean(urlDriven && selectedKey)
       );
       if (action.type === 'browser') {
-        window.history.go(-action.distance);
+        if (stepPaneDrillBack(detailNavigator, action.distance)) {
+          window.history.go(-action.distance);
+        }
+        return;
+      }
+      if (action.type === 'deselect') {
+        const next: any = { ...data };
+        delete next[selectedKey as string];
+        selectionStackRef.current.pop();
+        mainNavigator.refresh(next, 'replace');
         return;
       }
       // Native has no browser timeline to consume. Keep its synchronous pane
@@ -369,22 +402,7 @@ function WideTripleSplitView({
         mainNavigator.navigateBack(action.distance);
       }
     },
-    [mainNavigator, urlDriven, sectionParam, detailParam]
-  );
-  const masterPlaceholderRef = useLatest(masterPlaceholder);
-  const detailPlaceholderRef = useLatest(detailPlaceholder);
-
-  // Third column: the detail navigator.
-  const detailNavigator = useScopedPaneNavigator(
-    screens,
-    SuspenseContainer,
-    detailRootKey
-  );
-  // Second column: the middle/list navigator.
-  const middleNavigator = useScopedPaneNavigator(
-    screens,
-    SuspenseContainer,
-    middleRootKey
+    [mainNavigator, urlDriven, sectionParam, detailParam, detailNavigator]
   );
 
   // Report the current selection (both columns) as stable screen paths + params

@@ -4,6 +4,7 @@ import {
   resolveSelectionBackTargetIndex,
   resolveSelectionHistoryAction,
   shouldPreloadMirroredSelection,
+  stepPaneDrillBack,
 } from './selectionHistory';
 
 describe('resolveSelectionHistoryAction', () => {
@@ -67,6 +68,48 @@ describe('resolvePaneBackAction', () => {
       type: 'outer',
       distance: 1,
     });
+  });
+
+  it.each([
+    ['web', true],
+    ['native', false],
+  ])(
+    'clears a selection that replaced its predecessor on %s instead of leaving the split',
+    (_platform, useBrowserHistory) => {
+      expect(resolvePaneBackAction(1, 1, useBrowserHistory, true)).toEqual({
+        type: 'deselect',
+      });
+    }
+  );
+});
+
+describe('stepPaneDrillBack', () => {
+  const paneWithCrumbs = (crumbs: number, guardAllows = true) => {
+    const pane: any = {
+      stateContext: { crumbs: new Array(crumbs).fill({}) },
+      navigateBack: jest.fn((distance: number) => {
+        if (guardAllows) {
+          pane.stateContext = { crumbs: new Array(crumbs - distance).fill({}) };
+        }
+      }),
+    };
+    return pane;
+  };
+
+  it('steps a drill synchronously before the browser entry is consumed', () => {
+    const pane = paneWithCrumbs(2);
+    expect(stepPaneDrillBack(pane, 1)).toBe(true);
+    expect(pane.navigateBack).toHaveBeenCalledWith(1);
+  });
+
+  it('keeps the browser entry when a guard keeps the screen', () => {
+    expect(stepPaneDrillBack(paneWithCrumbs(2, false), 1)).toBe(false);
+  });
+
+  it('leaves a selection without a drill to the URL mirror', () => {
+    const pane = paneWithCrumbs(1);
+    expect(stepPaneDrillBack(pane, 1)).toBe(true);
+    expect(pane.navigateBack).not.toHaveBeenCalled();
   });
 });
 

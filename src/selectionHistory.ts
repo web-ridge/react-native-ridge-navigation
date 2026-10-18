@@ -1,3 +1,5 @@
+import type { StateNavigator } from 'navigation';
+
 export type SelectionHistory = 'replace' | 'push';
 
 export type NavigationHistoryAction = 'add' | 'replace' | 'none';
@@ -7,6 +9,7 @@ export type PaneApplyIntent = 'replace' | 'push' | null;
 export type PaneBackAction =
   | { type: 'browser'; distance: number }
   | { type: 'selection'; targetIndex: number }
+  | { type: 'deselect' }
   | { type: 'outer'; distance: number };
 
 /**
@@ -47,20 +50,30 @@ export function resolveSelectionBackTargetIndex(
  * turns `[detail, review]` into `[detail, detail]` and makes the next Back a
  * no-op. Native has no browser timeline, so it keeps the synchronous selection
  * refresh before falling back to the outer navigator.
+ *
+ * A selection that replaced its predecessor (peer selections replace by
+ * default, and so does a create screen swapping itself for the new record) owns
+ * no earlier entry: consuming the browser entry would leave the split, or the
+ * app. Back clears that selection instead, on web and native alike.
  */
 export function resolvePaneBackAction(
   stackLength: number,
   distance = 1,
-  useBrowserHistory = false
+  useBrowserHistory = false,
+  hasSelection = false
 ): PaneBackAction {
-  if (useBrowserHistory) {
-    return { type: 'browser', distance };
-  }
-
   const targetIndex = resolveSelectionBackTargetIndex(stackLength, distance);
-  return targetIndex == null
-    ? { type: 'outer', distance }
-    : { type: 'selection', targetIndex };
+  if (targetIndex != null) {
+    return useBrowserHistory
+      ? { type: 'browser', distance }
+      : { type: 'selection', targetIndex };
+  }
+  if (hasSelection) {
+    return { type: 'deselect' };
+  }
+  return useBrowserHistory
+    ? { type: 'browser', distance }
+    : { type: 'outer', distance };
 }
 
 /**
@@ -79,4 +92,23 @@ export function resolveSelectionHistoryAction(
     return 'replace';
   }
   return 'add';
+}
+
+/**
+ * In-app Back on web consumes the pane's browser entry, but the popstate that
+ * re-derives the pane arrives asynchronously. Step a pane drill synchronously
+ * first, so its unloading guards (a discard-changes prompt) judge the screen as
+ * the caller left it, for example still saving. Returns false when a guard kept
+ * the screen; the browser entry must then stay.
+ */
+export function stepPaneDrillBack(
+  navigator: StateNavigator,
+  distance: number
+): boolean {
+  if (navigator.stateContext.crumbs.length <= distance) {
+    return true;
+  }
+  const before = navigator.stateContext;
+  navigator.navigateBack(distance);
+  return navigator.stateContext !== before;
 }

@@ -23,6 +23,7 @@ import useLatest from './useLatest';
 import {
   resolvePaneBackAction,
   resolveSelectionHistoryAction,
+  stepPaneDrillBack,
   type SelectionHistory,
 } from './selectionHistory';
 import useCurrentRoot from './useCurrentRoot';
@@ -215,40 +216,6 @@ function WideSplitView({
     const hasSelection = selectionParam && data[selectionParam] != null;
     return Boolean(hasSelection) || mainNavigator.canNavigateBack(1);
   }, [mainNavigator, selectionParam]);
-  const paneGoBack = React.useCallback(
-    (n = 1) => {
-      const stack = selectionStackRef.current;
-      const action = resolvePaneBackAction(
-        selectionParam ? stack.length : 0,
-        n,
-        Platform.OS === 'web' && typeof window !== 'undefined'
-      );
-      if (action.type === 'browser') {
-        window.history.go(-action.distance);
-        return;
-      }
-      // Native has no browser timeline to consume. Keep its synchronous pane
-      // refresh so a nested detail Back never pops the entire split.
-      if (action.type === 'selection') {
-        if (!selectionParam) {
-          return;
-        }
-        const targetHref = stack[action.targetIndex];
-        const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
-        if (targetHref != null) {
-          next[selectionParam] = targetHref;
-        } else {
-          delete next[selectionParam];
-        }
-        mainNavigator.refresh(next, 'replace');
-        return;
-      }
-      if (mainNavigator.canNavigateBack(action.distance)) {
-        mainNavigator.navigateBack(action.distance);
-      }
-    },
-    [mainNavigator, selectionParam]
-  );
   const fullScreenPush = React.useCallback(
     (screen: any, params: any, options?: { preload?: boolean }) => {
       if (options?.preload ?? true) {
@@ -291,6 +258,51 @@ function WideSplitView({
     navigator.navigate(rootKey);
     return navigator;
   }, [SuspenseContainer, rootKey, screens]);
+  const paneGoBack = React.useCallback(
+    (n = 1) => {
+      const stack = selectionStackRef.current;
+      const data: any = mainNavigator.stateContext.data ?? {};
+      const action = resolvePaneBackAction(
+        selectionParam ? stack.length : 0,
+        n,
+        Platform.OS === 'web' && typeof window !== 'undefined',
+        Boolean(selectionParam && data[selectionParam] != null)
+      );
+      if (action.type === 'browser') {
+        if (stepPaneDrillBack(detailNavigator, action.distance)) {
+          window.history.go(-action.distance);
+        }
+        return;
+      }
+      if (action.type === 'deselect') {
+        const next: any = { ...data };
+        delete next[selectionParam as string];
+        selectionStackRef.current.pop();
+        mainNavigator.refresh(next, 'replace');
+        return;
+      }
+      // Native has no browser timeline to consume. Keep its synchronous pane
+      // refresh so a nested detail Back never pops the entire split.
+      if (action.type === 'selection') {
+        if (!selectionParam) {
+          return;
+        }
+        const targetHref = stack[action.targetIndex];
+        const next: any = { ...(mainNavigator.stateContext.data ?? {}) };
+        if (targetHref != null) {
+          next[selectionParam] = targetHref;
+        } else {
+          delete next[selectionParam];
+        }
+        mainNavigator.refresh(next, 'replace');
+        return;
+      }
+      if (mainNavigator.canNavigateBack(action.distance)) {
+        mainNavigator.navigateBack(action.distance);
+      }
+    },
+    [mainNavigator, selectionParam, detailNavigator]
+  );
 
   // Encode a pane route key + params (what a master row push carries) into the
   // compact href stored in the main URL, e.g. key `…/post/:id` + {id:'1'} ->
