@@ -38,6 +38,7 @@ export function OptimizedContextProvider({
 }) {
   const {
     preloadedCache,
+    preloadedAt,
     rootNavigator,
     preloadRoot,
     preloadScreen,
@@ -56,10 +57,23 @@ export function OptimizedContextProvider({
 
   // Scenes without a preloadId (e.g. synthetic roots) must not crash
   // generatePath and have nothing meaningful to render yet.
-  const preloaded =
+  const preloadPath =
     typeof preloadId === 'string'
-      ? preloadedCache[generatePath(preloadId, params ?? {})]
+      ? generatePath(preloadId, params ?? {})
       : undefined;
+  const preloaded =
+    preloadPath !== undefined ? preloadedCache[preloadPath] : undefined;
+
+  // A preload a screen has rendered with is used up: it no longer counts as
+  // fresh for the next Link press or hover to the same path, so navigating
+  // back to this screen later fetches again instead of reusing the old result.
+  // Keyed on the result too: a mounted scene that receives a new preload for
+  // its path uses that one up as well.
+  React.useEffect(() => {
+    if (preloadPath !== undefined && preloaded !== undefined && preloadedAt) {
+      delete preloadedAt[preloadPath];
+    }
+  }, [preloadPath, preloaded, preloadedAt]);
 
   const value = React.useMemo(
     () => ({
