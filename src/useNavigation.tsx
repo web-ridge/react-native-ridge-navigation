@@ -4,6 +4,7 @@ import {
   type BaseScreen,
   type BottomTabType,
   type ExtractRouteParams,
+  generatePath,
   getScreenKey,
 } from './navigationUtils';
 import useCurrentRoot from './useCurrentRoot';
@@ -13,6 +14,10 @@ import { Platform } from 'react-native';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import { useFullScreenPush } from './contexts/FullScreenPushContext';
 import { getRootPreloadScreens } from './rootPreloadPolicy';
+import {
+  commitWhenReady,
+  NavigationTransitionContext,
+} from './navigationTransition';
 
 type NavigateOptions = {
   /**
@@ -30,6 +35,14 @@ type NavigateOptions = {
    * No-op outside a split (falls back to a normal push).
    */
   fullScreen?: boolean;
+  /**
+   * Web: keep the current screen until the destination's code and preloaded
+   * data are ready (at most the provider's `pendingMs`), then commit in a
+   * transition. `Link` sets this; a programmatic call (after a mutation, a
+   * redirect) commits right away unless it opts in, so a form that just saved
+   * never lingers with a live submit button.
+   */
+  waitUntilReady?: boolean;
 };
 export default function useNavigation() {
   const {
@@ -40,7 +53,9 @@ export default function useNavigation() {
     theme,
     stateNavigator,
   } = React.useContext(OptimizedContext);
-  const { fluent, navigationRoot } = React.useContext(RidgeNavigationContext);
+  const { fluent, navigationRoot, preloadedCache, whenScreenReady } =
+    React.useContext(RidgeNavigationContext);
+  const transition = React.useContext(NavigationTransitionContext);
   const fullScreenPush = useFullScreenPush();
 
   const { currentRootKey, currentRoot } = useCurrentRoot();
@@ -111,18 +126,52 @@ export default function useNavigation() {
     [navigationRoot, preloadElement, preloadScreen, rootNavigator]
   );
 
+  /**
+   * Web + `waitUntilReady`: run `commit` (the actual navigate) as a
+   * transition once the screen's code and preloaded data are ready, capped at
+   * `transition.pendingMs`, so the current screen stays until the next one
+   * can render. Only the latest navigation commits: a second click while the
+   * first still waits wins. Everything else commits right away, as before;
+   * on native UIKit pushes immediately and the destination shows its own
+   * Suspense fallback.
+   */
+  const navigateWhenReady = React.useCallback(
+    <T extends BaseScreen>(
+      screen: T,
+      params: ExtractRouteParams<T['path']>,
+      options: NavigateOptions | undefined,
+      commit: () => void
+    ) => {
+      const preloaded =
+        (options?.preload ?? true)
+          ? preloadScreen(screen, params)
+          : preloadedCache?.[generatePath(screen.path, params)];
+      if (Platform.OS !== 'web' || !options?.waitUntilReady) {
+        // Also cancels a link navigation that is still waiting.
+        transition.latest.current += 1;
+        commit();
+        return;
+      }
+      commitWhenReady(
+        transition,
+        whenScreenReady?.(screen, params, preloaded) ?? null,
+        commit
+      );
+    },
+    [preloadScreen, preloadedCache, transition, whenScreenReady]
+  );
+
   const refresh = React.useCallback(
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
-      if (options?.preload ?? true) {
-        preload(screen, params);
-      }
-      stateNavigator.refresh(params, 'replace');
+      navigateWhenReady(screen, params, options, () =>
+        stateNavigator.refresh(params, 'replace')
+      );
     },
-    [stateNavigator, preload]
+    [stateNavigator, navigateWhenReady]
   );
 
   const innerNavigate = React.useCallback(
@@ -132,23 +181,27 @@ export default function useNavigation() {
       options?: NavigateOptions,
       historyAction?: 'add' | 'replace' | 'none'
     ) => {
-      if (options?.preload ?? true) {
-        preload(screen, params);
-      }
-
-      // on web, it works based on url but on mobile it also updates the
-      // selected bottom tab index.
-      if (options?.toBottomTab && Platform.OS !== 'web') {
-        switchToTab(options.toBottomTab);
-      }
-      const screenKey = getScreenKey(
-        currentRootKey!,
-        options?.toBottomTab || getCurrentTab(),
-        screen.path
-      );
-      stateNavigator.navigate(screenKey, params, historyAction);
+      navigateWhenReady(screen, params, options, () => {
+        // on web, it works based on url but on mobile it also updates the
+        // selected bottom tab index.
+        if (options?.toBottomTab && Platform.OS !== 'web') {
+          switchToTab(options.toBottomTab);
+        }
+        const screenKey = getScreenKey(
+          currentRootKey!,
+          options?.toBottomTab || getCurrentTab(),
+          screen.path
+        );
+        stateNavigator.navigate(screenKey, params, historyAction);
+      });
     },
-    [currentRootKey, getCurrentTab, stateNavigator, preload, switchToTab]
+    [
+      currentRootKey,
+      getCurrentTab,
+      stateNavigator,
+      navigateWhenReady,
+      switchToTab,
+    ]
   );
 
   const push = React.useCallback(
@@ -167,16 +220,13 @@ export default function useNavigation() {
     [innerNavigate, fullScreenPush]
   );
 
-  const replace = React.useCallback(
+  // The replacement itself, without preloading or waiting.
+  const replaceNow = React.useCallback(
     <T extends BaseScreen>(
       screen: T,
       params: ExtractRouteParams<T['path']>,
       options?: NavigateOptions
     ) => {
-      if (options?.preload ?? true) {
-        preload(screen, params);
-      }
-
       // on web, it works based on url but on mobile it also updates the
       // selected bottom tab index.
       if (options?.toBottomTab && Platform.OS !== 'web') {
@@ -210,7 +260,20 @@ export default function useNavigation() {
         'replace'
       );
     },
-    [currentRootKey, getCurrentTab, preload, stateNavigator, switchToTab]
+    [currentRootKey, getCurrentTab, stateNavigator, switchToTab]
+  );
+
+  const replace = React.useCallback(
+    <T extends BaseScreen>(
+      screen: T,
+      params: ExtractRouteParams<T['path']>,
+      options?: NavigateOptions
+    ) => {
+      navigateWhenReady(screen, params, options, () =>
+        replaceNow(screen, params, options)
+      );
+    },
+    [navigateWhenReady, replaceNow]
   );
 
   // Replace the whole stack of the current tab in ONE navigation: back to the
@@ -222,35 +285,45 @@ export default function useNavigation() {
   const resetTo = React.useCallback(
     (
       screens: { screen: BaseScreen; params: Record<string, unknown> }[],
-      options?: { preload?: boolean }
+      options?: { preload?: boolean; waitUntilReady?: boolean }
     ) => {
       const last = screens[screens.length - 1];
       if (!last) {
         return;
       }
-      if (options?.preload ?? true) {
-        preload(last.screen, last.params as never);
-      }
-      const tab = getCurrentTab();
-      try {
-        const { crumbs } = stateNavigator.stateContext;
-        let link =
-          crumbs.length > 0
-            ? stateNavigator.fluent(true).navigateBack(crumbs.length)
-            : stateNavigator.fluent(false);
-        for (const { screen, params } of screens) {
-          link = link.navigate(
-            getScreenKey(currentRootKey!, tab, screen.path),
-            params
-          );
+      navigateWhenReady(
+        last.screen,
+        last.params as never,
+        { preload: options?.preload, waitUntilReady: options?.waitUntilReady },
+        () => {
+          const tab = getCurrentTab();
+          try {
+            const { crumbs } = stateNavigator.stateContext;
+            let link =
+              crumbs.length > 0
+                ? stateNavigator.fluent(true).navigateBack(crumbs.length)
+                : stateNavigator.fluent(false);
+            for (const { screen, params } of screens) {
+              link = link.navigate(
+                getScreenKey(currentRootKey!, tab, screen.path),
+                params
+              );
+            }
+            stateNavigator.navigateLink(link.url, 'replace');
+          } catch (e) {
+            console.log('[react-native-ridge-navigation] resetTo failed', e);
+            replaceNow(last.screen, last.params as never);
+          }
         }
-        stateNavigator.navigateLink(link.url, 'replace');
-      } catch (e) {
-        console.log('[react-native-ridge-navigation] resetTo failed', e);
-        replace(last.screen, last.params as never, { preload: false });
-      }
+      );
     },
-    [currentRootKey, getCurrentTab, preload, replace, stateNavigator]
+    [
+      currentRootKey,
+      getCurrentTab,
+      navigateWhenReady,
+      replaceNow,
+      stateNavigator,
+    ]
   );
 
   return {

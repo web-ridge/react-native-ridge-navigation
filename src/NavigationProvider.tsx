@@ -34,6 +34,9 @@ import BottomTabRefreshProvider from './contexts/BottomTabRefreshProvider';
 import { useNavigationUrl } from './useNavigationUrl';
 import { getRootPreloadScreens } from './rootPreloadPolicy';
 import { NavigationBackGestureProvider } from './contexts/RidgeNavigationContext';
+import { getPreloadReady } from './Preloader';
+import { whenAllReady } from './screenReadiness';
+import { NavigationTransitionProvider } from './navigationTransition';
 
 export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   screens,
@@ -43,6 +46,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   children,
   initialRootKey,
   basePath,
+  pendingMs,
 }: {
   screens: ScreenItems;
   navigationRoot: Root;
@@ -51,6 +55,12 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   children?: any;
   initialRootKey: string;
   basePath?: string;
+  /**
+   * Web: how long a navigation keeps the current screen while the next one
+   * loads its code and preloaded data. After this the next screen commits and
+   * shows its own Suspense fallback. Default 1000 ms.
+   */
+  pendingMs?: number;
 }) {
   const { setGoToUrl, goToUrl, initialDefaultUrl } = useNavigationUrl({
     navigationRoot,
@@ -67,6 +77,10 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   );
 
   const preloadedCache = React.useRef<Record<string, any>>({});
+  // When each path was last preloaded, shared by every Link so two links to
+  // the same screen (or repeated hovers) do not preload it twice.
+  const preloadedAt = React.useRef<Record<string, number>>({});
+  const loadedElements = React.useRef(new WeakSet<object>());
 
   const preloadScreen = React.useCallback(
     <T extends BaseScreen>(screen: T, params: any) => {
@@ -74,6 +88,7 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         const result = screen.preload(params);
         const path = generatePath(screen.path, params);
         preloadedCache.current[path] = result;
+        preloadedAt.current[path] = Date.now();
         return result;
       } catch (error) {
         console.log(
@@ -91,7 +106,12 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
   const preloadElement = React.useCallback(
     async <T extends BaseScreen>(screen: T) => {
       try {
-        return await (screen.element as PreloadableComponent<any>)?.preload?.();
+        const element = screen.element as PreloadableComponent<any>;
+        const loaded = await element?.preload?.();
+        if (element) {
+          loadedElements.current.add(element);
+        }
+        return loaded;
       } catch (error) {
         console.log(
           '[react-native-ridge-navigation] error while preloading element',
@@ -102,6 +122,21 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
       return undefined;
     },
     []
+  );
+
+  const whenScreenReady = React.useCallback(
+    <T extends BaseScreen>(screen: T, params: any, preloaded: any) => {
+      const element = screen.element as PreloadableComponent<any> | undefined;
+      const elementReady =
+        !element?.preload || loadedElements.current.has(element)
+          ? null
+          : preloadElement(screen);
+      return whenAllReady([
+        elementReady,
+        getPreloadReady({ preloaded, params, screen }),
+      ]);
+    },
+    [preloadElement]
   );
 
   const preloadRoot = React.useCallback(
@@ -359,6 +394,8 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         rootNavigator,
         navigationRoot,
         preloadedCache: preloadedCache.current,
+        preloadedAt: preloadedAt.current,
+        whenScreenReady,
         preloadRoot,
         preloadScreen,
         theme,
@@ -369,35 +406,37 @@ export default function NavigationProvider<ScreenItems extends BaseScreen[]>({
         basePath,
       }}
     >
-      <BottomTabBadgeProvider>
-        <NavigationHandler stateNavigator={rootNavigator}>
-          <NavigationStackWrapper>
-            {children && (
-              <OptimizedContextProvider state={null} data={undefined}>
-                {children}
-              </OptimizedContextProvider>
-            )}
-            <NavigationStack
-              underlayColor={theme.layout.backgroundColor}
-              backgroundColor={() => theme.layout.backgroundColor}
-              sharedElements={getSharedElementsForState}
-              // unmountStyle={() => ''}
-              renderScene={(state, data) => {
-                return (
-                  <NavigationBackGestureProvider>
-                    <HiddenNavbarWithSwipeBack
-                      nativeHeader={state?.screen?.options?.nativeHeader}
-                    />
-                    <OptimizedContextProvider state={state} data={data}>
-                      <OptimizedRenderScene renderScene={state.renderScene} />
-                    </OptimizedContextProvider>
-                  </NavigationBackGestureProvider>
-                );
-              }}
-            />
-          </NavigationStackWrapper>
-        </NavigationHandler>
-      </BottomTabBadgeProvider>
+      <NavigationTransitionProvider pendingMs={pendingMs}>
+        <BottomTabBadgeProvider>
+          <NavigationHandler stateNavigator={rootNavigator}>
+            <NavigationStackWrapper>
+              {children && (
+                <OptimizedContextProvider state={null} data={undefined}>
+                  {children}
+                </OptimizedContextProvider>
+              )}
+              <NavigationStack
+                underlayColor={theme.layout.backgroundColor}
+                backgroundColor={() => theme.layout.backgroundColor}
+                sharedElements={getSharedElementsForState}
+                // unmountStyle={() => ''}
+                renderScene={(state, data) => {
+                  return (
+                    <NavigationBackGestureProvider>
+                      <HiddenNavbarWithSwipeBack
+                        nativeHeader={state?.screen?.options?.nativeHeader}
+                      />
+                      <OptimizedContextProvider state={state} data={data}>
+                        <OptimizedRenderScene renderScene={state.renderScene} />
+                      </OptimizedContextProvider>
+                    </NavigationBackGestureProvider>
+                  );
+                }}
+              />
+            </NavigationStackWrapper>
+          </NavigationHandler>
+        </BottomTabBadgeProvider>
+      </NavigationTransitionProvider>
     </RidgeNavigationContext.Provider>
   );
 }

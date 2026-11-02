@@ -160,6 +160,9 @@ export function registerScreen<
 export type LinkRenderProps = {
   onPressIn?: (event: GestureResponderEvent) => void;
   onHoverIn?: (event: any) => void;
+  onHoverOut?: (event: any) => void;
+  onFocus?: (event: any) => void;
+  onBlur?: (event: any) => void;
   onPress: (event: GestureResponderEvent) => void;
   accessibilityRole?: 'link';
   href?: string;
@@ -170,10 +173,19 @@ export type LinkProps<T extends BaseScreen> = {
   toBottomTab?: BottomTabType;
   params: ExtractRouteParams<T['path']>;
   children: (p: LinkRenderProps) => any;
-  linkMode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
+  /**
+   * Web preloading of the destination's code and data:
+   * - 'default': on intent — hover or focus that rests 50 ms, else on press.
+   * - 'sensitive': on hover, immediately (pickers whose items open on press).
+   * - 'press': data only on press; hover preloads just the code.
+   */
+  linkMode?: 'default' | 'sensitive' | 'press';
   onPress?: PressableProps['onPress'];
   onPressIn?: PressableProps['onPressIn'];
   onHoverIn?: PressableProps['onHoverIn'];
+  onHoverOut?: PressableProps['onHoverOut'];
+  onFocus?: PressableProps['onFocus'];
+  onBlur?: PressableProps['onBlur'];
   skipLinkBehaviourIfPressIsDefined?: boolean;
   replace?: boolean;
   refresh?: boolean;
@@ -193,7 +205,7 @@ export type BottomTabLinkProps<T extends BottomTabType> = {
   to: BottomTabType;
   params: ExtractRouteParams<T['child']['path']>;
   children: (p: BottomTabLinkRenderProps) => any;
-  mode?: 'default' | 'sensitive'; // used on the web when 'aggressive' the preload() will be called on mouse enter
+  mode?: 'default' | 'sensitive' | 'press'; // web preloading, see LinkProps.linkMode
   onPress?: PressableProps['onPress'];
 };
 

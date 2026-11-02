@@ -8,6 +8,11 @@ import { generatePath } from './navigationUtils';
 import useModal from './useModal';
 import RidgeNavigationContext from './contexts/RidgeNavigationContext';
 import useBottomTabIndex from './useBottomTabIndex';
+import {
+  intentPreloadDelayMs,
+  intentPreloadStaleMs,
+  isFreshPreload,
+} from './screenReadiness';
 
 export default function Link<T extends BaseScreen>({
   to,
@@ -22,9 +27,8 @@ export default function Link<T extends BaseScreen>({
   fullScreen,
   ...rest
 }: LinkProps<T>) {
-  const { basePath, preloadedCache, rootNavigator } = React.useContext(
-    RidgeNavigationContext
-  );
+  const { basePath, preloadedCache, preloadedAt, rootNavigator } =
+    React.useContext(RidgeNavigationContext);
   const { currentTab } = useBottomTabIndex();
   const { inModal } = useModal();
   const { push, replace, refresh, preload, preloadElement, currentRootKey } =
@@ -44,29 +48,49 @@ export default function Link<T extends BaseScreen>({
   }
 
   const preloadPath = generatePath(to.path, params);
-  const lastPreloadedAt = React.useRef<number | null>(null);
+  const intentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  React.useEffect(() => {
-    lastPreloadedAt.current = null;
-  }, [href]);
+  // When this path was last preloaded by anyone: every Link to the same
+  // screen shares it, so two links (or repeated hovers) preload once.
+  const lastPreloadedAt = React.useCallback(
+    () => (preloadedCache[preloadPath] ? preloadedAt?.[preloadPath] : null),
+    [preloadedCache, preloadedAt, preloadPath]
+  );
 
-  const hasPreloadedData = React.useCallback(() => {
-    return Boolean(preloadedCache[preloadPath]);
-  }, [preloadedCache, preloadPath]);
-
+  // Press: preload again unless the last preload is younger than the press
+  // window (Link.shared isStalePreload), so a click opens fresh data.
   const preloadData = React.useCallback(() => {
-    if (!isStalePreload(lastPreloadedAt.current) && hasPreloadedData()) {
+    if (!isStalePreload(lastPreloadedAt())) {
       return;
     }
-
-    lastPreloadedAt.current = new Date().getTime();
     preload(to, params);
-  }, [hasPreloadedData, preload, to, params]);
+  }, [lastPreloadedAt, preload, to, params]);
 
-  const preloadDataAndElement = React.useCallback(() => {
+  // Intent (hover/focus): reuse a preload for longer, see intentPreloadStaleMs.
+  const preloadIntent = React.useCallback(() => {
     preloadElement(to);
-    preloadData();
-  }, [preloadElement, to, preloadData]);
+    if (isFreshPreload(lastPreloadedAt(), intentPreloadStaleMs)) {
+      return;
+    }
+    preload(to, params);
+  }, [preloadElement, lastPreloadedAt, preload, to, params]);
+
+  const cancelIntent = React.useCallback(() => {
+    if (intentTimer.current) {
+      clearTimeout(intentTimer.current);
+      intentTimer.current = null;
+    }
+  }, []);
+
+  const startIntent = React.useCallback(() => {
+    cancelIntent();
+    intentTimer.current = setTimeout(() => {
+      intentTimer.current = null;
+      preloadIntent();
+    }, intentPreloadDelayMs);
+  }, [cancelIntent, preloadIntent]);
+
+  React.useEffect(() => cancelIntent, [cancelIntent]);
 
   const onPress = React.useCallback(
     (event: GestureResponderEvent) => {
@@ -82,11 +106,12 @@ export default function Link<T extends BaseScreen>({
 
       if (shouldHandleWebLinkPress(event, nativeEvent)) {
         event.preventDefault();
+        cancelIntent();
         const options = {
-          preload:
-            isStalePreload(lastPreloadedAt.current) || !hasPreloadedData(),
+          preload: isStalePreload(lastPreloadedAt()),
           toBottomTab,
           fullScreen,
+          waitUntilReady: true,
         };
         if (isRefreshInsteadOfPush) {
           refresh(to, params, options);
@@ -99,57 +124,94 @@ export default function Link<T extends BaseScreen>({
     },
     [
       onCustomPress,
+      cancelIntent,
       toBottomTab,
       isRefreshInsteadOfPush,
       isReplaceInsteadOfPush,
       refresh,
       to,
       params,
-      hasPreloadedData,
+      lastPreloadedAt,
       replace,
       push,
       fullScreen,
     ]
   );
 
-  const preloadElementInner = React.useCallback(() => {
-    preloadElement(to);
-  }, [preloadElement, to]);
-
+  // 'default': hover/focus preloads code + data after a short rest (intent),
+  // press preloads right away as a fallback (keyboard, touch, fast clicks).
+  // 'sensitive': hover preloads code + data immediately (pickers).
+  // 'press': hover preloads only the code, data waits for the press (opt-out
+  // for links whose data is expensive to fetch speculatively).
   const onPressInExternal = rest?.onPressIn;
-  const loadDataOnHover = linkMode === 'sensitive';
   const onPressIn = React.useCallback(
     (e: GestureResponderEvent) => {
-      if (!loadDataOnHover) {
-        preloadData();
-      }
+      cancelIntent();
+      preloadElement(to);
+      preloadData();
       onPressInExternal?.(e);
     },
-    [loadDataOnHover, onPressInExternal, preloadData]
+    [cancelIntent, preloadElement, to, preloadData, onPressInExternal]
   );
 
   const onHoverInExternal = rest?.onHoverIn;
   const onHoverIn = React.useCallback(
     (e: MouseEvent) => {
-      if (loadDataOnHover) {
-        preloadDataAndElement();
+      if (linkMode === 'sensitive') {
+        preloadIntent();
+      } else if (linkMode === 'press') {
+        preloadElement(to);
       } else {
-        preloadElementInner();
+        startIntent();
       }
       onHoverInExternal?.(e);
     },
     [
-      loadDataOnHover,
+      linkMode,
+      preloadIntent,
+      preloadElement,
+      to,
+      startIntent,
       onHoverInExternal,
-      preloadDataAndElement,
-      preloadElementInner,
     ]
   );
 
+  const onHoverOutExternal = rest?.onHoverOut;
+  const onHoverOut = React.useCallback(
+    (e: MouseEvent) => {
+      cancelIntent();
+      onHoverOutExternal?.(e);
+    },
+    [cancelIntent, onHoverOutExternal]
+  );
+
+  const onFocusExternal = rest?.onFocus;
+  const onFocus = React.useCallback(
+    (e: any) => {
+      if (linkMode !== 'press') {
+        startIntent();
+      }
+      onFocusExternal?.(e);
+    },
+    [linkMode, startIntent, onFocusExternal]
+  );
+
+  const onBlurExternal = rest?.onBlur;
+  const onBlur = React.useCallback(
+    (e: any) => {
+      cancelIntent();
+      onBlurExternal?.(e);
+    },
+    [cancelIntent, onBlurExternal]
+  );
+
   let baseProps: LinkRenderProps = {
-    onPressIn: onPressIn,
-    onHoverIn: onHoverIn,
-    onPress: onPress,
+    onPressIn,
+    onHoverIn,
+    onHoverOut,
+    onFocus,
+    onBlur,
+    onPress,
   };
   // Panes (SplitView / TripleSplitView columns, nested providers) run on a
   // history-less navigator whose rootKey is a per-instance ephemeral id, so an

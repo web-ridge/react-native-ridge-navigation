@@ -81,6 +81,9 @@ export function extractLinkProps<T extends BaseScreen>(
     toBottomTab,
     onPressIn,
     onHoverIn,
+    onHoverOut,
+    onFocus,
+    onBlur,
     ...otherProps
   } = props;
   return {
@@ -95,6 +98,9 @@ export function extractLinkProps<T extends BaseScreen>(
     toBottomTab,
     onPressIn,
     onHoverIn,
+    onHoverOut,
+    onFocus,
+    onBlur,
     otherProps,
   };
 }
