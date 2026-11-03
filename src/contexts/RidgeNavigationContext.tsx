@@ -43,6 +43,17 @@ const RidgeNavigationContext = React.createContext<{
   rootNavigator: StateNavigator;
   navigationRoot: Root;
   preloadedCache: Record<string, any>;
+  /** Path → when it was last preloaded (ms since epoch). */
+  preloadedAt: Record<string, number>;
+  /**
+   * Settles once the screen's code and preloaded data can render without
+   * suspending; null when they already can.
+   */
+  whenScreenReady: (
+    screen: BaseScreen,
+    params: any,
+    preloaded: any
+  ) => Promise<void> | null;
   preloadRoot: (rootKey: string) => void;
   preloadScreen: (screen: BaseScreen, params: any) => any;
   preloadElement: (screen: BaseScreen) => void;

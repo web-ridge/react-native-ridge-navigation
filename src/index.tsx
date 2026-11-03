@@ -43,7 +43,10 @@ export {
   usePreloadResult,
   setPreloadResultTransformHook,
   type PreloadResultTransformHook,
+  setPreloadReadyHook,
+  type PreloadReadyHook,
 } from './Preloader';
+export { useNavigationPending } from './navigationTransition';
 export { default as lazy } from './lazy';
 export { default as useBottomTabRefresh } from './useBottomTabRefresh';
 export {

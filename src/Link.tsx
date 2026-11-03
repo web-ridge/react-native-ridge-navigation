@@ -119,10 +119,23 @@ export default function Link<T extends BaseScreen>({
     [preloadData, preloadElementInner, onPressInExternal]
   );
 
+  // Native has no intent preloading; hand the caller's own hover/focus
+  // handlers through (createLinkComponent extracts them for the web Link).
+  const passThrough = {
+    ...(rest.onHoverIn ? { onHoverIn: rest.onHoverIn } : null),
+    ...(rest.onHoverOut ? { onHoverOut: rest.onHoverOut } : null),
+    ...(rest.onFocus ? { onFocus: rest.onFocus } : null),
+    ...(rest.onBlur ? { onBlur: rest.onBlur } : null),
+  };
   if (skipLinkBehaviourIfPressIsDefined && onCustomPress) {
-    return children({ onPress: onCustomPress, onPressIn: onPressInExternal });
+    return children({
+      ...passThrough,
+      onPress: onCustomPress,
+      onPressIn: onPressInExternal,
+    });
   }
   return children({
+    ...passThrough,
     onPress: onPress,
     onPressIn,
   });

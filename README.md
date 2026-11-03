@@ -19,8 +19,9 @@ control over the navigation!
 - Bundle splitting (lazy loading, smart prefetching)
 - Render as you fetch on iOS, Android & web
 - Works on Android, iOS & web!
-- Preload data on mouseDown (or more sensitive on hover, see `<Link />` example)
-- Preload component on hover (on web)
+- Intent preloading on web: hover or focus on a link (resting 50 ms) preloads the screen's code and data, press is the fallback (see `<Link />`)
+- Transition navigation on web: the current screen stays until the next screen's code and data are ready (max `pendingMs`), no empty frame and no Suspense fallback in between
+- `useNavigationPending(delayMs)` for a subtle "still loading" indicator
 - Automatic deep-linking
 - Real-time light/dark mode
 - Out of the box scroll restoration (on web), because screens in tab are pushed on top of each other!
@@ -244,7 +245,9 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
 <Link
   to={routes.PostScreen}
   params={{ id: `${item.id}` }}
-  // linkMode="default" // optional if sensitive the preload will be called on hover instead of mouseDown
+  // linkMode="default" // web: preload code + data on intent (hover/focus resting 50 ms), press as fallback
+  // linkMode="sensitive" // web: preload code + data on hover immediately
+  // linkMode="press" // web: data only on press (opt-out for expensive speculative fetches)
 >
   {(linkProps) => (
     <Pressable  {...linkProps}> // or other touchables/buttons
@@ -256,6 +259,44 @@ Use the `<Link />` component as much as possible since it will work with ctrl+cl
 
 
 ```
+
+## Intent preloading and transition navigation (web)
+
+Modelled on TanStack Router's `preload: 'intent'` and pending behaviour:
+
+- **Intent preload**: hovering or focusing a `Link` for 50 ms preloads the
+  destination's code chunk and data (moving away within 50 ms cancels it).
+  Press still preloads immediately, for touch and keyboard. A hover preload is
+  reused for 30 s by every link to the same path, so repeated hovers do not
+  fire repeated requests; a press re-preloads when the last preload is older
+  than 5 s, so a click never opens a screen on old data (with a
+  store-and-network cache it renders the hovered data at once and refreshes in
+  the background).
+- **Transition navigation**: a `Link` press keeps the current screen until
+  the destination's code and data are ready, then commits in a React
+  transition. Programmatic `push`, `replace`, `refresh` and `resetTo` do the
+  same with `{ waitUntilReady: true }`; without it they commit right away as
+  before (so a form that just saved never lingers with a live submit
+  button). Every pushed scene mounts new Suspense
+  boundaries, and React always shows the fallback of a new boundary — and
+  then holds the real content until 300 ms after it — so waiting before the
+  commit is what avoids the empty frame. After `pendingMs` (default 1000 ms,
+  a `NavigationProvider` prop) the destination commits anyway and shows its own
+  fallback. Only the latest navigation commits. Native is unchanged: UIKit
+  pushes immediately and the destination renders its own fallback.
+- **Ready hook**: tell the navigator when preloaded data can render without
+  suspending. The default waits for a preload result that is a promise. With
+  Relay, return a promise per `PreloadedQuery` whose data is not in the store
+  yet (for example by waiting for the first payload of `ref.source`):
+
+```tsx
+import { setPreloadReadyHook } from 'react-native-ridge-navigation';
+
+setPreloadReadyHook(({ preloaded }) => waitForRelayRefs(preloaded)); // null = ready
+```
+
+- **Pending indicator**: `useNavigationPending(500)` is true while a
+  navigation has been waiting for more than 500 ms.
 
 ## createLinkComponent
 
@@ -343,9 +384,9 @@ const {
   pop, // go back
   switchRoot,
   preload, // call preload (done automatic on link mouseDown
-  push, // calls preload + pushes screen
-  replace, // calls preload + replaces screen
-  refresh, // calls preload + replaces params of screen
+  push, // calls preload + pushes screen ({ waitUntilReady: true }: web waits until ready)
+  replace, // calls preload + replaces screen (same option)
+  refresh, // calls preload + replaces params of screen (same option)
 } = useNavigation()
 ```
 
